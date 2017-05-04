@@ -67,7 +67,7 @@ pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token>
         use std::str::FromStr;
 
         lazy_static! {
-            static ref RE: Regex = Regex::new(r"^\[\d*\]$").unwrap();
+            static ref RE: Regex = Regex::new(r"^\[-?\d*\]$").unwrap();
         }
 
         match RE.captures(s) {
@@ -111,7 +111,7 @@ pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token>
     match tokens.next() {
         None        => Err(Error::from(ErrorKind::EmptyQueryError)),
         Some(token) => {
-            let mut tok = Token::Identifier { ident: String::from(token), next: None };
+            let mut tok = mk_token_object(token);
             build_token_tree(&mut tokens, &mut tok);
             Ok(tok)
         }
