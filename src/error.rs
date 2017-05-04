@@ -10,5 +10,10 @@ error_chain! {
             description("parsing the query failed")
             display("Parsing the query '{}' failed", query)
         }
+
+        EmptyQueryError {
+            description("the query is empty")
+            display("The query on the TOML is empty")
+        }
     }
 }
