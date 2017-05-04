@@ -62,44 +62,47 @@ pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token>
     ///
     /// The `Token` object with the correct identifier/index for this token and no next token.
     ///
-    fn mk_token_object(s: &str) -> Token {
+    fn mk_token_object(s: &str) -> Result<Token> {
         use regex::Regex;
         use std::str::FromStr;
 
         lazy_static! {
-            static ref RE: Regex = Regex::new(r"^\[-?\d*\]$").unwrap();
+            static ref RE: Regex = Regex::new(r"^\[-?\d+\]$").unwrap();
         }
 
-        match RE.captures(s) {
-            None => {
-                Token::Identifier { ident: String::from(s), next: None }
-            },
-            Some(captures) => {
-                match captures.get(0) {
-                    None => Token::Identifier { ident: String::from(s), next: None },
-                    Some(mtch) => {
-                        let mtch = mtch.as_str().replace("[","").replace("]","");
-                        println!("{}", mtch);
-                        let i : i64 = FromStr::from_str(&mtch).unwrap();
-                        Token::Index {
-                            idx: i,
-                            next: None,
+        if s.as_bytes()[0] == b'[' && s.as_bytes()[s.len() - 1] == b']' {
+            match RE.captures(s) {
+                None => return Err(Error::from(ErrorKind::ArrayAccessWithoutIndex)),
+                Some(captures) => {
+                    match captures.get(0) {
+                        None => Ok(Token::Identifier { ident: String::from(s), next: None }),
+                        Some(mtch) => {
+                            let mtch = mtch.as_str().replace("[","").replace("]","");
+                            let i : i64 = FromStr::from_str(&mtch).unwrap(); // save because regex
+                            Ok(Token::Index {
+                                idx: i,
+                                next: None,
+                            })
                         }
                     }
                 }
             }
+        } else {
+            Ok(Token::Identifier { ident: String::from(s), next: None })
         }
+
     }
 
-    fn build_token_tree(split: &mut Split<char>, last: &mut Token) {
+    fn build_token_tree(split: &mut Split<char>, last: &mut Token) -> Result<()> {
         match split.next() {
             None        => { /* No more tokens */ }
             Some(token) => {
-                let mut token = mk_token_object(token);
+                let mut token = try!(mk_token_object(token));
                 build_token_tree(split, &mut token);
                 last.set_next(token);
             }
         }
+        Ok(())
     }
 
     if query.is_empty() {
@@ -114,8 +117,8 @@ pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token>
             if token.len() == 0 {
                 return Err(Error::from(ErrorKind::EmptyIdentifier));
             }
-            let mut tok = mk_token_object(token);
-            build_token_tree(&mut tokens, &mut tok);
+            let mut tok = try!(mk_token_object(token));
+            let _       = try!(build_token_tree(&mut tokens, &mut tok));
             Ok(tok)
         }
     }
