@@ -70,7 +70,7 @@ pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token>
             static ref RE: Regex = Regex::new(r"^\[-?\d+\]$").unwrap();
         }
 
-        if s.as_bytes()[0] == b'[' && s.as_bytes()[s.len() - 1] == b']' {
+        if has_array_brackets(s) {
             match RE.captures(s) {
                 None => return Err(Error::from(ErrorKind::ArrayAccessWithoutIndex)),
                 Some(captures) => {
@@ -91,6 +91,11 @@ pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token>
             Ok(Token::Identifier { ident: String::from(s), next: None })
         }
 
+    }
+
+    /// Check whether a str begins with '[' and ends with ']'
+    fn has_array_brackets(s: &str) -> bool {
+        s.as_bytes()[0] == b'[' && s.as_bytes()[s.len() - 1] == b']'
     }
 
     fn build_token_tree(split: &mut Split<char>, last: &mut Token) -> Result<()> {
