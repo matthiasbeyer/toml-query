@@ -36,7 +36,14 @@ impl Token {
 }
 
 pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token> {
-    return Err(Error::from(ErrorKind::EmptyQueryError))
+    if query.is_empty() {
+        return Err(Error::from(ErrorKind::EmptyQueryError));
+    }
+
+    return Ok(Token::Identifier {
+        ident: query,
+        next: None,
+    });
 }
 
 #[cfg(test)]
