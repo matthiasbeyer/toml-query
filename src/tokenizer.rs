@@ -18,6 +18,13 @@ pub enum Token {
 
 impl Token {
 
+    pub fn set_next(&mut self, token: Token) {
+        match self {
+            &mut Token::Identifier { next: ref mut next, .. } => *next = Some(Rc::new(token)),
+            &mut Token::Index { next: ref mut next, .. }      => *next = Some(Rc::new(token)),
+        }
+    }
+
     #[cfg(test)]
     pub fn identifier(&self) -> &String {
         match self {
@@ -36,14 +43,39 @@ impl Token {
 }
 
 pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token> {
+    use std::str::Split;
+
+    fn build_token_tree(split: &mut Split<char>, last: &mut Token) {
+        match split.next() {
+            None        => { /* No more tokens */ }
+            Some(token) => {
+                let token = String::from(token);
+
+                let mut token = Token::Identifier {
+                    ident: token,
+                    next: None,
+                };
+
+                build_token_tree(split, &mut token);
+                last.set_next(token);
+            }
+        }
+    }
+
     if query.is_empty() {
         return Err(Error::from(ErrorKind::EmptyQueryError));
     }
 
-    return Ok(Token::Identifier {
-        ident: query,
-        next: None,
-    });
+    let mut tokens = query.split(seperator);
+
+    match tokens.next() {
+        None        => Err(Error::from(ErrorKind::EmptyQueryError)),
+        Some(token) => {
+            let mut tok = Token::Identifier { ident: String::from(token), next: None };
+            build_token_tree(&mut tokens, &mut tok);
+            Ok(tok)
+        }
+    }
 }
 
 #[cfg(test)]
