@@ -36,7 +36,7 @@ impl Token {
 }
 
 pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token> {
-    unimplemented!()
+    return Err(Error::from(ErrorKind::EmptyQueryError))
 }
 
 #[cfg(test)]
