@@ -1,11 +1,20 @@
 /// The query resolver that operates on the AST and the TOML object
 
+use toml::Value;
+use tokenizer::Token;
+use error::*;
+
+fn resolve(toml: &mut Value, tokens: Token) -> Result<&mut Value> {
+    unimplemented!()
+}
+
 #[cfg(test)]
 mod test {
     use toml::from_str as toml_from_str;
     use toml::Value;
     use tokenizer::*;
     use error::*;
+    use super::resolve;
 
     macro_rules! do_resolve {
         ( $toml:ident => $query:expr ) => {
