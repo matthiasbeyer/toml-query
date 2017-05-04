@@ -1,5 +1,11 @@
 /// The tokenizer for the query interpreter
 
+use error::*;
+
+pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token> {
+    unimplemented!()
+}
+
 #[cfg(test)]
 mod test {
     use error::*;
