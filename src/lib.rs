@@ -7,7 +7,12 @@
 
 #[macro_use] extern crate error_chain;
 #[macro_use] extern crate is_match;
+#[macro_use] extern crate lazy_static;
+extern crate regex;
 extern crate toml;
+
+#[cfg(test)]
+#[macro_use] extern crate quickcheck;
 
 // public modules
 
@@ -15,4 +20,6 @@ extern crate toml;
 pub mod error;
 
 // private modules
+
+mod tokenizer;
 

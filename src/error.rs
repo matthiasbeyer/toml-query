@@ -10,5 +10,25 @@ error_chain! {
             description("parsing the query failed")
             display("Parsing the query '{}' failed", query)
         }
+
+        EmptyQueryError {
+            description("the query is empty")
+            display("The query on the TOML is empty")
+        }
+
+        EmptyIdentifier {
+            description("Query an empty identifier: ''")
+            display("The passed query has an empty identifier")
+        }
+
+        ArrayAccessWithoutIndex {
+            description("trying to access array without index")
+            display("The passed query tries to access an array but does not specify the index")
+        }
+
+        ArrayAccessWithInvalidIndex {
+            description("trying to pass an invalid index")
+            display("The passed query tries to access an array but does not specify a valid index")
+        }
     }
 }
