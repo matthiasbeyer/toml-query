@@ -77,7 +77,7 @@ pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token>
                     match captures.get(0) {
                         None => Ok(Token::Identifier { ident: String::from(s), next: None }),
                         Some(mtch) => {
-                            let mtch = mtch.as_str().replace("[","").replace("]","");
+                            let mtch = without_array_brackets(mtch.as_str());
                             let i : i64 = FromStr::from_str(&mtch).unwrap(); // save because regex
                             Ok(Token::Index {
                                 idx: i,
@@ -96,6 +96,11 @@ pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token>
     /// Check whether a str begins with '[' and ends with ']'
     fn has_array_brackets(s: &str) -> bool {
         s.as_bytes()[0] == b'[' && s.as_bytes()[s.len() - 1] == b']'
+    }
+
+    /// Remove '[' and ']' from a str
+    fn without_array_brackets(s: &str) -> String {
+        s.replace("[","").replace("]","")
     }
 
     fn build_token_tree(split: &mut Split<char>, last: &mut Token) -> Result<()> {
