@@ -19,3 +19,5 @@ pub mod error;
 
 // private modules
 
+mod tokenizer;
+
