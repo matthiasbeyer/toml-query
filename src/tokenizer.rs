@@ -70,27 +70,26 @@ pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token>
             static ref RE: Regex = Regex::new(r"^\[-?\d+\]$").unwrap();
         }
 
-        if has_array_brackets(s) {
-            match RE.captures(s) {
-                None => return Err(Error::from(ErrorKind::ArrayAccessWithoutIndex)),
-                Some(captures) => {
-                    match captures.get(0) {
-                        None => Ok(Token::Identifier { ident: String::from(s), next: None }),
-                        Some(mtch) => {
-                            let mtch = without_array_brackets(mtch.as_str());
-                            let i : i64 = FromStr::from_str(&mtch).unwrap(); // save because regex
-                            Ok(Token::Index {
-                                idx: i,
-                                next: None,
-                            })
-                        }
+        if !has_array_brackets(s) {
+            return Ok(Token::Identifier { ident: String::from(s), next: None });
+        }
+
+        match RE.captures(s) {
+            None => return Err(Error::from(ErrorKind::ArrayAccessWithoutIndex)),
+            Some(captures) => {
+                match captures.get(0) {
+                    None => Ok(Token::Identifier { ident: String::from(s), next: None }),
+                    Some(mtch) => {
+                        let mtch = without_array_brackets(mtch.as_str());
+                        let i : i64 = FromStr::from_str(&mtch).unwrap(); // save because regex
+                        Ok(Token::Index {
+                            idx: i,
+                            next: None,
+                        })
                     }
                 }
             }
-        } else {
-            Ok(Token::Identifier { ident: String::from(s), next: None })
         }
-
     }
 
     /// Check whether a str begins with '[' and ends with ']'
