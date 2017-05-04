@@ -136,6 +136,46 @@ mod test {
     }
 
     #[test]
+    fn test_tokenize_seperator_only() {
+        let tokens = tokenize_with_seperator(&String::from("."), '.');
+        assert!(tokens.is_err());
+        let tokens = tokens.unwrap_err();
+
+        let errkind = tokens.kind();
+        assert!(is_match!(errkind, &ErrorKind::EmptyIdentifier { .. }));
+    }
+
+    #[test]
+    fn test_tokenize_array_brackets_only() {
+        let tokens = tokenize_with_seperator(&String::from("[]"), '.');
+        assert!(tokens.is_err());
+        let tokens = tokens.unwrap_err();
+
+        let errkind = tokens.kind();
+        assert!(is_match!(errkind, &ErrorKind::ArrayAccessWithoutIndex { .. }));
+    }
+
+    #[test]
+    fn test_tokenize_identifiers_with_array_brackets_only() {
+        let tokens = tokenize_with_seperator(&String::from("a.b.c.[]"), '.');
+        assert!(tokens.is_err());
+        let tokens = tokens.unwrap_err();
+
+        let errkind = tokens.kind();
+        assert!(is_match!(errkind, &ErrorKind::ArrayAccessWithoutIndex { .. }));
+    }
+
+    #[test]
+    fn test_tokenize_identifiers_in_array_brackets() {
+        let tokens = tokenize_with_seperator(&String::from("[a]"), '.');
+        assert!(tokens.is_err());
+        let tokens = tokens.unwrap_err();
+
+        let errkind = tokens.kind();
+        assert!(is_match!(errkind, &ErrorKind::ArrayAccessWithoutIndex { .. }));
+    }
+
+    #[test]
     fn test_tokenize_single_token_query() {
         let tokens = tokenize_with_seperator(&String::from("example"), '.');
         assert!(tokens.is_ok());
