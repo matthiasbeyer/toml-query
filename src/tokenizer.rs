@@ -111,6 +111,9 @@ pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token>
     match tokens.next() {
         None        => Err(Error::from(ErrorKind::EmptyQueryError)),
         Some(token) => {
+            if token.len() == 0 {
+                return Err(Error::from(ErrorKind::EmptyIdentifier));
+            }
             let mut tok = mk_token_object(token);
             build_token_tree(&mut tokens, &mut tok);
             Ok(tok)
