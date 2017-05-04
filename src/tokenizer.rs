@@ -1,6 +1,20 @@
 /// The tokenizer for the query interpreter
 
 use error::*;
+use std::rc::Rc;
+
+#[derive(Debug, PartialEq, Eq)]
+pub enum Token {
+    Identifier {
+        ident: String,
+        next: Option<Rc<Token>>
+    },
+
+    Index {
+        idx: i64,
+        next: Option<Rc<Token>>
+    }
+}
 
 pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token> {
     unimplemented!()
