@@ -275,6 +275,16 @@ mod test {
         assert_eq!(expected, tokens);
     }
 
+    #[test]
+    fn test_tokenize_empty_token_after_good_token() {
+        let tokens = tokenize_with_seperator(&String::from("a..b"), '.');
+        assert!(tokens.is_err());
+        let tokens = tokens.unwrap_err();
+
+        let errkind = tokens.kind();
+        assert!(is_match!(errkind, &ErrorKind::EmptyIdentifier { .. }));
+    }
+
     quickcheck! {
         fn test_array_index(i: i64) -> bool {
             match tokenize_with_seperator(&format!("[{}]", i), '.') {
