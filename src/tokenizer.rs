@@ -45,17 +45,57 @@ impl Token {
 pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token> {
     use std::str::Split;
 
+    /// Creates a Token object from a string
+    ///
+    /// # Panics
+    ///
+    /// * If the internal regex does not compile (should never happen)
+    /// * If the token is non-valid (that is, a array index with a non-i64)
+    /// * If the regex does not find anything
+    /// * If the integer in the brackets (`[]`) cannot be parsed to a valid i64
+    ///
+    /// # Incorrect behaviour
+    ///
+    /// * If the regex finds multiple captures
+    ///
+    /// # Returns
+    ///
+    /// The `Token` object with the correct identifier/index for this token and no next token.
+    ///
+    fn mk_token_object(s: &str) -> Token {
+        use regex::Regex;
+        use std::str::FromStr;
+
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r"^\[\d\]$").unwrap();
+        }
+
+        match RE.captures(s) {
+            None => {
+                Token::Identifier { ident: String::from(s), next: None }
+            },
+            Some(captures) => {
+                match captures.get(0) {
+                    None => Token::Identifier { ident: String::from(s), next: None },
+                    Some(mtch) => {
+                        let mtch = mtch.as_str().replace("[","").replace("]","");
+                        println!("{}", mtch);
+                        let i : i64 = FromStr::from_str(&mtch).unwrap();
+                        Token::Index {
+                            idx: i,
+                            next: None,
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     fn build_token_tree(split: &mut Split<char>, last: &mut Token) {
         match split.next() {
             None        => { /* No more tokens */ }
             Some(token) => {
-                let token = String::from(token);
-
-                let mut token = Token::Identifier {
-                    ident: token,
-                    next: None,
-                };
-
+                let mut token = mk_token_object(token);
                 build_token_tree(split, &mut token);
                 last.set_next(token);
             }
