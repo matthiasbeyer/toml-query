@@ -6,6 +6,9 @@ error_chain! {
     }
 
     errors {
+
+        // Errors for tokenizer
+
         QueryParsingError(query: String) {
             description("parsing the query failed")
             display("Parsing the query '{}' failed", query)
@@ -30,5 +33,13 @@ error_chain! {
             description("trying to pass an invalid index")
             display("The passed query tries to access an array but does not specify a valid index")
         }
+
+        // Errors for Resolver
+
+        IdentifierNotFoundInDocument(ident: String) {
+            description("Identifier missing in document")
+            display("The identfier '{}' is not present in the document", ident)
+        }
+
     }
 }
