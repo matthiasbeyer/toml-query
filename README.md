@@ -9,6 +9,21 @@ value.insert("foo.bar.a.b.c", Value::Integer(1)) // -> Result<bool, Error>
 value.remove("foo.bar.a.b.c") // -> Result<bool, Error>
 ```
 
+# Development
+
+This library was developed using a Test-Driven-Development approach from the
+ground up.
+
+Goals:
+
+* Nice, clean and human-readable error messages in the `Error` types
+* Easy to use library
+
+Non-Goals:
+
+* High performance. TOML objects shouldn't be enormous. The library _may_ get
+  faster at some point in time, but it is not a primary goal of the development.
+
 # License
 
 MPL 2.0
