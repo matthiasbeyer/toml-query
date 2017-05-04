@@ -20,6 +20,9 @@ toml = "0.4"
 is-match = "0.1"
 error-chain = "0.10"
 
+[dev-dependencies]
+quickcheck = "0.4"
+
 [dependencies.log]
 version = "0.3"
 optional = true
