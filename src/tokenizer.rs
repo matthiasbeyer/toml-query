@@ -16,6 +16,25 @@ pub enum Token {
     }
 }
 
+impl Token {
+
+    #[cfg(test)]
+    pub fn identifier(&self) -> &String {
+        match self {
+            &Token::Identifier { ident: ref ident, .. } => &ident,
+            _ => unreachable!(),
+        }
+    }
+
+    #[cfg(test)]
+    pub fn idx(&self) -> i64 {
+        match self {
+            &Token::Index { idx: i, .. } => i,
+            _ => unreachable!(),
+        }
+    }
+}
+
 pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token> {
     unimplemented!()
 }
