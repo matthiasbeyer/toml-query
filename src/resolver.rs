@@ -56,7 +56,9 @@ fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut Valu
                     Err(Error::from(ErrorKind::QueryingValueAsTable(ident.clone())))
                 },
 
-                &Token::Index { .. } => unimplemented!(),
+                &Token::Index { idx: i, .. } => {
+                    Err(Error::from(ErrorKind::QueryingValueAsArray(i)))
+                },
             }
         }
     }
