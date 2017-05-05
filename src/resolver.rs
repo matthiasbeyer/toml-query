@@ -1,21 +1,51 @@
 /// The query resolver that operates on the AST and the TOML object
 
+use std::ops::Deref;
+use std::ops::IndexMut;
+
 use toml::Value;
 use tokenizer::Token;
 use error::*;
 
-fn resolve(toml: &mut Value, tokens: Token) -> Result<&mut Value> {
-    let ident = tokens.identifier().unwrap().clone();
-
+fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut Value> {
     match toml {
         &mut Value::Table(ref mut t) => {
-            match t.get_mut(&ident) {
-                None    => Err(Error::from(ErrorKind::IdentifierNotFoundInDocument(ident))),
-                Some(s) => Ok(s),
+            match tokens {
+                &Token::Identifier { ident: ref ident, .. } => {
+                    match t.get_mut(ident) {
+                        None    => {
+                            let ek = ErrorKind::IdentifierNotFoundInDocument(ident.clone());
+                            Err(Error::from(ek))
+                        },
+                        Some(sub_document) => {
+                            if tokens.has_next() {
+                                resolve(sub_document, tokens.next().unwrap().deref())
+                            } else {
+                                Ok(sub_document)
+                            }
+                        },
+                    }
+                },
+
+                &Token::Index { .. } => unimplemented!(),
             }
         },
+
+        &mut Value::Array(ref mut ary) => {
+            match tokens {
+                &Token::Index { idx: i, .. } => Ok(ary.index_mut(i)),
+                &Token::Identifier { .. } => unimplemented!(),
+            }
+        },
+
         _ => {
-            Err(Error::from(ErrorKind::IdentifierNotFoundInDocument(ident)))
+            match tokens {
+                &Token::Identifier { ident: ref ident, .. } => {
+                    Err(Error::from(ErrorKind::IdentifierNotFoundInDocument(ident.clone())))
+                },
+
+                &Token::Index { .. } => unimplemented!(),
+            }
         }
     }
 }
@@ -30,7 +60,7 @@ mod test {
 
     macro_rules! do_resolve {
         ( $toml:ident => $query:expr ) => {
-            resolve(&mut $toml, tokenize_with_seperator(&String::from($query), '.').unwrap())
+            resolve(&mut $toml, &tokenize_with_seperator(&String::from($query), '.').unwrap())
         }
     }
 
@@ -325,7 +355,7 @@ mod test {
         let mut result = result.unwrap();
 
         let tokens = tokenize_with_seperator(&String::from("color"), '.').unwrap();
-        let result = resolve(result, tokens);
+        let result = resolve(result, &tokens);
 
         assert!(result.is_ok());
         let result = result.unwrap();
