@@ -11,7 +11,7 @@ pub enum Token {
     },
 
     Index {
-        idx: i64,
+        idx: usize,
         next: Option<Rc<Token>>
     }
 }
@@ -33,7 +33,7 @@ impl Token {
     }
 
     #[cfg(test)]
-    pub fn idx(&self) -> i64 {
+    pub fn idx(&self) -> usize {
         match self {
             &Token::Index { idx: i, .. } => i,
             _ => unreachable!(),
@@ -80,7 +80,7 @@ pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token>
                     None => Ok(Token::Identifier { ident: String::from(s), next: None }),
                     Some(mtch) => {
                         let mtch = without_array_brackets(mtch.as_str());
-                        let i : i64 = FromStr::from_str(&mtch).unwrap(); // save because regex
+                        let i : usize = FromStr::from_str(&mtch).unwrap(); // save because regex
                         Ok(Token::Index {
                             idx: i,
                             next: None,
@@ -288,7 +288,7 @@ mod test {
     }
 
     quickcheck! {
-        fn test_array_index(i: i64) -> bool {
+        fn test_array_index(i: usize) -> bool {
             match tokenize_with_seperator(&format!("[{}]", i), '.') {
                 Ok(Token::Index {
                     idx: i,
