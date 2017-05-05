@@ -37,10 +37,11 @@ impl Token {
         }
     }
 
-    pub fn identifier(&self) -> Option<&String> {
+    #[cfg(test)]
+    pub fn identifier(&self) -> &String {
         match self {
-            &Token::Identifier { ident: ref ident, .. } => Some(&ident),
-            _ => None,
+            &Token::Identifier { ident: ref ident, .. } => &ident,
+            _ => unreachable!(),
         }
     }
 
@@ -231,7 +232,7 @@ mod test {
         assert!(match tokens {
             Token::Identifier { next: Some(ref next), .. } => { 
                 assert_eq!(1, Rc::strong_count(&next));
-                assert_eq!("b", next.deref().identifier().unwrap());
+                assert_eq!("b", next.deref().identifier());
                 match next.deref() {
                     &Token::Identifier { next: None, .. } => true,
                     _ => false
@@ -239,7 +240,7 @@ mod test {
             },
             _ => false,
         });
-        assert_eq!("a", tokens.identifier().unwrap());
+        assert_eq!("a", tokens.identifier());
     }
 
     #[test]
@@ -248,7 +249,7 @@ mod test {
         assert!(tokens.is_ok());
         let tokens = tokens.unwrap();
 
-        assert_eq!("a", tokens.identifier().unwrap());
+        assert_eq!("a", tokens.identifier());
         assert!(match tokens {
             Token::Identifier { next: Some(ref next), .. } => {
                 assert_eq!(1, Rc::strong_count(&next));
@@ -269,7 +270,7 @@ mod test {
         assert!(tokens.is_ok());
         let tokens = tokens.unwrap();
 
-        assert_eq!("a", tokens.identifier().unwrap());
+        assert_eq!("a", tokens.identifier());
 
         let expected =
             Token::Identifier {
