@@ -7,7 +7,7 @@ use toml::Value;
 use tokenizer::Token;
 use error::*;
 
-fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut Value> {
+pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut Value> {
     match toml {
         &mut Value::Table(ref mut t) => {
             match tokens {
