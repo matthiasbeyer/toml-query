@@ -148,4 +148,193 @@ mod test {
         }
     }
 
+    #[test]
+    fn test_resolve_array_index_query_1() {
+        let mut toml = toml_from_str("example = [ 1 ]").unwrap();
+        let result = do_resolve!(toml => "example.[0]");
+
+        assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(is_match!(result, &mut Value::Integer(1)));
+    }
+
+    #[test]
+    fn test_resolve_array_index_query_2() {
+        let mut toml = toml_from_str("example = [ 1, 2, 3, 4, 5 ]").unwrap();
+        let result = do_resolve!(toml => "example.[4]");
+
+        assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(is_match!(result, &mut Value::Integer(5)));
+    }
+
+    #[test]
+    fn test_resolve_table_element_query() {
+        let mut toml = toml_from_str(r#"
+        [table]
+        value = 42
+        "#).unwrap();
+        let result = do_resolve!(toml => "table.value");
+
+        assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(is_match!(result, &mut Value::Integer(42)));
+    }
+
+    #[test]
+    fn test_resolve_table_with_many_elements_element_query() {
+        let mut toml = toml_from_str(r#"
+        [table]
+        value1 = 42
+        value2 = 43
+        value3 = 44
+        value4 = 45
+        value5 = 46
+        "#).unwrap();
+        let result = do_resolve!(toml => "table.value1");
+
+        assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(is_match!(result, &mut Value::Integer(42)));
+    }
+
+    #[test]
+    fn test_resolve_table_array_query() {
+        let mut toml = toml_from_str(r#"
+        [table]
+        value1 = [ 42.0, 50.0 ]
+        "#).unwrap();
+        let result = do_resolve!(toml => "table.value1");
+
+        assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(is_match!(result, &mut Value::Array(_)));
+        match result {
+            &mut Value::Array(ref ary) => {
+                assert_eq!(ary[0], Value::Float(42.0));
+                assert_eq!(ary[1], Value::Float(50.0));
+            },
+            _ => panic!("What just happened?"),
+        }
+    }
+
+    #[test]
+    fn test_resolve_table_array_element_query() {
+        let mut toml = toml_from_str(r#"
+        [table]
+        value1 = [ 42 ]
+        "#).unwrap();
+        let result = do_resolve!(toml => "table.value1.[0]");
+
+        assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(is_match!(result, &mut Value::Integer(42)));
+    }
+
+    #[test]
+    fn test_resolve_multi_table_query() {
+        let mut toml = toml_from_str(r#"
+        [table0]
+        value = [ 1 ]
+        [table1]
+        value = [ "Foo" ]
+        [table2]
+        value = [ 42.0 ]
+        [table3]
+        value = [ true ]
+        "#).unwrap();
+        let result = do_resolve!(toml => "table1.value.[0]");
+
+        assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(is_match!(result, &mut Value::String(_)));
+        match result {
+            &mut Value::String(ref s) => assert_eq!("Foo", s),
+            _ => panic!("What just happened?"),
+        }
+    }
+
+    static FRUIT_TABLE : &'static str = r#"
+    [[fruit.blah]]
+      name = "apple"
+
+      [fruit.blah.physical]
+        color = "red"
+        shape = "round"
+
+    [[fruit.blah]]
+      name = "banana"
+
+      [fruit.blah.physical]
+        color = "yellow"
+        shape = "bent"
+    "#;
+
+    #[test]
+    fn test_resolve_array_table_query_1() {
+        let mut toml = toml_from_str(FRUIT_TABLE).unwrap();
+        let result = do_resolve!(toml => "fruit.blah.[0].name");
+
+        assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(is_match!(result, &mut Value::String(_)));
+        match result {
+            &mut Value::String(ref s) => assert_eq!("apple", s),
+            _ => panic!("What just happened?"),
+        }
+    }
+
+    #[test]
+    fn test_resolve_array_table_query_2() {
+        let mut toml = toml_from_str(FRUIT_TABLE).unwrap();
+        let result = do_resolve!(toml => "fruit.blah.[0].physical");
+
+        assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(is_match!(result, &mut Value::Table(_)));
+        match result {
+            &mut Value::Table(ref tab) => {
+                match tab.get("color") {
+                    Some(&Value::String(ref s)) => assert_eq!("red", s),
+                    _ => assert!(false),
+                }
+                match tab.get("shape") {
+                    Some(&Value::String(ref s)) => assert_eq!("round", s),
+                    _ => assert!(false),
+                }
+            },
+            _ => panic!("What just happened?"),
+        }
+    }
+
+    #[test]
+    fn test_resolve_query_on_result() {
+        let mut toml = toml_from_str(FRUIT_TABLE).unwrap();
+        let result = do_resolve!(toml => "fruit.blah.[1].physical");
+
+        assert!(result.is_ok());
+        let mut result = result.unwrap();
+
+        let tokens = tokenize_with_seperator(&String::from("color"), '.').unwrap();
+        let result = resolve(result, tokens);
+
+        assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(is_match!(result, &mut Value::String(_)));
+        match result {
+            &mut Value::String(ref s) => assert_eq!("yellow", s),
+            _ => panic!("What just happened?"),
+        }
+    }
+
 }
