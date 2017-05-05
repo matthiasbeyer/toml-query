@@ -1,6 +1,5 @@
 /// The query resolver that operates on the AST and the TOML object
 
-use std::ops::Deref;
 use std::ops::Index;
 
 use toml::Value;
@@ -11,7 +10,7 @@ pub fn resolve<'doc>(toml: &'doc Value, tokens: &Token) -> Result<&'doc Value> {
     match toml {
         &Value::Table(ref t) => {
             match tokens {
-                &Token::Identifier { ident: ref ident, .. } => {
+                &Token::Identifier { ref ident, .. } => {
                     match t.get(ident) {
                         None    => {
                             let ek = ErrorKind::IdentifierNotFoundInDocument(ident.clone());
@@ -26,8 +25,8 @@ pub fn resolve<'doc>(toml: &'doc Value, tokens: &Token) -> Result<&'doc Value> {
                     }
                 },
 
-                &Token::Index { idx: i, .. } => {
-                    let kind = ErrorKind::NoIndexInTable(i);
+                &Token::Index { idx, .. } => {
+                    let kind = ErrorKind::NoIndexInTable(idx);
                     Err(Error::from(kind))
                 },
             }
@@ -35,13 +34,13 @@ pub fn resolve<'doc>(toml: &'doc Value, tokens: &Token) -> Result<&'doc Value> {
 
         &Value::Array(ref ary) => {
             match tokens {
-                &Token::Index { idx: i, .. } => {
+                &Token::Index { idx, .. } => {
                     match tokens.next() {
-                        Some(next) => resolve(ary.get(i).unwrap(), next),
-                        None       => Ok(ary.index(i)),
+                        Some(next) => resolve(ary.get(idx).unwrap(), next),
+                        None       => Ok(ary.index(idx)),
                     }
                 },
-                &Token::Identifier { ident: ref ident, .. } => {
+                &Token::Identifier { ref ident, .. } => {
                     let kind = ErrorKind::NoIdentifierInArray(ident.clone());
                     Err(Error::from(kind))
                 },
@@ -49,12 +48,12 @@ pub fn resolve<'doc>(toml: &'doc Value, tokens: &Token) -> Result<&'doc Value> {
         },
 
         _ => match tokens {
-            &Token::Identifier { ident: ref ident, .. } => {
+            &Token::Identifier { ref ident, .. } => {
                 Err(Error::from(ErrorKind::QueryingValueAsTable(ident.clone())))
             },
 
-            &Token::Index { idx: i, .. } => {
-                Err(Error::from(ErrorKind::QueryingValueAsArray(i)))
+            &Token::Index { idx, .. } => {
+                Err(Error::from(ErrorKind::QueryingValueAsArray(idx)))
             },
         }
     }
