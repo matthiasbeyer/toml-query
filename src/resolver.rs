@@ -18,10 +18,9 @@ fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut Valu
                             Err(Error::from(ek))
                         },
                         Some(sub_document) => {
-                            if tokens.has_next() {
-                                resolve(sub_document, tokens.next().unwrap().deref())
-                            } else {
-                                Ok(sub_document)
+                            match tokens.next() {
+                                Some(next) => resolve(sub_document, next),
+                                None => Ok(sub_document),
                             }
                         },
                     }
@@ -37,10 +36,9 @@ fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut Valu
         &mut Value::Array(ref mut ary) => {
             match tokens {
                 &Token::Index { idx: i, .. } => {
-                    if tokens.has_next() {
-                        resolve(ary.get_mut(i).unwrap(), tokens.next().unwrap().deref())
-                    } else {
-                        Ok(ary.index_mut(i))
+                    match tokens.next() {
+                        Some(next) => resolve(ary.get_mut(i).unwrap(), next),
+                        None       => Ok(ary.index_mut(i)),
                     }
                 },
                 &Token::Identifier { ident: ref ident, .. } => {
@@ -50,16 +48,14 @@ fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut Valu
             }
         },
 
-        _ => {
-            match tokens {
-                &Token::Identifier { ident: ref ident, .. } => {
-                    Err(Error::from(ErrorKind::QueryingValueAsTable(ident.clone())))
-                },
+        _ => match tokens {
+            &Token::Identifier { ident: ref ident, .. } => {
+                Err(Error::from(ErrorKind::QueryingValueAsTable(ident.clone())))
+            },
 
-                &Token::Index { idx: i, .. } => {
-                    Err(Error::from(ErrorKind::QueryingValueAsArray(i)))
-                },
-            }
+            &Token::Index { idx: i, .. } => {
+                Err(Error::from(ErrorKind::QueryingValueAsArray(i)))
+            },
         }
     }
 }
