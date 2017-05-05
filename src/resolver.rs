@@ -5,7 +5,8 @@ use tokenizer::Token;
 use error::*;
 
 fn resolve(toml: &mut Value, tokens: Token) -> Result<&mut Value> {
-    unimplemented!()
+    let ident = tokens.identifier().unwrap().clone();
+    Err(Error::from(ErrorKind::IdentifierNotFoundInDocument(ident)))
 }
 
 #[cfg(test)]
