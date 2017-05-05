@@ -34,18 +34,11 @@ impl Token {
     #[cfg(test)]
     pub fn identifier(&self) -> &String {
         match self {
-            &Token::Identifier { ident: ref ident, .. } => &ident,
+            &Token::Identifier { ref ident, .. } => &ident,
             _ => unreachable!(),
         }
     }
 
-    #[cfg(test)]
-    pub fn idx(&self) -> usize {
-        match self {
-            &Token::Index { idx: i, .. } => i,
-            _ => unreachable!(),
-        }
-    }
 }
 
 pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token> {
@@ -144,7 +137,7 @@ pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token>
 
 #[cfg(test)]
 mod test {
-    use error::*;
+    use error::ErrorKind;
     use super::*;
 
     use std::ops::Deref;
@@ -206,11 +199,8 @@ mod test {
         let tokens = tokens.unwrap();
 
         assert!(match tokens {
-            Token::Identifier {
-                ident: ident,
-                next: None
-            } => { 
-                assert_eq!(String::from("example"), ident);
+            Token::Identifier { ref ident, next: None } => {
+                assert_eq!("example", ident);
                 true
             },
             _ => false,
@@ -256,8 +246,6 @@ mod test {
 
     #[test]
     fn test_tokenize_many_idents_then_array_query() {
-        use std::ops::Deref;
-
         let tokens = tokenize_with_seperator(&String::from("a.b.c.[1000]"), '.');
         assert!(tokens.is_ok());
         let tokens = tokens.unwrap();
@@ -295,11 +283,8 @@ mod test {
     quickcheck! {
         fn test_array_index(i: usize) -> bool {
             match tokenize_with_seperator(&format!("[{}]", i), '.') {
-                Ok(Token::Index {
-                    idx: i,
-                    next: None,
-                }) => true,
-                _ => false,
+                Ok(Token::Index { next: None, ..  }) => true,
+                _                                    => false,
             }
         }
     }
