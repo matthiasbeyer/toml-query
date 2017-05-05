@@ -1,6 +1,5 @@
 /// The query resolver that operates on the AST and the TOML object
 
-use std::ops::Deref;
 use std::ops::IndexMut;
 
 use toml::Value;
@@ -11,7 +10,7 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut 
     match toml {
         &mut Value::Table(ref mut t) => {
             match tokens {
-                &Token::Identifier { ident: ref ident, .. } => {
+                &Token::Identifier { ref ident, .. } => {
                     match t.get_mut(ident) {
                         None    => {
                             let ek = ErrorKind::IdentifierNotFoundInDocument(ident.clone());
@@ -26,8 +25,8 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut 
                     }
                 },
 
-                &Token::Index { idx: i, .. } => {
-                    let kind = ErrorKind::NoIndexInTable(i);
+                &Token::Index { idx, .. } => {
+                    let kind = ErrorKind::NoIndexInTable(idx);
                     Err(Error::from(kind))
                 },
             }
@@ -35,13 +34,13 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut 
 
         &mut Value::Array(ref mut ary) => {
             match tokens {
-                &Token::Index { idx: i, .. } => {
+                &Token::Index { idx, .. } => {
                     match tokens.next() {
-                        Some(next) => resolve(ary.get_mut(i).unwrap(), next),
-                        None       => Ok(ary.index_mut(i)),
+                        Some(next) => resolve(ary.get_mut(idx).unwrap(), next),
+                        None       => Ok(ary.index_mut(idx)),
                     }
                 },
-                &Token::Identifier { ident: ref ident, .. } => {
+                &Token::Identifier { ref ident, .. } => {
                     let kind = ErrorKind::NoIdentifierInArray(ident.clone());
                     Err(Error::from(kind))
                 },
@@ -49,12 +48,12 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut 
         },
 
         _ => match tokens {
-            &Token::Identifier { ident: ref ident, .. } => {
+            &Token::Identifier { ref ident, .. } => {
                 Err(Error::from(ErrorKind::QueryingValueAsTable(ident.clone())))
             },
 
-            &Token::Index { idx: i, .. } => {
-                Err(Error::from(ErrorKind::QueryingValueAsArray(i)))
+            &Token::Index { idx, .. } => {
+                Err(Error::from(ErrorKind::QueryingValueAsArray(idx)))
             },
         }
     }

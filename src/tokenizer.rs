@@ -19,8 +19,8 @@ impl Token {
 
     pub fn next(&self) -> Option<&Box<Token>> {
         match self {
-            &Token::Identifier { next: ref next, .. } => next.as_ref(),
-            &Token::Index { next: ref next, .. }      => next.as_ref(),
+            &Token::Identifier { ref next, .. } => next.as_ref(),
+            &Token::Index { ref next, .. }      => next.as_ref(),
         }
     }
 
@@ -31,8 +31,8 @@ impl Token {
 
     pub fn set_next(&mut self, token: Token) {
         match self {
-            &mut Token::Identifier { next: ref mut next, .. } => *next = Some(Box::new(token)),
-            &mut Token::Index { next: ref mut next, .. }      => *next = Some(Box::new(token)),
+            &mut Token::Identifier { ref mut next, .. } => *next = Some(Box::new(token)),
+            &mut Token::Index { ref mut next, .. }      => *next = Some(Box::new(token)),
         }
     }
 
