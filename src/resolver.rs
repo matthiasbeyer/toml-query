@@ -373,4 +373,64 @@ mod test {
         }
     }
 
+    #[test]
+    fn test_resolve_query_empty_table() {
+        let mut toml = toml_from_str(r#"
+        [example]
+        "#).unwrap();
+        let result = do_resolve!(toml => "example");
+
+        assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(is_match!(result, &mut Value::Table(_)));
+        match result {
+            &mut Value::Table(ref t) => assert!(t.is_empty()),
+            _ => panic!("What just happened?"),
+        }
+    }
+
+    #[test]
+    fn test_resolve_query_member_of_empty_table() {
+        let mut toml = toml_from_str(r#"
+        [example]
+        "#).unwrap();
+        let result = do_resolve!(toml => "example.foo");
+
+        assert!(result.is_err());
+        let result = result.unwrap_err();
+
+        let errkind = result.kind();
+        assert!(is_match!(errkind, &ErrorKind::IdentifierNotFoundInDocument { .. }));
+    }
+
+    #[test]
+    fn test_resolve_query_index_in_table() {
+        let mut toml = toml_from_str(r#"
+        [example]
+        "#).unwrap();
+        let result = do_resolve!(toml => "example.[0]");
+
+        assert!(result.is_err());
+        let result = result.unwrap_err();
+
+        let errkind = result.kind();
+        assert!(is_match!(errkind, &ErrorKind::NoIndexInTable { .. }));
+    }
+
+    #[test]
+    fn test_resolve_query_identifier_in_array() {
+        let mut toml = toml_from_str(r#"
+        [example]
+        foo = [ 1, 2, 3 ]
+        "#).unwrap();
+        let result = do_resolve!(toml => "example.foo.bar");
+
+        assert!(result.is_err());
+        let result = result.unwrap_err();
+
+        let errkind = result.kind();
+        assert!(is_match!(errkind, &ErrorKind::NoIdentifierInArray { .. }));
+    }
+
 }
