@@ -66,7 +66,7 @@ pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token>
         use std::str::FromStr;
 
         lazy_static! {
-            static ref RE: Regex = Regex::new(r"^\[-?\d+\]$").unwrap();
+            static ref RE: Regex = Regex::new(r"^\[\d+\]$").unwrap();
         }
 
         if !has_array_brackets(s) {
