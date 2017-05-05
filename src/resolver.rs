@@ -439,4 +439,34 @@ mod test {
         assert!(is_match!(errkind, &ErrorKind::NoIdentifierInArray { .. }));
     }
 
+    #[test]
+    fn test_resolve_query_value_as_table() {
+        let mut toml = toml_from_str(r#"
+        [example]
+        foo = 1
+        "#).unwrap();
+        let result = do_resolve!(toml => "example.foo.bar");
+
+        assert!(result.is_err());
+        let result = result.unwrap_err();
+
+        let errkind = result.kind();
+        assert!(is_match!(errkind, &ErrorKind::QueryingValueAsTable { .. }));
+    }
+
+    #[test]
+    fn test_resolve_query_value_as_array() {
+        let mut toml = toml_from_str(r#"
+        [example]
+        foo = 1
+        "#).unwrap();
+        let result = do_resolve!(toml => "example.foo.[0]");
+
+        assert!(result.is_err());
+        let result = result.unwrap_err();
+
+        let errkind = result.kind();
+        assert!(is_match!(errkind, &ErrorKind::QueryingValueAsArray { .. }));
+    }
+
 }
