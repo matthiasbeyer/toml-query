@@ -33,7 +33,13 @@ fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut Valu
 
         &mut Value::Array(ref mut ary) => {
             match tokens {
-                &Token::Index { idx: i, .. } => Ok(ary.index_mut(i)),
+                &Token::Index { idx: i, .. } => {
+                    if tokens.has_next() {
+                        resolve(ary.get_mut(i).unwrap(), tokens.next().unwrap().deref())
+                    } else {
+                        Ok(ary.index_mut(i))
+                    }
+                },
                 &Token::Identifier { .. } => unimplemented!(),
             }
         },
