@@ -31,6 +31,13 @@ impl Token {
         }
     }
 
+    /// Pop the last token from the chain of tokens
+    ///
+    /// Returns None if the current Token has no next token
+    pub fn pop_last(&mut self) -> Option<Box<Token>> {
+        unimplemented!()
+    }
+
     #[cfg(test)]
     pub fn identifier(&self) -> &String {
         match self {
