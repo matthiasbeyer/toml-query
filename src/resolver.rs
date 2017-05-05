@@ -43,7 +43,10 @@ fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut Valu
                         Ok(ary.index_mut(i))
                     }
                 },
-                &Token::Identifier { .. } => unimplemented!(),
+                &Token::Identifier { ident: ref ident, .. } => {
+                    let kind = ErrorKind::NoIdentifierInArray(ident.clone());
+                    Err(Error::from(kind))
+                },
             }
         },
 
