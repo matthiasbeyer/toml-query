@@ -35,7 +35,11 @@ impl Token {
     ///
     /// Returns None if the current Token has no next token
     pub fn pop_last(&mut self) -> Option<Box<Token>> {
-        unimplemented!()
+        if !self.has_next() {
+            None
+        } else {
+            unimplemented!()
+        }
     }
 
     #[cfg(test)]
