@@ -51,5 +51,15 @@ error_chain! {
             display("Got an identifier query '{}' but have array", s)
         }
 
+        QueryingValueAsTable(s: String) {
+            description("Querying a table where a value is")
+            display("Got an identifier query '{}' but have value", s)
+        }
+
+        QueryingValueAsArray(i: usize) {
+            description("Querying a table where a value is")
+            display("Got an index query '{}' but have value", i)
+        }
+
     }
 }
