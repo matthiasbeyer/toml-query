@@ -22,4 +22,5 @@ pub mod error;
 // private modules
 
 mod tokenizer;
+mod resolver;
 
