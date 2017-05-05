@@ -18,9 +18,9 @@ extern crate toml;
 
 #[macro_use] pub mod log;
 pub mod error;
-pub mod resolver;
 
 // private modules
 
 mod tokenizer;
+mod resolver;
 
