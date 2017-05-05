@@ -27,7 +27,10 @@ fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut Valu
                     }
                 },
 
-                &Token::Index { .. } => unimplemented!(),
+                &Token::Index { idx: i, .. } => {
+                    let kind = ErrorKind::NoIndexInTable(i);
+                    Err(Error::from(kind))
+                },
             }
         },
 
