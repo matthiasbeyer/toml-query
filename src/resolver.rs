@@ -6,7 +6,18 @@ use error::*;
 
 fn resolve(toml: &mut Value, tokens: Token) -> Result<&mut Value> {
     let ident = tokens.identifier().unwrap().clone();
-    Err(Error::from(ErrorKind::IdentifierNotFoundInDocument(ident)))
+
+    match toml {
+        &mut Value::Table(ref mut t) => {
+            match t.get_mut(&ident) {
+                None    => Err(Error::from(ErrorKind::IdentifierNotFoundInDocument(ident))),
+                Some(s) => Ok(s),
+            }
+        },
+        _ => {
+            Err(Error::from(ErrorKind::IdentifierNotFoundInDocument(ident)))
+        }
+    }
 }
 
 #[cfg(test)]
