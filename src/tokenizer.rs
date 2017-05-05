@@ -1,24 +1,23 @@
 /// The tokenizer for the query interpreter
 
 use error::*;
-use std::rc::Rc;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Token {
     Identifier {
         ident: String,
-        next: Option<Rc<Token>>
+        next: Option<Box<Token>>
     },
 
     Index {
         idx: usize,
-        next: Option<Rc<Token>>
+        next: Option<Box<Token>>
     }
 }
 
 impl Token {
 
-    pub fn next(&self) -> Option<&Rc<Token>> {
+    pub fn next(&self) -> Option<&Box<Token>> {
         match self {
             &Token::Identifier { next: ref next, .. } => next.as_ref(),
             &Token::Index { next: ref next, .. }      => next.as_ref(),
@@ -32,8 +31,8 @@ impl Token {
 
     pub fn set_next(&mut self, token: Token) {
         match self {
-            &mut Token::Identifier { next: ref mut next, .. } => *next = Some(Rc::new(token)),
-            &mut Token::Index { next: ref mut next, .. }      => *next = Some(Rc::new(token)),
+            &mut Token::Identifier { next: ref mut next, .. } => *next = Some(Box::new(token)),
+            &mut Token::Index { next: ref mut next, .. }      => *next = Some(Box::new(token)),
         }
     }
 
@@ -231,7 +230,6 @@ mod test {
 
         assert!(match tokens {
             Token::Identifier { next: Some(ref next), .. } => { 
-                assert_eq!(1, Rc::strong_count(&next));
                 assert_eq!("b", next.deref().identifier());
                 match next.deref() {
                     &Token::Identifier { next: None, .. } => true,
@@ -252,7 +250,6 @@ mod test {
         assert_eq!("a", tokens.identifier());
         assert!(match tokens {
             Token::Identifier { next: Some(ref next), .. } => {
-                assert_eq!(1, Rc::strong_count(&next));
                 match next.deref() {
                     &Token::Index { idx: 0, next: None } => true,
                     _ => false
@@ -275,11 +272,11 @@ mod test {
         let expected =
             Token::Identifier {
                 ident: String::from("a"),
-                next: Some(Rc::new(Token::Identifier {
+                next: Some(Box::new(Token::Identifier {
                     ident: String::from("b"),
-                    next: Some(Rc::new(Token::Identifier {
+                    next: Some(Box::new(Token::Identifier {
                         ident: String::from("c"),
-                        next: Some(Rc::new(Token::Index {
+                        next: Some(Box::new(Token::Index {
                             idx: 1000,
                             next: None,
                         })),
