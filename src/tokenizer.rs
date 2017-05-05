@@ -289,4 +289,122 @@ mod test {
         }
     }
 
+    #[test]
+    fn test_pop_last_token_from_single_identifier_token_is_none() {
+        let mut token = Token::Identifier {
+            ident: String::from("something"),
+            next: None,
+        };
+
+        let last = token.pop_last();
+        assert!(last.is_none());
+    }
+
+    #[test]
+    fn test_pop_last_token_from_single_index_token_is_none() {
+        let mut token = Token::Index {
+            idx: 0,
+            next: None,
+        };
+
+        let last = token.pop_last();
+        assert!(last.is_none());
+    }
+
+    #[test]
+    fn test_pop_last_token_from_single_identifier_token_is_one() {
+        let mut token = Token::Identifier {
+            ident: String::from("some"),
+            next: Some(Box::new(Token::Identifier {
+                ident: String::from("thing"),
+                next: None,
+            })),
+        };
+
+        let last = token.pop_last();
+
+        assert!(last.is_some());
+        let last = last.unwrap();
+
+        assert!(is_match!(*last, Token::Identifier { .. }));
+        match *last {
+            Token::Identifier { ident: ident, .. } => {
+                assert_eq!("thing", ident);
+            }
+            _ => panic!("What just happened?"),
+        }
+    }
+
+    #[test]
+    fn test_pop_last_token_from_single_index_token_is_one() {
+        let mut token = Token::Index {
+            idx: 0,
+            next: Some(Box::new(Token::Index {
+                idx: 1,
+                next: None,
+            })),
+        };
+
+        let last = token.pop_last();
+
+        assert!(last.is_some());
+        let last = last.unwrap();
+
+        assert!(is_match!(*last, Token::Index { idx: 1, .. }));
+    }
+
+    #[test]
+    fn test_pop_last_token_from_identifier_chain() {
+        let tokens = tokenize_with_seperator(&String::from("a.b.c.d.e.f"), '.');
+        assert!(tokens.is_ok());
+        let mut tokens = tokens.unwrap();
+
+        let last = tokens.pop_last();
+        assert!(last.is_some());
+        assert_eq!("f", last.unwrap().identifier());
+    }
+
+    #[test]
+    fn test_pop_last_token_from_mixed_chain() {
+        let tokens = tokenize_with_seperator(&String::from("a.[100].c.[3].e.f"), '.');
+        assert!(tokens.is_ok());
+        let mut tokens = tokens.unwrap();
+
+        let last = tokens.pop_last();
+        assert!(last.is_some());
+        assert_eq!("f", last.unwrap().identifier());
+    }
+
+    #[test]
+    fn test_pop_last_token_from_identifier_chain_is_array() {
+        let tokens = tokenize_with_seperator(&String::from("a.b.c.d.e.f.[1000]"), '.');
+        assert!(tokens.is_ok());
+        let mut tokens = tokens.unwrap();
+
+        let last = tokens.pop_last();
+        assert!(last.is_some());
+        assert_eq!(1000, last.unwrap().idx());
+    }
+
+    #[test]
+    fn test_pop_last_token_from_mixed_chain_is_array() {
+        let tokens = tokenize_with_seperator(&String::from("a.[100].c.[3].e.f.[1000]"), '.');
+        assert!(tokens.is_ok());
+        let mut tokens = tokens.unwrap();
+
+        let last = tokens.pop_last();
+        assert!(last.is_some());
+        assert_eq!(1000, last.unwrap().idx());
+    }
+
+    #[test]
+    fn test_pop_last_token_from_one_token() {
+        let tokens = tokenize_with_seperator(&String::from("a"), '.');
+        assert!(tokens.is_ok());
+        let mut tokens = tokens.unwrap();
+
+        let last = tokens.pop_last();
+        assert!(last.is_none());
+    }
+
 }
