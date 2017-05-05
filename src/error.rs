@@ -41,5 +41,15 @@ error_chain! {
             display("The identfier '{}' is not present in the document", ident)
         }
 
+        NoIndexInTable(i: usize) {
+            description("Cannot deref index from table")
+            display("Got an index query '[{}]' but have table", i)
+        }
+
+        NoIdentifierInArray(s: String) {
+            description("Cannot query identifier in array")
+            display("Got an identifier query '{}' but have array", s)
+        }
+
     }
 }
