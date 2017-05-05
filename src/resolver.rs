@@ -53,7 +53,7 @@ fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut Valu
         _ => {
             match tokens {
                 &Token::Identifier { ident: ref ident, .. } => {
-                    Err(Error::from(ErrorKind::IdentifierNotFoundInDocument(ident.clone())))
+                    Err(Error::from(ErrorKind::QueryingValueAsTable(ident.clone())))
                 },
 
                 &Token::Index { .. } => unimplemented!(),
