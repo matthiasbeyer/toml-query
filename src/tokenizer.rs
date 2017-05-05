@@ -38,7 +38,15 @@ impl Token {
         if !self.has_next() {
             None
         } else {
-            unimplemented!()
+            match self {
+                &mut Token::Identifier { next: ref mut next, .. } => {
+                    next.take()
+                },
+
+                &mut Token::Index { next: ref mut next, .. } => {
+                    next.take()
+                },
+            }
         }
     }
 
