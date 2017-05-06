@@ -457,4 +457,38 @@ mod test {
         assert!(last.is_none());
     }
 
+    #[test]
+    fn test_pop_last_chain() {
+        let tokens = tokenize_with_seperator(&String::from("a.[100].c.[3].e.f.[1000]"), '.');
+        assert!(tokens.is_ok());
+        let mut tokens = tokens.unwrap();
+
+        let last = tokens.pop_last();
+        assert!(last.is_some());
+        assert_eq!(1000, last.unwrap().idx());
+
+        let last = tokens.pop_last();
+        assert!(last.is_some());
+        assert_eq!("f", last.unwrap().identifier());
+
+        let last = tokens.pop_last();
+        assert!(last.is_some());
+        assert_eq!("e", last.unwrap().identifier());
+
+        let last = tokens.pop_last();
+        assert!(last.is_some());
+        assert_eq!(3, last.unwrap().idx());
+
+        let last = tokens.pop_last();
+        assert!(last.is_some());
+        assert_eq!("c", last.unwrap().identifier());
+
+        let last = tokens.pop_last();
+        assert!(last.is_some());
+        assert_eq!(100, last.unwrap().idx());
+
+        let last = tokens.pop_last();
+        assert!(last.is_none());
+    }
+
 }
