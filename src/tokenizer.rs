@@ -44,7 +44,7 @@ impl Token {
             None
         } else {
             match self {
-                &mut Token::Identifier { next: ref mut next, .. } => {
+                &mut Token::Identifier { ref mut next, .. } => {
                     if next.is_some() {
                         let mut n = next.take().unwrap();
                         if n.has_next() {
@@ -59,7 +59,7 @@ impl Token {
                     }
                 },
 
-                &mut Token::Index { next: ref mut next, .. } => {
+                &mut Token::Index { ref mut next, .. } => {
                     if next.is_some() {
                         let mut n = next.take().unwrap();
                         if n.has_next() {
@@ -382,7 +382,7 @@ mod test {
 
         assert!(is_match!(*last, Token::Identifier { .. }));
         match *last {
-            Token::Identifier { ident: ident, .. } => {
+            Token::Identifier { ident, .. } => {
                 assert_eq!("thing", ident);
             }
             _ => panic!("What just happened?"),
