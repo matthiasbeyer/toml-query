@@ -24,6 +24,11 @@ impl Token {
         }
     }
 
+    /// Convenience function for `token.next().is_some()`
+    pub fn has_next(&self) -> bool {
+        self.next().is_some()
+    }
+
     pub fn set_next(&mut self, token: Token) {
         match self {
             &mut Token::Identifier { ref mut next, .. } => *next = Some(Box::new(token)),
