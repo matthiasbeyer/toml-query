@@ -51,5 +51,89 @@ impl<'doc> TomlValueInsertExt<'doc> for Value {
 
 }
 
+#[cfg(test)]
+mod test {
+    use super::*;
+    use error::*;
+    use toml::Value;
+    use toml::from_str as toml_from_str;
 
+    #[test]
+    fn test_insert_with_seperator_into_table() {
+        let mut toml : Value = toml_from_str(r#"
+        [table]
+        "#).unwrap();
+
+        let res = toml.insert_with_seperator(&String::from("table.a"), '.', Value::Integer(1));
+
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(res.is_none());
+
+        assert!(is_match!(toml, Value::Table(_)));
+        match toml {
+            Value::Table(ref t) => {
+                assert!(!t.is_empty());
+
+                let table = t.get("table");
+                assert!(table.is_some());
+
+                let table = table.unwrap();
+                assert!(is_match!(table, &Value::Table(_)));
+                match table {
+                    &Value::Table(ref t) => {
+                        assert!(!t.is_empty());
+
+                        let a = t.get("a");
+                        assert!(a.is_some());
+
+                        let a = a.unwrap();
+                        assert!(is_match!(a, &Value::Integer(1)));
+                    },
+                    _ => panic!("What just happenend?"),
+                }
+            },
+            _ => panic!("What just happenend?"),
+        }
+    }
+
+    #[test]
+    fn test_insert_with_seperator_into_array() {
+        use std::ops::Index;
+
+        let mut toml : Value = toml_from_str(r#"
+        array = []
+        "#).unwrap();
+
+        let res = toml.insert_with_seperator(&String::from("array.[0]"), '.', Value::Integer(1));
+
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(res.is_none());
+
+        assert!(is_match!(toml, Value::Table(_)));
+        match toml {
+            Value::Table(ref t) => {
+                assert!(!t.is_empty());
+
+                let array = t.get("array");
+                assert!(array.is_some());
+
+                let array = array.unwrap();
+                assert!(is_match!(array, &Value::Array(_)));
+                match array {
+                    &Value::Array(ref a) => {
+                        assert!(!a.is_empty());
+                        assert!(is_match!(a.index(0), &Value::Integer(1)));
+                    },
+                    _ => panic!("What just happenend?"),
+                }
+            },
+            _ => panic!("What just happenend?"),
+        }
+    }
+
+}
 
