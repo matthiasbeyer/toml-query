@@ -135,5 +135,68 @@ mod test {
         }
     }
 
+    #[test]
+    fn test_insert_with_seperator_into_nested_table() {
+        let mut toml : Value = toml_from_str(r#"
+        [a.b.c]
+        "#).unwrap();
+
+        let res = toml.insert_with_seperator(&String::from("a.b.c.d"), '.', Value::Integer(1));
+
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(res.is_none());
+
+        assert!(is_match!(toml, Value::Table(_)));
+        match toml {
+            Value::Table(ref outer) => {
+                assert!(!outer.is_empty());
+                let a_tab = outer.get("a");
+                assert!(a_tab.is_some());
+
+                let a_tab = a_tab.unwrap();
+                assert!(is_match!(a_tab, &Value::Table(_)));
+                match a_tab {
+                    &Value::Table(ref a) => {
+                        assert!(!a.is_empty());
+
+                        let b_tab = a.get("b");
+                        assert!(b_tab.is_some());
+
+                        let b_tab = b_tab.unwrap();
+                        assert!(is_match!(b_tab, &Value::Table(_)));
+                        match b_tab {
+                            &Value::Table(ref b) => {
+                                assert!(!b.is_empty());
+
+                                let c_tab = b.get("c");
+                                assert!(c_tab.is_some());
+
+                                let c_tab = c_tab.unwrap();
+                                assert!(is_match!(c_tab, &Value::Table(_)));
+                                match c_tab {
+                                    &Value::Table(ref c) => {
+                                        assert!(!c.is_empty());
+
+                                        let d = c.get("d");
+                                        assert!(d.is_some());
+
+                                        let d = d.unwrap();
+                                        assert!(is_match!(d, &Value::Integer(1)));
+                                    },
+                                    _ => panic!("What just happenend?"),
+                                }
+                            },
+                            _ => panic!("What just happenend?"),
+                        }
+                    },
+                    _ => panic!("What just happenend?"),
+                }
+            },
+            _ => panic!("What just happened?"),
+        }
+    }
+
 }
 
