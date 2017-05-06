@@ -63,6 +63,14 @@ impl Token {
         }
     }
 
+    #[cfg(test)]
+    pub fn idx(&self) -> usize {
+        match self {
+            &Token::Index { idx: i, .. } => i,
+            _ => unreachable!(),
+        }
+    }
+
 }
 
 pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token> {
