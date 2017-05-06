@@ -45,7 +45,16 @@ impl Token {
         } else {
             match self {
                 &mut Token::Identifier { next: ref mut next, .. } => {
-                    next.take()
+                    if next.is_some() {
+                        let mut next = next.take().unwrap();
+                        if next.has_next() {
+                            next.pop_last()
+                        } else {
+                            Some(next)
+                        }
+                    } else {
+                        None
+                    }
                 },
 
                 &mut Token::Index { next: ref mut next, .. } => {
