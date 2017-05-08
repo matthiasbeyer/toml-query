@@ -6,7 +6,7 @@ use tokenizer::Token;
 use tokenizer::tokenize_with_seperator;
 use error::*;
 
-pub trait TomlValueInsertExt<'doc> {
+pub trait TomlValueInsertExt {
 
     /// Extension function for inserting a value in the current toml::Value document
     /// using a custom seperator.
@@ -42,7 +42,7 @@ pub trait TomlValueInsertExt<'doc> {
 
 }
 
-impl<'doc> TomlValueInsertExt<'doc> for Value {
+impl TomlValueInsertExt for Value {
 
     fn insert_with_seperator(&mut self, query: &String, sep: char, value: Value) -> Result<Option<Value>> {
         use resolver::mut_resolver::resolve;
