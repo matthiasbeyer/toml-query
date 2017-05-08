@@ -2,6 +2,7 @@
 
 use toml::Value;
 
+use tokenizer::Token;
 use tokenizer::tokenize_with_seperator;
 use error::*;
 
@@ -46,7 +47,22 @@ impl<'doc> TomlValueInsertExt<'doc> for Value {
     fn insert_with_seperator(&mut self, query: &String, sep: char, value: Value) -> Result<Option<Value>> {
         use resolver::mut_resolver::resolve;
 
-        unimplemented!()
+        let mut tokens = try!(tokenize_with_seperator(query, sep));
+        let last       = tokens.pop_last().unwrap();
+        let mut val    = try!(resolve(self, &tokens));
+
+        match *last {
+            Token::Identifier { ident, .. } => {
+                match val {
+                    &mut Value::Table(ref mut t) => {
+                        Ok(t.insert(ident, value))
+                    },
+                    _ => unimplemented!()
+                }
+            },
+
+            _ => unimplemented!()
+        }
     }
 
 }
