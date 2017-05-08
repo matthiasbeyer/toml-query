@@ -61,7 +61,19 @@ impl<'doc> TomlValueInsertExt<'doc> for Value {
                 }
             },
 
-            _ => unimplemented!()
+            Token::Index { idx , .. } => {
+                match val {
+                    &mut Value::Array(ref mut a) => {
+                        if a.len() > idx {
+                            unimplemented!()
+                        } else {
+                            a.push(value);
+                            Ok(None)
+                        }
+                    },
+                    _ => unimplemented!()
+                }
+            },
         }
     }
 
