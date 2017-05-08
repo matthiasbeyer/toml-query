@@ -129,6 +129,46 @@ mod test {
     }
 
     #[test]
+    fn test_set_with_seperator_into_table_key_nonexistent() {
+        let mut toml : Value = toml_from_str(r#"
+        [table]
+        "#).unwrap();
+
+        let res = toml.set_with_seperator(&String::from("table.a"), '.', Value::Integer(1));
+
+        assert!(res.is_ok());
+        let res = res.unwrap();
+
+        assert!(res.is_none());
+
+        assert!(is_match!(toml, Value::Table(_)));
+        match toml {
+            Value::Table(ref t) => {
+                assert!(!t.is_empty());
+
+                let inner = t.get("table");
+                assert!(inner.is_some());
+
+                let inner = inner.unwrap();
+                assert!(is_match!(inner, &Value::Table(_)));
+                match inner {
+                    &Value::Table(ref t) => {
+                        assert!(!t.is_empty());
+
+                        let a = t.get("a");
+                        assert!(a.is_some());
+
+                        let a = a.unwrap();
+                        assert!(is_match!(a, &Value::Integer(1)));
+                    },
+                    _ => panic!("What just happenend?"),
+                }
+            },
+            _ => panic!("What just happenend?"),
+        }
+    }
+
+    #[test]
     fn test_set_with_seperator_into_array() {
         use std::ops::Index;
 
@@ -144,6 +184,43 @@ mod test {
         assert!(res.is_some());
         let res = res.unwrap();
         assert!(is_match!(res, Value::Integer(0)));
+
+        assert!(is_match!(toml, Value::Table(_)));
+        match toml {
+            Value::Table(ref t) => {
+                assert!(!t.is_empty());
+
+                let inner = t.get("array");
+                assert!(inner.is_some());
+
+                let inner = inner.unwrap();
+                assert!(is_match!(inner, &Value::Array(_)));
+                match inner {
+                    &Value::Array(ref a) => {
+                        assert!(!a.is_empty());
+                        assert!(is_match!(a.index(0), &Value::Integer(1)));
+                    },
+                    _ => panic!("What just happenend?"),
+                }
+            },
+            _ => panic!("What just happenend?"),
+        }
+    }
+
+    #[test]
+    fn test_set_with_seperator_into_table_index_nonexistent() {
+        use std::ops::Index;
+
+        let mut toml : Value = toml_from_str(r#"
+        array = []
+        "#).unwrap();
+
+        let res = toml.set_with_seperator(&String::from("array.[0]"), '.', Value::Integer(1));
+
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(res.is_none());
 
         assert!(is_match!(toml, Value::Table(_)));
         match toml {
@@ -232,6 +309,30 @@ mod test {
             },
             _ => panic!("What just happenend?"),
         }
+    }
+
+    #[test]
+    fn test_set_with_seperator_into_nonexistent_table() {
+        let mut toml : Value = toml_from_str("").unwrap();
+
+        let res = toml.set_with_seperator(&String::from("table.a"), '.', Value::Integer(1));
+
+        assert!(res.is_err());
+
+        let res = res.unwrap_err();
+        assert!(is_match!(res.kind(), &ErrorKind::IdentifierNotFoundInDocument(_)));
+    }
+
+    #[test]
+    fn test_set_with_seperator_into_nonexistent_array() {
+        let mut toml : Value = toml_from_str("").unwrap();
+
+        let res = toml.set_with_seperator(&String::from("[0]"), '.', Value::Integer(1));
+
+        assert!(res.is_err());
+
+        let res = res.unwrap_err();
+        assert!(is_match!(res.kind(), &ErrorKind::NoIndexInTable(0)));
     }
 
 }
