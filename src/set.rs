@@ -44,9 +44,9 @@ impl<'doc> TomlValueSetExt<'doc> for Value {
 
         let mut tokens = try!(tokenize_with_seperator(query, sep));
         let last = tokens.pop_last();
-        let last = last.unwrap();
 
         let mut val = try!(resolve(self, &tokens));
+        let last = last.unwrap_or_else(|| Box::new(tokens));
 
         match *last {
             Token::Identifier { ident, .. } => {
