@@ -46,9 +46,10 @@ impl<'doc> TomlValueSetExt<'doc> for Value {
         let last = tokens.pop_last();
         let last = last.unwrap();
 
+        let mut val = try!(resolve(self, &tokens));
+
         match *last {
             Token::Identifier { ident, .. } => {
-                let mut val = try!(resolve(self, &tokens));
                 match val {
                     &mut Value::Table(ref mut t) => {
                         Ok(t.insert(ident, value))
@@ -57,7 +58,22 @@ impl<'doc> TomlValueSetExt<'doc> for Value {
                 }
             }
 
-            _ => unimplemented!(),
+            Token::Index { idx, .. } => {
+                match val {
+                    &mut Value::Array(ref mut a) => {
+                        if a.len() > idx {
+                            let result = a.swap_remove(idx);
+                            a.insert(idx, value);
+                            Ok(Some(result))
+                        } else {
+                            a.push(value);
+                            Ok(None)
+                        }
+                    }
+                    _ => unimplemented!()
+                }
+            }
+
         }
     }
 
