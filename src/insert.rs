@@ -226,5 +226,33 @@ mod test {
         }
     }
 
+    #[test]
+    fn test_insert_with_seperator_into_table_where_array_is() {
+        let mut toml : Value = toml_from_str(r#"
+        table = []
+        "#).unwrap();
+
+        let res = toml.insert_with_seperator(&String::from("table.a"), '.', Value::Integer(1));
+
+        assert!(res.is_err());
+
+        let err = res.unwrap_err();
+        assert!(is_match!(err.kind(), &ErrorKind::NoIdentifierInArray(_)));
+    }
+
+    #[test]
+    fn test_insert_with_seperator_into_array_where_table_is() {
+        let mut toml : Value = toml_from_str(r#"
+        [table]
+        "#).unwrap();
+
+        let res = toml.insert_with_seperator(&String::from("table.[0]"), '.', Value::Integer(1));
+
+        assert!(res.is_err());
+
+        let err = res.unwrap_err();
+        assert!(is_match!(err.kind(), &ErrorKind::NoIndexInTable(_)));
+    }
+
 }
 
