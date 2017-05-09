@@ -164,5 +164,34 @@ mod test {
         }
     }
 
+    #[test]
+    fn test_delete_nonempty_table() {
+        let mut toml : Value = toml_from_str(r#"
+        [table]
+        a = 1
+        "#).unwrap();
+
+        let res = toml.delete_with_seperator(&String::from("table"), '.');
+
+        assert!(res.is_err());
+
+        let res = res.unwrap_err();
+        assert!(is_match!(res.kind(), &ErrorKind::CannotDeleteNonEmptyTable(_)));
+    }
+
+    #[test]
+    fn test_delete_nonempty_array() {
+        let mut toml : Value = toml_from_str(r#"
+        array = [ 1 ]
+        "#).unwrap();
+
+        let res = toml.delete_with_seperator(&String::from("array.[0]"), '.');
+
+        assert!(res.is_err());
+
+        let res = res.unwrap_err();
+        assert!(is_match!(res.kind(), &ErrorKind::CannotDeleteNonEmptyArray(_)));
+    }
+
 }
 
