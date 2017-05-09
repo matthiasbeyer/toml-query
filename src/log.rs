@@ -1,7 +1,9 @@
-/// If logging is not compiled into the library, this module defines the logging macros to result
-/// in nothing.
-///
+//! If logging is not compiled into the library, this module defines the logging macros to result
+//! in nothing.
 
+/// This macro is defined if the `logging` feature is _not_ compiled into the library
+///
+/// It ignores all logging calls inside the library.
 #[cfg(not(feature = "logging"))]
 #[macro_export]
 macro_rules! debug {
@@ -9,6 +11,9 @@ macro_rules! debug {
     ($($arg:tt)*) => { };
 }
 
+/// This macro is defined if the `logging` feature is _not_ compiled into the library
+///
+/// It ignores all logging calls inside the library.
 #[cfg(not(feature = "logging"))]
 #[macro_export]
 macro_rules! error {
@@ -16,6 +21,9 @@ macro_rules! error {
     ($($arg:tt)*) => { };
 }
 
+/// This macro is defined if the `logging` feature is _not_ compiled into the library
+///
+/// It ignores all logging calls inside the library.
 #[cfg(not(feature = "logging"))]
 #[macro_export]
 macro_rules! info {
@@ -23,6 +31,9 @@ macro_rules! info {
     ($($arg:tt)*) => { };
 }
 
+/// This macro is defined if the `logging` feature is _not_ compiled into the library
+///
+/// It ignores all logging calls inside the library.
 #[cfg(not(feature = "logging"))]
 #[macro_export]
 macro_rules! log {
@@ -30,6 +41,9 @@ macro_rules! log {
     ($($arg:tt)*) => { };
 }
 
+/// This macro is defined if the `logging` feature is _not_ compiled into the library
+///
+/// It ignores all logging calls inside the library.
 #[cfg(not(feature = "logging"))]
 #[macro_export]
 macro_rules! trace {
@@ -37,6 +51,9 @@ macro_rules! trace {
     ($($arg:tt)*) => { };
 }
 
+/// This macro is defined if the `logging` feature is _not_ compiled into the library
+///
+/// It ignores all logging calls inside the library.
 #[cfg(not(feature = "logging"))]
 #[macro_export]
 macro_rules! warn {
