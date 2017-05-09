@@ -21,6 +21,7 @@ pub mod error;
 pub mod read;
 pub mod set;
 pub mod insert;
+pub mod delete;
 
 // private modules
 
