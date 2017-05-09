@@ -71,7 +71,7 @@ impl TomlValueInsertExt for Value {
                             Ok(None)
                         }
                     },
-                    _ => unimplemented!()
+                    _ => Err(Error::from(ErrorKind::NoIndexInTable(idx)))
                 }
             },
         }
