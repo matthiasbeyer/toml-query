@@ -61,5 +61,15 @@ error_chain! {
             display("Got an index query '{}' but have value", i)
         }
 
+        CannotDeleteNonEmptyTable(tabname: String) {
+            description("Cannot delete Table that is not empty")
+            display("Cannot delete table '{}' which is not empty", tabname)
+        }
+
+        CannotDeleteNonEmptyArray(arrname: String) {
+            description("Cannot delete Array that is not empty")
+            display("Cannot delete array '{}' which is not empty", arrname)
+        }
+
     }
 }
