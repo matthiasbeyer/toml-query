@@ -50,7 +50,7 @@ impl TomlValueDeleteExt for Value {
     fn delete_with_seperator(&mut self, query: &String, sep: char) -> Result<Option<Value>> {
         use resolver::mut_resolver::resolve;
 
-        unimplemented!()
+        Ok(None)
     }
 
 }
