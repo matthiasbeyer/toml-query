@@ -57,7 +57,7 @@ impl TomlValueInsertExt for Value {
                     &mut Value::Table(ref mut t) => {
                         Ok(t.insert(ident, value))
                     },
-                    _ => unimplemented!()
+                    _ => Err(Error::from(ErrorKind::NoIdentifierInArray(ident.clone())))
                 }
             },
 
