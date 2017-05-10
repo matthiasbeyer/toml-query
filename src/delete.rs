@@ -50,7 +50,26 @@ impl TomlValueDeleteExt for Value {
     fn delete_with_seperator(&mut self, query: &String, sep: char) -> Result<Option<Value>> {
         use resolver::mut_resolver::resolve;
 
-        Ok(None)
+        let mut tokens = try!(tokenize_with_seperator(query, sep));
+        let last_token = tokens.pop_last();
+
+        if last_token.is_none() {
+            match self {
+                &mut Value::Table(ref mut tab) => {
+                    match tokens {
+                        Token::Identifier { ident, .. } => {
+                            println!("Removing {} from {:?}", ident, tab);
+                            Ok(tab.remove(&ident))
+                        },
+                        _ => Ok(None)
+                    }
+                },
+                _ => unimplemented!()
+            }
+        } else {
+            let mut val = try!(resolve(self, &tokens));
+            Ok(None)
+        }
     }
 
 }
