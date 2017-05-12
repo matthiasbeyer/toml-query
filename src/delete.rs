@@ -53,16 +53,61 @@ impl TomlValueDeleteExt for Value {
         let mut tokens = try!(tokenize_with_seperator(query, sep));
         let last_token = tokens.pop_last();
 
+        /// Check whether a structure (Table/Array) is empty. If the Value has not these types,
+        /// the default value is returned
+        #[inline]
+        fn is_empty(val: Option<&Value>, default: bool) -> bool {
+            val.map(|v| match v {
+                    &Value::Table(ref tab) => tab.is_empty(),
+                    &Value::Array(ref arr) => arr.is_empty(),
+                    _                      => default
+                })
+                .unwrap_or(default)
+        }
+
+        #[inline]
+        fn is_table(val: Option<&Value>) -> bool {
+            val.map(|v| is_match!(v, &Value::Table(_))).unwrap_or(false)
+        }
+
+        #[inline]
+        fn is_array(val: Option<&Value>) -> bool {
+            val.map(|v| is_match!(v, &Value::Array(_))).unwrap_or(false)
+        }
+
+        #[inline]
+        fn name_of_val(val: Option<&Value>) -> &'static str {
+            val.map(|v| match v {
+                &Value::Array(_)    => "Array",
+                &Value::Boolean(_)  => "Boolean",
+                &Value::Datetime(_) => "Datetime",
+                &Value::Float(_)    => "Float",
+                &Value::Integer(_)  => "Integer",
+                &Value::String(_)   => "String",
+                &Value::Table(_)    => "Table",
+            }).unwrap_or("None")
+        }
+
         if last_token.is_none() {
             match self {
                 &mut Value::Table(ref mut tab) => {
                     match tokens {
                         Token::Identifier { ident, .. } => {
-                            if !tab.is_empty() {
-                                let kind = ErrorKind::CannotDeleteNonEmptyTable(ident.clone());
-                                Err(Error::from(kind))
-                            } else {
+                            if is_empty(tab.get(&ident), true) {
                                 Ok(tab.remove(&ident))
+                            } else {
+                                if is_table(tab.get(&ident)) {
+                                    let kind = ErrorKind::CannotDeleteNonEmptyTable(ident.clone());
+                                    Err(Error::from(kind))
+                                } else if is_array(tab.get(&ident)) {
+                                    let kind = ErrorKind::CannotDeleteNonEmptyArray(ident.clone());
+                                    Err(Error::from(kind))
+                                } else {
+                                    let act = name_of_val(tab.get(&ident));
+                                    let tbl = "table";
+                                    let k   = ErrorKind::CannotAccessBecauseTypeMismatch(tbl, act);
+                                    Err(Error::from(k))
+                                }
                             }
                         },
                         _ => Ok(None)
@@ -208,7 +253,7 @@ mod test {
         array = [ 1 ]
         "#).unwrap();
 
-        let res = toml.delete_with_seperator(&String::from("array.[0]"), '.');
+        let res = toml.delete_with_seperator(&String::from("array"), '.');
 
         assert!(res.is_err());
 
