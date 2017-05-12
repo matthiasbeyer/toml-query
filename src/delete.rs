@@ -58,8 +58,12 @@ impl TomlValueDeleteExt for Value {
                 &mut Value::Table(ref mut tab) => {
                     match tokens {
                         Token::Identifier { ident, .. } => {
-                            println!("Removing {} from {:?}", ident, tab);
-                            Ok(tab.remove(&ident))
+                            if !tab.is_empty() {
+                                let kind = ErrorKind::CannotDeleteNonEmptyTable(ident.clone());
+                                Err(Error::from(kind))
+                            } else {
+                                Ok(tab.remove(&ident))
+                            }
                         },
                         _ => Ok(None)
                     }
