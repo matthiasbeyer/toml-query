@@ -483,5 +483,21 @@ mod test {
         assert!(is_match!(res.kind(), &ErrorKind::NoIdentifierInArray(_)));
     }
 
+    #[test]
+    fn test_delete_nonexistent_array_idx() {
+        use read::TomlValueReadExt;
+
+        let mut toml : Value = toml_from_str(r#"
+        array = [ 1, 2, 3 ]
+        "#).unwrap();
+
+        let res     = toml.delete_with_seperator(&String::from("array.[22]"), '.');
+
+        assert!(res.is_err());
+
+        let res = res.unwrap_err();
+        assert!(is_match!(res.kind(), &ErrorKind::ArrayIndexOutOfBounds(22, 3)));
+    }
+
 }
 
