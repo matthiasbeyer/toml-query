@@ -25,6 +25,9 @@ pub trait TomlValueInsertExt {
     /// that the element should be put at 1000, the function ignores the large index and simply
     /// appends the value to the index.
     ///
+    /// If a Value is inserted into an Array, the array indexes are shifted. Semantically this is
+    /// the same as doing a `array.insert(4, _)` (see the standard library).
+    ///
     /// # Return value
     ///
     /// If the insert operation worked correctly, `Ok(None)` is returned.
@@ -65,7 +68,8 @@ impl TomlValueInsertExt for Value {
                 match val {
                     &mut Value::Array(ref mut a) => {
                         if a.len() > idx {
-                            unimplemented!()
+                            a.insert(idx, value);
+                            Ok(None)
                         } else {
                             a.push(value);
                             Ok(None)
