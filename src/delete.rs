@@ -114,6 +114,21 @@ impl TomlValueDeleteExt for Value {
                         _ => Ok(None)
                     }
                 },
+                &mut Value::Array(ref mut arr) => {
+                    match tokens {
+                        Token::Identifier { ident, .. } => {
+                            let ek = ErrorKind::NoIdentifierInArray(ident);
+                            Err(Error::from(ek))
+                        },
+                        Token::Index { idx , .. } => {
+                            if is_empty(Some(arr.index(idx)), true) {
+                                Ok(Some(arr.remove(idx)))
+                            } else {
+                                unimplemented!()
+                            }
+                        },
+                    }
+                },
                 _ => unimplemented!()
             }
         } else {
