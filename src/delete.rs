@@ -169,8 +169,9 @@ impl TomlValueDeleteExt for Value {
                 },
                 &mut Value::Array(ref mut arr) => {
                     match *last_token {
-                        Token::Identifier { ref ident, .. } => {
-                            unimplemented!()
+                        Token::Identifier { ident, .. } => {
+                            let kind = ErrorKind::NoIdentifierInArray(ident);
+                            Err(Error::from(kind))
                         },
                         Token::Index { idx, .. } => {
                             if is_empty(Some(&arr.index(idx)), true) {
