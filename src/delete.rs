@@ -129,7 +129,13 @@ impl TomlValueDeleteExt for Value {
                         },
                     }
                 },
-                _ => unimplemented!()
+                _ => {
+                    let kind = match tokens {
+                        Token::Identifier { ident, .. } => ErrorKind::QueryingValueAsTable(ident),
+                        Token::Index { idx , .. } => ErrorKind::QueryingValueAsArray(idx),
+                    };
+                    Err(Error::from(kind))
+                }
             }
         } else {
             let mut val = try!(resolve(self, &tokens));
