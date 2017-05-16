@@ -451,5 +451,37 @@ mod test {
         assert!(is_match!(res.kind(), &ErrorKind::QueryingValueAsArray(_)));
     }
 
+    #[test]
+    fn test_delete_index_from_table_in_table() {
+        use read::TomlValueReadExt;
+
+        let mut toml : Value = toml_from_str(r#"
+        table = { another = { int = 1 } }
+        "#).unwrap();
+
+        let res     = toml.delete_with_seperator(&String::from("table.another.[0]"), '.');
+
+        assert!(res.is_err());
+
+        let res = res.unwrap_err();
+        assert!(is_match!(res.kind(), &ErrorKind::NoIndexInTable(0)));
+    }
+
+    #[test]
+    fn test_delete_identifier_from_array_in_table() {
+        use read::TomlValueReadExt;
+
+        let mut toml : Value = toml_from_str(r#"
+        table = { another = [ 1, 2, 3, 4, 5, 6 ] }
+        "#).unwrap();
+
+        let res     = toml.delete_with_seperator(&String::from("table.another.nonexist"), '.');
+
+        assert!(res.is_err());
+
+        let res = res.unwrap_err();
+        assert!(is_match!(res.kind(), &ErrorKind::NoIdentifierInArray(_)));
+    }
+
 }
 
