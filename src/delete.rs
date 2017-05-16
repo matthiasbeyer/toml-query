@@ -448,7 +448,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::CannotAccessBecauseTypeMismatch(_, _)));
+        assert!(is_match!(res.kind(), &ErrorKind::QueryingValueAsArray(_)));
     }
 
 }
