@@ -544,5 +544,33 @@ mod test {
         assert!(is_match!(res.kind(), &ErrorKind::CannotDeleteNonEmptyTable(None)));
     }
 
+    #[test]
+    fn test_delete_from_value_like_it_was_table() {
+        let mut toml : Value = toml_from_str(r#"
+        val = 5
+        "#).unwrap();
+
+        let res = toml.delete_with_seperator(&String::from("val.foo"), '.');
+
+        assert!(res.is_err());
+
+        let res = res.unwrap_err();
+        assert!(is_match!(res.kind(), &ErrorKind::QueryingValueAsTable(_)));
+    }
+
+    #[test]
+    fn test_delete_from_value_like_it_was_array() {
+        let mut toml : Value = toml_from_str(r#"
+        val = 5
+        "#).unwrap();
+
+        let res = toml.delete_with_seperator(&String::from("val.[0]"), '.');
+
+        assert!(res.is_err());
+
+        let res = res.unwrap_err();
+        assert!(is_match!(res.kind(), &ErrorKind::QueryingValueAsArray(0)));
+    }
+
 }
 
