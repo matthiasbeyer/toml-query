@@ -53,6 +53,10 @@ impl TomlValueSetExt for Value {
                 match val {
                     &mut Value::Table(ref mut t) => {
                         Ok(t.insert(ident, value))
+                    },
+                    &mut Value::Array(_) => {
+                        let kind = ErrorKind::NoIdentifierInArray(ident);
+                        Err(Error::from(kind))
                     }
                     _ => unimplemented!()
                 }
@@ -69,6 +73,10 @@ impl TomlValueSetExt for Value {
                             a.push(value);
                             Ok(None)
                         }
+                    }
+                    &mut Value::Table(_) => {
+                        let kind = ErrorKind::NoIndexInTable(idx);
+                        Err(Error::from(kind))
                     }
                     _ => unimplemented!()
                 }
@@ -333,6 +341,34 @@ mod test {
 
         let res = res.unwrap_err();
         assert!(is_match!(res.kind(), &ErrorKind::NoIndexInTable(0)));
+    }
+
+    #[test]
+    fn test_set_with_seperator_ident_into_ary() {
+        let mut toml : Value = toml_from_str(r#"
+        array = [ 0 ]
+        "#).unwrap();
+
+        let res = toml.set_with_seperator(&String::from("array.foo"), '.', Value::Integer(2));
+
+        assert!(res.is_err());
+        let res = res.unwrap_err();
+
+        assert!(is_match!(res.kind(), &ErrorKind::NoIdentifierInArray(_)));
+    }
+
+    #[test]
+    fn test_set_with_seperator_index_into_table() {
+        let mut toml : Value = toml_from_str(r#"
+        foo = { bar = 1 }
+        "#).unwrap();
+
+        let res = toml.set_with_seperator(&String::from("foo.[0]"), '.', Value::Integer(2));
+
+        assert!(res.is_err());
+        let res = res.unwrap_err();
+
+        assert!(is_match!(res.kind(), &ErrorKind::NoIndexInTable(_)));
     }
 
 }
