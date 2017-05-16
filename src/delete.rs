@@ -224,7 +224,6 @@ impl TomlValueDeleteExt for Value {
 #[cfg(test)]
 mod test {
     use super::*;
-    use error::*;
     use toml::Value;
     use toml::from_str as toml_from_str;
 
@@ -485,8 +484,6 @@ mod test {
 
     #[test]
     fn test_delete_index_from_table_in_table() {
-        use read::TomlValueReadExt;
-
         let mut toml : Value = toml_from_str(r#"
         table = { another = { int = 1 } }
         "#).unwrap();
@@ -501,8 +498,6 @@ mod test {
 
     #[test]
     fn test_delete_identifier_from_array_in_table() {
-        use read::TomlValueReadExt;
-
         let mut toml : Value = toml_from_str(r#"
         table = { another = [ 1, 2, 3, 4, 5, 6 ] }
         "#).unwrap();
@@ -517,8 +512,6 @@ mod test {
 
     #[test]
     fn test_delete_nonexistent_array_idx() {
-        use read::TomlValueReadExt;
-
         let mut toml : Value = toml_from_str(r#"
         array = [ 1, 2, 3 ]
         "#).unwrap();
