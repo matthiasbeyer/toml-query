@@ -86,7 +86,6 @@ impl TomlValueInsertExt for Value {
 #[cfg(test)]
 mod test {
     use super::*;
-    use error::*;
     use toml::Value;
     use toml::from_str as toml_from_str;
 
