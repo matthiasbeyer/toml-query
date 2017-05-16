@@ -549,6 +549,23 @@ mod test {
     }
 
     #[test]
+    fn test_delete_non_empty_table_from_top_level_array() {
+        use read::TomlValueReadExt;
+
+        let mut toml : Value = toml_from_str(r#"
+        array = [ { t = 1 }, { t = 2 } ]
+        "#).unwrap();
+
+        let mut ary = toml.read_mut(&String::from("array")).unwrap();
+        let res     = ary.delete_with_seperator(&String::from("[1]"), '.');
+
+        assert!(res.is_err());
+
+        let res = res.unwrap_err();
+        assert!(is_match!(res.kind(), &ErrorKind::CannotDeleteNonEmptyTable(None)));
+    }
+
+    #[test]
     fn test_delete_from_value_like_it_was_table() {
         let mut toml : Value = toml_from_str(r#"
         val = 5
