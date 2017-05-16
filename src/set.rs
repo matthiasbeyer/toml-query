@@ -74,6 +74,10 @@ impl TomlValueSetExt for Value {
                             Ok(None)
                         }
                     }
+                    &mut Value::Table(_) => {
+                        let kind = ErrorKind::NoIndexInTable(idx);
+                        Err(Error::from(kind))
+                    }
                     _ => unimplemented!()
                 }
             }
