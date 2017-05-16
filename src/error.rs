@@ -61,5 +61,25 @@ error_chain! {
             display("Got an index query '{}' but have value", i)
         }
 
+        CannotDeleteNonEmptyTable(tabname: Option<String>) {
+            description("Cannot delete Table that is not empty")
+            display("Cannot delete table '{:?}' which is not empty", tabname)
+        }
+
+        CannotDeleteNonEmptyArray(arrname: Option<String>) {
+            description("Cannot delete Array that is not empty")
+            display("Cannot delete array '{:?}' which is not empty", arrname)
+        }
+
+        CannotAccessBecauseTypeMismatch(expected: &'static str, actual: &'static str) {
+            description("Cannot access value because of type mismatch")
+            display("Cannot access {} because expected {}", actual, expected)
+        }
+
+        ArrayIndexOutOfBounds(idx: usize, arrlen: usize) {
+            description("Delete index out of bounds")
+            display("Cannot delete in array at {}, array has length {}", idx, arrlen)
+        }
+
     }
 }

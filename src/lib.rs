@@ -1,3 +1,6 @@
+#![recursion_limit = "1024"]
+// We need this for error_chain, unfortunately.
+
 /// # toml-query
 ///
 /// A crate to help executing queries on toml data structures inside Rust code.
@@ -21,6 +24,7 @@ pub mod error;
 pub mod read;
 pub mod set;
 pub mod insert;
+pub mod delete;
 
 // private modules
 
