@@ -81,7 +81,10 @@ impl TomlValueSetExt for Value {
                         let kind = ErrorKind::NoIndexInTable(idx);
                         Err(Error::from(kind))
                     }
-                    _ => unimplemented!()
+                    _ => {
+                        let kind = ErrorKind::QueryingValueAsArray(idx);
+                        Err(Error::from(kind))
+                    }
                 }
             }
 
