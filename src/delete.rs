@@ -174,6 +174,10 @@ impl TomlValueDeleteExt for Value {
                             Err(Error::from(kind))
                         },
                         Token::Index { idx, .. } => {
+                            if idx > arr.len() {
+                                let kind = ErrorKind::ArrayIndexOutOfBounds(idx, arr.len());
+                                return Err(Error::from(kind))
+                            }
                             if is_empty(Some(&arr.index(idx)), true) {
                                 Ok(Some(arr.remove(idx)))
                             } else {
