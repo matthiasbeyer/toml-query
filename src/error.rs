@@ -71,5 +71,9 @@ error_chain! {
             display("Cannot delete array '{}' which is not empty", arrname)
         }
 
+        CannotAccessBecauseTypeMismatch(expected: &'static str, actual: &'static str) {
+            description("Cannot access value because of type mismatch")
+            display("Cannot access {} because expected {}", actual, expected)
+        }
     }
 }
