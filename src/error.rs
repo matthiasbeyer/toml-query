@@ -75,5 +75,11 @@ error_chain! {
             description("Cannot access value because of type mismatch")
             display("Cannot access {} because expected {}", actual, expected)
         }
+
+        ArrayIndexOutOfBounds(idx: usize, arrlen: usize) {
+            description("Delete index out of bounds")
+            display("Cannot delete in array at {}, array has length {}", idx, arrlen)
+        }
+
     }
 }
