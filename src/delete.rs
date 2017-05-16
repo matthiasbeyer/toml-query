@@ -101,7 +101,7 @@ impl TomlValueDeleteExt for Value {
                                     let kind = ErrorKind::CannotDeleteNonEmptyTable(ident.clone());
                                     Err(Error::from(kind))
                                 } else if is_array(tab.get(&ident)) {
-                                    let kind = ErrorKind::CannotDeleteNonEmptyArray(ident.clone());
+                                    let kind = ErrorKind::CannotDeleteNonEmptyArray(Some(ident.clone()));
                                     Err(Error::from(kind))
                                 } else {
                                     let act = name_of_val(tab.get(&ident));
@@ -151,7 +151,7 @@ impl TomlValueDeleteExt for Value {
                                     let kind = ErrorKind::CannotDeleteNonEmptyTable(ident.clone());
                                     Err(Error::from(kind))
                                 } else if is_array(tab.get(ident)) {
-                                    let kind = ErrorKind::CannotDeleteNonEmptyArray(ident.clone());
+                                    let kind = ErrorKind::CannotDeleteNonEmptyArray(Some(ident.clone()));
                                     Err(Error::from(kind))
                                 } else {
                                     let act = name_of_val(tab.get(ident));
@@ -506,7 +506,7 @@ mod test {
     }
 
     #[test]
-    fn test_delete_non_empty_from_array() {
+    fn test_delete_non_empty_array_from_array() {
         let mut toml : Value = toml_from_str(r#"
         array = [ [ 1 ], [ 2 ] ]
         "#).unwrap();

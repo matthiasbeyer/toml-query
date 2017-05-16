@@ -66,9 +66,9 @@ error_chain! {
             display("Cannot delete table '{}' which is not empty", tabname)
         }
 
-        CannotDeleteNonEmptyArray(arrname: String) {
+        CannotDeleteNonEmptyArray(arrname: Option<String>) {
             description("Cannot delete Array that is not empty")
-            display("Cannot delete array '{}' which is not empty", arrname)
+            display("Cannot delete array '{:?}' which is not empty", arrname)
         }
 
         CannotAccessBecauseTypeMismatch(expected: &'static str, actual: &'static str) {
