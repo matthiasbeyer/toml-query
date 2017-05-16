@@ -181,7 +181,18 @@ impl TomlValueDeleteExt for Value {
                             if is_empty(Some(&arr.index(idx)), true) {
                                 Ok(Some(arr.remove(idx)))
                             } else {
-                                unimplemented!()
+                                if is_table(Some(&arr.index(idx))) {
+                                    let kind = ErrorKind::CannotDeleteNonEmptyTable(None);
+                                    Err(Error::from(kind))
+                                } else if is_array(Some(&arr.index(idx))) {
+                                    let kind = ErrorKind::CannotDeleteNonEmptyArray(None);
+                                    Err(Error::from(kind))
+                                } else {
+                                    let act = name_of_val(Some(arr.index(idx)));
+                                    let tbl = "table";
+                                    let k   = ErrorKind::CannotAccessBecauseTypeMismatch(tbl, act);
+                                    Err(Error::from(k))
+                                }
                             }
                         },
                     }
