@@ -49,6 +49,7 @@ impl TomlValueDeleteExt for Value {
 
     fn delete_with_seperator(&mut self, query: &String, sep: char) -> Result<Option<Value>> {
         use resolver::mut_resolver::resolve;
+        use std::ops::Index;
 
         let mut tokens = try!(tokenize_with_seperator(query, sep));
         let last_token = tokens.pop_last();
@@ -117,9 +118,9 @@ impl TomlValueDeleteExt for Value {
             }
         } else {
             let mut val = try!(resolve(self, &tokens));
+            let last_token = last_token.unwrap();
             match val {
                 &mut Value::Table(ref mut tab) => {
-                    let last_token = last_token.unwrap();
                     match *last_token {
                         Token::Identifier { ref ident, .. } => {
                             if is_empty(tab.get(ident), true) {
@@ -145,7 +146,18 @@ impl TomlValueDeleteExt for Value {
                     }
                 },
                 &mut Value::Array(ref mut arr) => {
-                    unimplemented!()
+                    match *last_token {
+                        Token::Identifier { ref ident, .. } => {
+                            unimplemented!()
+                        },
+                        Token::Index { idx, .. } => {
+                            if is_empty(Some(&arr.index(idx)), true) {
+                                Ok(Some(arr.remove(idx)))
+                            } else {
+                                unimplemented!()
+                            }
+                        },
+                    }
                 },
                 _ => {
                     unimplemented!()
