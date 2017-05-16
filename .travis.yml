@@ -9,4 +9,10 @@ rust:
 matrix:
   allow_failures:
     - rust: nightly
-
+cache: cargo
+notifications:
+  irc:
+    channels:
+    - chat.freenode.net#imag
+    template:
+    - "%{repository_name} (%{branch} @ %{commit} by %{author}): %{result}"
