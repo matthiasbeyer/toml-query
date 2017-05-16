@@ -53,6 +53,10 @@ impl TomlValueSetExt for Value {
                 match val {
                     &mut Value::Table(ref mut t) => {
                         Ok(t.insert(ident, value))
+                    },
+                    &mut Value::Array(_) => {
+                        let kind = ErrorKind::NoIdentifierInArray(ident);
+                        Err(Error::from(kind))
                     }
                     _ => unimplemented!()
                 }
