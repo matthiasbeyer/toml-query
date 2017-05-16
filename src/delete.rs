@@ -261,5 +261,78 @@ mod test {
         assert!(is_match!(res.kind(), &ErrorKind::CannotDeleteNonEmptyArray(_)));
     }
 
+    #[test]
+    fn test_delete_int_from_table() {
+        let mut toml : Value = toml_from_str(r#"
+        [table]
+        int = 1
+        "#).unwrap();
+
+        let res = toml.delete_with_seperator(&String::from("table.int"), '.');
+
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(is_match!(res, Some(Value::Integer(1))));
+    }
+
+    #[test]
+    fn test_delete_array_from_table() {
+        let mut toml : Value = toml_from_str(r#"
+        [table]
+        array = []
+        "#).unwrap();
+
+        let res = toml.delete_with_seperator(&String::from("table.array"), '.');
+
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(is_match!(res, Some(Value::Array(_))));
+    }
+
+    #[test]
+    fn test_delete_int_from_array_from_table() {
+        let mut toml : Value = toml_from_str(r#"
+        [table]
+        array = [ 1 ]
+        "#).unwrap();
+
+        let res = toml.delete_with_seperator(&String::from("table.array.[0]"), '.');
+
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(is_match!(res, Some(Value::Integer(1))));
+    }
+
+    #[test]
+    fn test_delete_int_from_array() {
+        let mut toml : Value = toml_from_str(r#"
+        array = [ 1 ]
+        "#).unwrap();
+
+        let res = toml.delete_with_seperator(&String::from("array.[0]"), '.');
+
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(is_match!(res, Some(Value::Integer(1))));
+    }
+
+    #[test]
+    fn test_delete_int_from_table_from_array() {
+        let mut toml : Value = toml_from_str(r#"
+        array = [ { table = { int = 1 } } ]
+        "#).unwrap();
+
+        let res = toml.delete_with_seperator(&String::from("array.[0].table.int"), '.');
+
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(is_match!(res, Some(Value::Integer(1))));
+    }
+
 }
 
