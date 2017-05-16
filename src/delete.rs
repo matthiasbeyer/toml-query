@@ -162,7 +162,8 @@ impl TomlValueDeleteExt for Value {
                             }
                         },
                         Token::Index { idx, .. } => {
-                            unimplemented!()
+                            let kind = ErrorKind::NoIndexInTable(idx);
+                            Err(Error::from(kind))
                         },
                     }
                 },
