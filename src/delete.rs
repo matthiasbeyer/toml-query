@@ -117,7 +117,40 @@ impl TomlValueDeleteExt for Value {
             }
         } else {
             let mut val = try!(resolve(self, &tokens));
-            Ok(None)
+            match val {
+                &mut Value::Table(ref mut tab) => {
+                    let last_token = last_token.unwrap();
+                    match *last_token {
+                        Token::Identifier { ref ident, .. } => {
+                            if is_empty(tab.get(ident), true) {
+                                Ok(tab.remove(ident))
+                            } else {
+                                if is_table(tab.get(ident)) {
+                                    let kind = ErrorKind::CannotDeleteNonEmptyTable(ident.clone());
+                                    Err(Error::from(kind))
+                                } else if is_array(tab.get(ident)) {
+                                    let kind = ErrorKind::CannotDeleteNonEmptyArray(ident.clone());
+                                    Err(Error::from(kind))
+                                } else {
+                                    let act = name_of_val(tab.get(ident));
+                                    let tbl = "table";
+                                    let k   = ErrorKind::CannotAccessBecauseTypeMismatch(tbl, act);
+                                    Err(Error::from(k))
+                                }
+                            }
+                        },
+                        Token::Index { idx, .. } => {
+                            unimplemented!()
+                        },
+                    }
+                },
+                &mut Value::Array(ref mut arr) => {
+                    unimplemented!()
+                },
+                _ => {
+                    unimplemented!()
+                }
+            }
         }
     }
 
