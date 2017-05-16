@@ -98,7 +98,7 @@ impl TomlValueDeleteExt for Value {
                                 Ok(tab.remove(&ident))
                             } else {
                                 if is_table(tab.get(&ident)) {
-                                    let kind = ErrorKind::CannotDeleteNonEmptyTable(ident.clone());
+                                    let kind = ErrorKind::CannotDeleteNonEmptyTable(Some(ident.clone()));
                                     Err(Error::from(kind))
                                 } else if is_array(tab.get(&ident)) {
                                     let kind = ErrorKind::CannotDeleteNonEmptyArray(Some(ident.clone()));
@@ -148,7 +148,7 @@ impl TomlValueDeleteExt for Value {
                                 Ok(tab.remove(ident))
                             } else {
                                 if is_table(tab.get(ident)) {
-                                    let kind = ErrorKind::CannotDeleteNonEmptyTable(ident.clone());
+                                    let kind = ErrorKind::CannotDeleteNonEmptyTable(Some(ident.clone()));
                                     Err(Error::from(kind))
                                 } else if is_array(tab.get(ident)) {
                                     let kind = ErrorKind::CannotDeleteNonEmptyArray(Some(ident.clone()));
