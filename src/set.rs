@@ -371,5 +371,33 @@ mod test {
         assert!(is_match!(res.kind(), &ErrorKind::NoIndexInTable(_)));
     }
 
+    #[test]
+    fn test_set_with_seperator_ident_into_non_structure() {
+        let mut toml : Value = toml_from_str(r#"
+        val = 0
+        "#).unwrap();
+
+        let res = toml.set_with_seperator(&String::from("val.foo"), '.', Value::Integer(2));
+
+        assert!(res.is_err());
+        let res = res.unwrap_err();
+
+        assert!(is_match!(res.kind(), &ErrorKind::QueryingValueAsTable(_)));
+    }
+
+    #[test]
+    fn test_set_with_seperator_index_into_non_structure() {
+        let mut toml : Value = toml_from_str(r#"
+        foo = 1
+        "#).unwrap();
+
+        let res = toml.set_with_seperator(&String::from("foo.[0]"), '.', Value::Integer(2));
+
+        assert!(res.is_err());
+        let res = res.unwrap_err();
+
+        assert!(is_match!(res.kind(), &ErrorKind::QueryingValueAsArray(_)));
+    }
+
 }
 
