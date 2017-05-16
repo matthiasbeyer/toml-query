@@ -519,5 +519,19 @@ mod test {
         assert!(is_match!(res.kind(), &ErrorKind::CannotDeleteNonEmptyArray(None)));
     }
 
+    #[test]
+    fn test_delete_non_empty_table_from_array() {
+        let mut toml : Value = toml_from_str(r#"
+        array = [ { t = 1 }, { t = 2 } ]
+        "#).unwrap();
+
+        let res = toml.delete_with_seperator(&String::from("array.[1]"), '.');
+
+        assert!(res.is_err());
+
+        let res = res.unwrap_err();
+        assert!(is_match!(res.kind(), &ErrorKind::CannotDeleteNonEmptyTable(None)));
+    }
+
 }
 
