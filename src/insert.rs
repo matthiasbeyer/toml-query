@@ -254,5 +254,47 @@ mod test {
         assert!(is_match!(err.kind(), &ErrorKind::NoIndexInTable(_)));
     }
 
+    #[test]
+    fn test_insert_with_seperator_into_array_between_values() {
+        use std::ops::Index;
+
+        let mut toml : Value = toml_from_str(r#"
+        array = [1, 2, 3, 4, 5]
+        "#).unwrap();
+
+        let res = toml.insert_with_seperator(&String::from("array.[2]"), '.', Value::Integer(6));
+
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(res.is_none());
+
+        assert!(is_match!(toml, Value::Table(_)));
+        match toml {
+            Value::Table(ref t) => {
+                assert!(!t.is_empty());
+
+                let array = t.get("array");
+                assert!(array.is_some());
+
+                let array = array.unwrap();
+                assert!(is_match!(array, &Value::Array(_)));
+                match array {
+                    &Value::Array(ref a) => {
+                        assert!(!a.is_empty());
+                        assert!(is_match!(a.index(0), &Value::Integer(1)));
+                        assert!(is_match!(a.index(1), &Value::Integer(2)));
+                        assert!(is_match!(a.index(2), &Value::Integer(6)));
+                        assert!(is_match!(a.index(3), &Value::Integer(3)));
+                        assert!(is_match!(a.index(4), &Value::Integer(4)));
+                        assert!(is_match!(a.index(5), &Value::Integer(5)));
+                    },
+                    _ => panic!("What just happenend?"),
+                }
+            },
+            _ => panic!("What just happenend?"),
+        }
+    }
+
 }
 
