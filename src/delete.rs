@@ -379,5 +379,56 @@ mod test {
         assert!(is_match!(res, Some(Value::Integer(1))));
     }
 
+    #[test]
+    fn test_delete_from_array_value() {
+        use read::TomlValueReadExt;
+
+        let mut toml : Value = toml_from_str(r#"
+        array = [ 1 ]
+        "#).unwrap();
+
+        let mut ary = toml.read_mut(&String::from("array")).unwrap();
+        let res     = ary.delete_with_seperator(&String::from("[0]"), '.');
+
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(is_match!(res, Some(Value::Integer(1))));
+    }
+
+    #[test]
+    fn test_delete_from_int_value() {
+        use read::TomlValueReadExt;
+
+        let mut toml : Value = toml_from_str(r#"
+        array = [ 1 ]
+        "#).unwrap();
+
+        let mut ary = toml.read_mut(&String::from("array.[0]")).unwrap();
+        let res     = ary.delete_with_seperator(&String::from("nonexist"), '.');
+
+        assert!(res.is_err());
+
+        let res = res.unwrap_err();
+        assert!(is_match!(res.kind(), &ErrorKind::QueryingValueAsTable(_)));
+    }
+
+    #[test]
+    fn test_delete_index_from_non_array() {
+        use read::TomlValueReadExt;
+
+        let mut toml : Value = toml_from_str(r#"
+        array = 1
+        "#).unwrap();
+
+        let mut ary = toml.read_mut(&String::from("array")).unwrap();
+        let res     = ary.delete_with_seperator(&String::from("[0]"), '.');
+
+        assert!(res.is_err());
+
+        let res = res.unwrap_err();
+        assert!(is_match!(res.kind(), &ErrorKind::CannotAccessBecauseTypeMismatch(_, _)));
+    }
+
 }
 
