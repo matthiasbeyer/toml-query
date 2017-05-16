@@ -198,7 +198,11 @@ impl TomlValueDeleteExt for Value {
                     }
                 },
                 _ => {
-                    unimplemented!()
+                    let kind = match *last_token {
+                        Token::Identifier { ident, .. } => ErrorKind::QueryingValueAsTable(ident),
+                        Token::Index { idx, .. } => ErrorKind::QueryingValueAsArray(idx),
+                    };
+                    Err(Error::from(kind))
                 }
             }
         }
