@@ -299,5 +299,44 @@ mod test {
         }
     }
 
+    #[test]
+    fn test_insert_with_seperator_into_table_with_nonexisting_keys() {
+        let mut toml : Value = toml_from_str(r#"
+        "#).unwrap();
+
+        let res = toml.insert_with_seperator(&String::from("table.a"), '.', Value::Integer(1));
+
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(res.is_none());
+
+        assert!(is_match!(toml, Value::Table(_)));
+        match toml {
+            Value::Table(ref t) => {
+                assert!(!t.is_empty());
+
+                let table = t.get("table");
+                assert!(table.is_some());
+
+                let table = table.unwrap();
+                assert!(is_match!(table, &Value::Table(_)));
+                match table {
+                    &Value::Table(ref t) => {
+                        assert!(!t.is_empty());
+
+                        let a = t.get("a");
+                        assert!(a.is_some());
+
+                        let a = a.unwrap();
+                        assert!(is_match!(a, &Value::Integer(1)));
+                    },
+                    _ => panic!("What just happenend?"),
+                }
+            },
+            _ => panic!("What just happenend?"),
+        }
+    }
+
 }
 
