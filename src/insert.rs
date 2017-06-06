@@ -48,7 +48,7 @@ pub trait TomlValueInsertExt {
 impl TomlValueInsertExt for Value {
 
     fn insert_with_seperator(&mut self, query: &str, sep: char, value: Value) -> Result<Option<Value>> {
-        use resolver::mut_resolver::resolve;
+        use resolver::mut_creating_resolver::resolve;
 
         let mut tokens = try!(tokenize_with_seperator(query, sep));
         let last       = tokens.pop_last().unwrap();
