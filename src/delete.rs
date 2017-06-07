@@ -270,6 +270,27 @@ mod test {
     }
 
     #[test]
+    fn test_delete_integer_removes_entry_from_document() {
+        let mut toml : Value = toml_from_str(r#"
+        value = 1
+        "#).unwrap();
+
+        let res = toml.delete_with_seperator(&String::from("value"), '.');
+
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(res.is_some());
+        let res = res.unwrap();
+        assert!(is_match!(res, Value::Integer(1)));
+
+        match toml {
+            Value::Table(tab) => assert!(tab.is_empty()),
+            _                 => assert!(false, "Strange things are happening"),
+        }
+    }
+
+    #[test]
     fn test_delete_string() {
         let mut toml : Value = toml_from_str(r#"
         value = "foo"
@@ -286,6 +307,31 @@ mod test {
         match res {
             Value::String(ref s) => assert_eq!("foo", s),
             _ => panic!("What just happened?"),
+        }
+    }
+
+    #[test]
+    fn test_delete_string_removes_entry_from_document() {
+        let mut toml : Value = toml_from_str(r#"
+        value = "foo"
+        "#).unwrap();
+
+        let res = toml.delete_with_seperator(&String::from("value"), '.');
+
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(res.is_some());
+        let res = res.unwrap();
+        assert!(is_match!(res, Value::String(_)));
+        match res {
+            Value::String(ref s) => assert_eq!("foo", s),
+            _ => panic!("What just happened?"),
+        }
+
+        match toml {
+            Value::Table(tab) => assert!(tab.is_empty()),
+            _                 => assert!(false, "Strange things are happening"),
         }
     }
 
@@ -310,6 +356,31 @@ mod test {
     }
 
     #[test]
+    fn test_delete_empty_table_removes_entry_from_document() {
+        let mut toml : Value = toml_from_str(r#"
+        [table]
+        "#).unwrap();
+
+        let res = toml.delete_with_seperator(&String::from("table"), '.');
+
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(res.is_some());
+        let res = res.unwrap();
+        assert!(is_match!(res, Value::Table(_)));
+        match res {
+            Value::Table(ref t) => assert!(t.is_empty()),
+            _ => panic!("What just happened?"),
+        }
+
+        match toml {
+            Value::Table(tab) => assert!(tab.is_empty()),
+            _                 => assert!(false, "Strange things are happening"),
+        }
+    }
+
+    #[test]
     fn test_delete_empty_array() {
         let mut toml : Value = toml_from_str(r#"
         array = []
@@ -326,6 +397,31 @@ mod test {
         match res {
             Value::Array(ref a) => assert!(a.is_empty()),
             _ => panic!("What just happened?"),
+        }
+    }
+
+    #[test]
+    fn test_delete_empty_array_removes_entry_from_document() {
+        let mut toml : Value = toml_from_str(r#"
+        array = []
+        "#).unwrap();
+
+        let res = toml.delete_with_seperator(&String::from("array"), '.');
+
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(res.is_some());
+        let res = res.unwrap();
+        assert!(is_match!(res, Value::Array(_)));
+        match res {
+            Value::Array(ref a) => assert!(a.is_empty()),
+            _ => panic!("What just happened?"),
+        }
+
+        match toml {
+            Value::Table(tab) => assert!(tab.is_empty()),
+            _                 => assert!(false, "Strange things are happening"),
         }
     }
 
