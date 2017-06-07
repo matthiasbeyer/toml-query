@@ -18,6 +18,7 @@ pub enum Token {
 impl Token {
 
     pub fn next(&self) -> Option<&Box<Token>> {
+        trace!("Matching token (self): {:?}", self);
         match self {
             &Token::Identifier { ref next, .. } => next.as_ref(),
             &Token::Index { ref next, .. }      => next.as_ref(),
@@ -26,10 +27,12 @@ impl Token {
 
     /// Convenience function for `token.next().is_some()`
     pub fn has_next(&self) -> bool {
+        trace!("self.has_next(): {:?}", self.next().is_some());
         self.next().is_some()
     }
 
     pub fn set_next(&mut self, token: Token) {
+        trace!("self.set_next({:?})", token);
         match self {
             &mut Token::Identifier { ref mut next, .. } => *next = Some(Box::new(token)),
             &mut Token::Index { ref mut next, .. }      => *next = Some(Box::new(token)),
@@ -40,36 +43,60 @@ impl Token {
     ///
     /// Returns None if the current Token has no next token
     pub fn pop_last(&mut self) -> Option<Box<Token>> {
+        trace!("self.pop_last()");
         if !self.has_next() {
+            trace!("self.pop_last(): No next");
             None
         } else {
+            trace!("self.pop_last(): Having next");
             match self {
                 &mut Token::Identifier { ref mut next, .. } => {
+                    trace!("self.pop_last(): self is Identifier");
                     if next.is_some() {
+                        trace!("self.pop_last(): next is Some(_)");
                         let mut n = next.take().unwrap();
                         if n.has_next() {
+                            trace!("self.pop_last(): next also has a next");
+
+                            trace!("self.pop_last(): Recursing now");
                             let result = n.pop_last();
+
                             *next = Some(n);
+
+                            trace!("self.pop_last(): Returning Result");
                             return result;
                         } else {
+                            trace!("self.pop_last(): next itself has no next, returning Some");
                             Some(n)
                         }
                     } else {
+                        trace!("self.pop_last(): next is none, returning None");
                         None
                     }
                 },
 
                 &mut Token::Index { ref mut next, .. } => {
+                    trace!("self.pop_last(): self is Index");
                     if next.is_some() {
+                        trace!("self.pop_last(): next is Some(_)");
+
                         let mut n = next.take().unwrap();
                         if n.has_next() {
+                            trace!("self.pop_last(): next also has a next");
+
+                            trace!("self.pop_last(): Recursing now");
                             let result = n.pop_last();
+
                             *next = Some(n);
+
+                            trace!("self.pop_last(): Returning Result");
                             return result;
                         } else {
+                            trace!("self.pop_last(): next itself has no next, returning Some");
                             Some(n)
                         }
                     } else {
+                        trace!("self.pop_last(): next is none, returning None");
                         None
                     }
                 },
@@ -79,6 +106,7 @@ impl Token {
 
     #[cfg(test)]
     pub fn identifier(&self) -> &String {
+        trace!("self.identifier()");
         match self {
             &Token::Identifier { ref ident, .. } => &ident,
             _ => unreachable!(),
@@ -87,6 +115,7 @@ impl Token {
 
     #[cfg(test)]
     pub fn idx(&self) -> usize {
+        trace!("self.idx()");
         match self {
             &Token::Index { idx: i, .. } => i,
             _ => unreachable!(),
@@ -97,6 +126,7 @@ impl Token {
 
 pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
     use std::str::Split;
+    trace!("tokenize_with_seperator(query: {:?}, seperator: {:?})", query, seperator);
 
     /// Creates a Token object from a string
     ///
@@ -119,22 +149,33 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
         use regex::Regex;
         use std::str::FromStr;
 
+        trace!("mk_token_object(s: {:?})", s);
+
         lazy_static! {
             static ref RE: Regex = Regex::new(r"^\[\d+\]$").unwrap();
         }
 
         if !has_array_brackets(s) {
+            trace!("returning Ok(Identifier{ident: {:?}, next: None})", s);
             return Ok(Token::Identifier { ident: String::from(s), next: None });
         }
 
+        trace!("Capturing with Regex: {:?}", RE);
         match RE.captures(s) {
             None => return Err(Error::from(ErrorKind::ArrayAccessWithoutIndex)),
             Some(captures) => {
+                trace!("Captured: {:?}", captures);
                 match captures.get(0) {
                     None => Ok(Token::Identifier { ident: String::from(s), next: None }),
                     Some(mtch) => {
+                        trace!("First capture: {:?}", mtch);
+
                         let mtch = without_array_brackets(mtch.as_str());
+                        trace!(".. without array brackets: {:?}", mtch);
+
                         let i : usize = FromStr::from_str(&mtch).unwrap(); // save because regex
+
+                        trace!("returning Ok(Index {idx: {}, next: None}", i);
                         Ok(Token::Index {
                             idx: i,
                             next: None,
@@ -147,43 +188,60 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
 
     /// Check whether a str begins with '[' and ends with ']'
     fn has_array_brackets(s: &str) -> bool {
+        trace!("has_array_brackets({:?})", s);
         s.as_bytes()[0] == b'[' && s.as_bytes()[s.len() - 1] == b']'
     }
 
     /// Remove '[' and ']' from a str
     fn without_array_brackets(s: &str) -> String {
+        trace!("without_array_brackets({:?})", s);
         s.replace("[","").replace("]","")
     }
 
     fn build_token_tree(split: &mut Split<char>, last: &mut Token) -> Result<()> {
+        trace!("build_token_tree(split: {:?}, last: {:?})", split, last);
         match split.next() {
             None        => { /* No more tokens */ }
             Some(token) => {
+                trace!("build_token_tree(...): next from split: {:?}", token);
+
                 if token.len() == 0 {
+                    trace!("build_token_tree(...): Empty identifier... returning Error");
                     return Err(Error::from(ErrorKind::EmptyIdentifier));
                 }
+
                 let mut token = try!(mk_token_object(token));
                 try!(build_token_tree(split, &mut token));
                 last.set_next(token);
             }
         }
+
+        trace!("build_token_tree(...): returning Ok(())");
         Ok(())
     }
 
     if query.is_empty() {
+        trace!("Query is empty. Returning error");
         return Err(Error::from(ErrorKind::EmptyQueryError));
     }
 
     let mut tokens = query.split(seperator);
+    trace!("Tokens splitted: {:?}", tokens);
 
     match tokens.next() {
         None        => Err(Error::from(ErrorKind::EmptyQueryError)),
         Some(token) => {
+            trace!("next Token: {:?}", token);
+
             if token.len() == 0 {
+                trace!("Empty token. Returning Error");
                 return Err(Error::from(ErrorKind::EmptyIdentifier));
             }
+
             let mut tok = try!(mk_token_object(token));
             let _       = try!(build_token_tree(&mut tokens, &mut tok));
+
+            trace!("Returning Ok({:?})", tok);
             Ok(tok)
         }
     }
