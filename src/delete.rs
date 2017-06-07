@@ -34,12 +34,12 @@ pub trait TomlValueDeleteExt {
     ///
     /// On failure, `Err(e)` is returned
     ///
-    fn delete_with_seperator(&mut self, query: &String, sep: char) -> Result<Option<Value>>;
+    fn delete_with_seperator(&mut self, query: &str, sep: char) -> Result<Option<Value>>;
 
     /// Extension function for inserting a value from the current toml::Value document
     ///
     /// See documentation of `TomlValueinsertExt::insert_with_seperator`
-    fn delete(&mut self, query: &String) -> Result<Option<Value>> {
+    fn delete(&mut self, query: &str) -> Result<Option<Value>> {
         self.delete_with_seperator(query, '.')
     }
 
@@ -47,7 +47,7 @@ pub trait TomlValueDeleteExt {
 
 impl TomlValueDeleteExt for Value {
 
-    fn delete_with_seperator(&mut self, query: &String, sep: char) -> Result<Option<Value>> {
+    fn delete_with_seperator(&mut self, query: &str, sep: char) -> Result<Option<Value>> {
         use resolver::mut_resolver::resolve;
         use std::ops::Index;
 

@@ -95,7 +95,7 @@ impl Token {
 
 }
 
-pub fn tokenize_with_seperator(query: &String, seperator: char) -> Result<Token> {
+pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
     use std::str::Split;
 
     /// Creates a Token object from a string
