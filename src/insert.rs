@@ -28,11 +28,53 @@ pub trait TomlValueInsertExt {
     /// If a Value is inserted into an Array, the array indexes are shifted. Semantically this is
     /// the same as doing a `array.insert(4, _)` (see the standard library).
     ///
+    /// ## Known Bugs
+    ///
+    /// The current implementation does _not_ create intermediate Arrays as described above.
+    /// This is a known bug. So queries like "foo.bar.[0].baz" (or any query which has an array
+    /// element) will fail with an error rather than work.
+    ///
     /// # Return value
     ///
     /// If the insert operation worked correctly, `Ok(None)` is returned.
     /// If the insert operation replaced an existing value `Ok(Some(old_value))` is returned
     /// On failure, `Err(e)` is returned
+    ///
+    /// # Examples
+    ///
+    /// The following example shows a working `insert_with_seperator()` call on an empty toml
+    /// document. The Value is inserted as `"foo.bar = 1"` in the document.
+    ///
+    /// ```rust
+    /// extern crate toml;
+    /// extern crate toml_query;
+    ///
+    /// let mut toml : toml::Value = toml::from_str("").unwrap();
+    /// let query = "foo.bar";
+    /// let sep = '.';
+    /// let val = toml::Value::Integer(1);
+    ///
+    /// let res = toml_query::insert::TomlValueInsertExt::insert_with_seperator(&mut toml, query, sep, val);
+    /// assert!(res.is_ok());
+    /// let res = res.unwrap();
+    /// assert!(res.is_none());
+    /// ```
+    ///
+    /// The following example shows a failing `insert_with_seperator()` call on an empty toml
+    /// document. The Query does contain an array token, which does not yet work.
+    ///
+    /// ```rust,should_panic
+    /// extern crate toml;
+    /// extern crate toml_query;
+    ///
+    /// let mut toml : toml::Value = toml::from_str("").unwrap();
+    /// let query = "foo.[0]";
+    /// let sep = '.';
+    /// let val = toml::Value::Integer(1);
+    ///
+    /// let res = toml_query::insert::TomlValueInsertExt::insert_with_seperator(&mut toml, query, sep, val);
+    /// assert!(res.is_ok()); // panics
+    /// ```
     ///
     fn insert_with_seperator(&mut self, query: &str, sep: char, value: Value) -> Result<Option<Value>>;
 
@@ -48,7 +90,7 @@ pub trait TomlValueInsertExt {
 impl TomlValueInsertExt for Value {
 
     fn insert_with_seperator(&mut self, query: &str, sep: char, value: Value) -> Result<Option<Value>> {
-        use resolver::mut_resolver::resolve;
+        use resolver::mut_creating_resolver::resolve;
 
         let mut tokens = try!(tokenize_with_seperator(query, sep));
         let last       = tokens.pop_last().unwrap();
@@ -291,6 +333,45 @@ mod test {
                         assert!(is_match!(a.index(3), &Value::Integer(3)));
                         assert!(is_match!(a.index(4), &Value::Integer(4)));
                         assert!(is_match!(a.index(5), &Value::Integer(5)));
+                    },
+                    _ => panic!("What just happenend?"),
+                }
+            },
+            _ => panic!("What just happenend?"),
+        }
+    }
+
+    #[test]
+    fn test_insert_with_seperator_into_table_with_nonexisting_keys() {
+        let mut toml : Value = toml_from_str(r#"
+        "#).unwrap();
+
+        let res = toml.insert_with_seperator(&String::from("table.a"), '.', Value::Integer(1));
+
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(res.is_none());
+
+        assert!(is_match!(toml, Value::Table(_)));
+        match toml {
+            Value::Table(ref t) => {
+                assert!(!t.is_empty());
+
+                let table = t.get("table");
+                assert!(table.is_some());
+
+                let table = table.unwrap();
+                assert!(is_match!(table, &Value::Table(_)));
+                match table {
+                    &Value::Table(ref t) => {
+                        assert!(!t.is_empty());
+
+                        let a = t.get("a");
+                        assert!(a.is_some());
+
+                        let a = a.unwrap();
+                        assert!(is_match!(a, &Value::Integer(1)));
                     },
                     _ => panic!("What just happenend?"),
                 }
