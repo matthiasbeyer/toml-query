@@ -26,12 +26,12 @@ pub trait TomlValueSetExt {
     ///     * If the query is `"a.b.[3]"` but the array at "`b"` has no index `3`: error
     ///     * etc.
     ///
-    fn set_with_seperator(&mut self, query: &String, sep: char, value: Value) -> Result<Option<Value>>;
+    fn set_with_seperator(&mut self, query: &str, sep: char, value: Value) -> Result<Option<Value>>;
 
     /// Extension function for setting a value from the current toml::Value document
     ///
     /// See documentation of `TomlValueSetExt::set_with_seperator`
-    fn set(&mut self, query: &String, value: Value) -> Result<Option<Value>> {
+    fn set(&mut self, query: &str, value: Value) -> Result<Option<Value>> {
         self.set_with_seperator(query, '.', value)
     }
 
@@ -39,7 +39,7 @@ pub trait TomlValueSetExt {
 
 impl TomlValueSetExt for Value {
 
-    fn set_with_seperator(&mut self, query: &String, sep: char, value: Value) -> Result<Option<Value>> {
+    fn set_with_seperator(&mut self, query: &str, sep: char, value: Value) -> Result<Option<Value>> {
         use resolver::mut_resolver::resolve;
 
         let mut tokens = try!(tokenize_with_seperator(query, sep));

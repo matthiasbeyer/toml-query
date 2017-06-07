@@ -34,12 +34,12 @@ pub trait TomlValueInsertExt {
     /// If the insert operation replaced an existing value `Ok(Some(old_value))` is returned
     /// On failure, `Err(e)` is returned
     ///
-    fn insert_with_seperator(&mut self, query: &String, sep: char, value: Value) -> Result<Option<Value>>;
+    fn insert_with_seperator(&mut self, query: &str, sep: char, value: Value) -> Result<Option<Value>>;
 
     /// Extension function for inserting a value from the current toml::Value document
     ///
     /// See documentation of `TomlValueinsertExt::insert_with_seperator`
-    fn insert(&mut self, query: &String, value: Value) -> Result<Option<Value>> {
+    fn insert(&mut self, query: &str, value: Value) -> Result<Option<Value>> {
         self.insert_with_seperator(query, '.', value)
     }
 
@@ -47,7 +47,7 @@ pub trait TomlValueInsertExt {
 
 impl TomlValueInsertExt for Value {
 
-    fn insert_with_seperator(&mut self, query: &String, sep: char, value: Value) -> Result<Option<Value>> {
+    fn insert_with_seperator(&mut self, query: &str, sep: char, value: Value) -> Result<Option<Value>> {
         use resolver::mut_resolver::resolve;
 
         let mut tokens = try!(tokenize_with_seperator(query, sep));
