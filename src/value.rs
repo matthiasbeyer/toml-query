@@ -100,3 +100,5 @@ pub trait TomlValueExt<'doc> :
     }
 }
 
+impl<'doc> TomlValueExt<'doc> for Value { }
+
