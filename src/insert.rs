@@ -28,11 +28,53 @@ pub trait TomlValueInsertExt {
     /// If a Value is inserted into an Array, the array indexes are shifted. Semantically this is
     /// the same as doing a `array.insert(4, _)` (see the standard library).
     ///
+    /// ## Known Bugs
+    ///
+    /// The current implementation does _not_ create intermediate Arrays as described above.
+    /// This is a known bug. So queries like "foo.bar.[0].baz" (or any query which has an array
+    /// element) will fail with an error rather than work.
+    ///
     /// # Return value
     ///
     /// If the insert operation worked correctly, `Ok(None)` is returned.
     /// If the insert operation replaced an existing value `Ok(Some(old_value))` is returned
     /// On failure, `Err(e)` is returned
+    ///
+    /// # Examples
+    ///
+    /// The following example shows a working `insert_with_seperator()` call on an empty toml
+    /// document. The Value is inserted as `"foo.bar = 1"` in the document.
+    ///
+    /// ```rust
+    /// extern crate toml;
+    /// extern crate toml_query;
+    ///
+    /// let mut toml : toml::Value = toml::from_str("").unwrap();
+    /// let query = "foo.bar";
+    /// let sep = '.';
+    /// let val = toml::Value::Integer(1);
+    ///
+    /// let res = toml_query::insert::TomlValueInsertExt::insert_with_seperator(&mut toml, query, sep, val);
+    /// assert!(res.is_ok());
+    /// let res = res.unwrap();
+    /// assert!(res.is_none());
+    /// ```
+    ///
+    /// The following example shows a failing `insert_with_seperator()` call on an empty toml
+    /// document. The Query does contain an array token, which does not yet work.
+    ///
+    /// ```rust,should_panic
+    /// extern crate toml;
+    /// extern crate toml_query;
+    ///
+    /// let mut toml : toml::Value = toml::from_str("").unwrap();
+    /// let query = "foo.[0]";
+    /// let sep = '.';
+    /// let val = toml::Value::Integer(1);
+    ///
+    /// let res = toml_query::insert::TomlValueInsertExt::insert_with_seperator(&mut toml, query, sep, val);
+    /// assert!(res.is_ok()); // panics
+    /// ```
     ///
     fn insert_with_seperator(&mut self, query: &str, sep: char, value: Value) -> Result<Option<Value>>;
 
