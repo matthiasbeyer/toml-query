@@ -1,6 +1,6 @@
 [package]
 name = "toml-query"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Matthias Beyer <mail@beyermatthias.de>"]
 
 description = "Library to work with toml::Value objects more conveniently"
