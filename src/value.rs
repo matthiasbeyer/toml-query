@@ -29,25 +29,25 @@ pub trait TomlValueExt<'doc> :
 
     /// See documentation of `TomlValueReadExt`
     #[inline]
-    fn read_with_seperator(&'doc self, query: &String, sep: char) -> Result<&'doc Value> {
+    fn read_with_seperator(&'doc self, query: &String, sep: char) -> Result<Option<&'doc Value>> {
         TomlValueReadExt::read_with_seperator(self, query, sep)
     }
 
     /// See documentation of `TomlValueReadExt`
     #[inline]
-    fn read_mut_with_seperator(&'doc mut self, query: &String, sep: char) -> Result<&'doc mut Value> {
+    fn read_mut_with_seperator(&'doc mut self, query: &String, sep: char) -> Result<Option<&'doc mut Value>> {
         TomlValueReadExt::read_mut_with_seperator(self, query, sep)
     }
 
     /// See documentation of `TomlValueReadExt`
     #[inline]
-    fn read(&'doc self, query: &String) -> Result<&'doc Value> {
+    fn read(&'doc self, query: &String) -> Result<Option<&'doc Value>> {
         TomlValueReadExt::read_with_seperator(self, query, '.')
     }
 
     /// See documentation of `TomlValueReadExt`
     #[inline]
-    fn read_mut(&'doc mut self, query: &String) -> Result<&'doc mut Value> {
+    fn read_mut(&'doc mut self, query: &String) -> Result<Option<&'doc mut Value>> {
         TomlValueReadExt::read_mut_with_seperator(self, query, '.')
     }
 
