@@ -3,7 +3,7 @@
 Work with [toml-rs]() `Value` objects in an easy way:
 
 ```rust
-value.read("foo.bar.a.b.c")                       // -> Result<&Value, Error>
+value.read("foo.bar.a.b.c")                       // -> Result<Option<&Value>, Error>
 value.set("foo.bar.a.b.c", Value::Integer(1))     // -> Result<Option<Value>, Error>
 value.insert("foo.bar.a.b.c", Value::Integer(1))  // -> Result<Option<Value>, Error>
 value.delete("foo.bar.a.b.c")                     // -> Result<Option<Value>, Error>
