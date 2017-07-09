@@ -6,21 +6,16 @@ use toml::Value;
 use tokenizer::Token;
 use error::*;
 
-pub fn resolve<'doc>(toml: &'doc Value, tokens: &Token) -> Result<&'doc Value> {
+pub fn resolve<'doc>(toml: &'doc Value, tokens: &Token) -> Result<Option<&'doc Value>> {
     match toml {
         &Value::Table(ref t) => {
             match tokens {
                 &Token::Identifier { ref ident, .. } => {
                     match t.get(ident) {
-                        None    => {
-                            let ek = ErrorKind::IdentifierNotFoundInDocument(ident.clone());
-                            Err(Error::from(ek))
-                        },
-                        Some(sub_document) => {
-                            match tokens.next() {
-                                Some(next) => resolve(sub_document, next),
-                                None => Ok(sub_document),
-                            }
+                        None => Ok(None),
+                        Some(sub_document) => match tokens.next() {
+                            Some(next) => resolve(sub_document, next),
+                            None       => Ok(Some(sub_document)),
                         },
                     }
                 },
@@ -37,7 +32,7 @@ pub fn resolve<'doc>(toml: &'doc Value, tokens: &Token) -> Result<&'doc Value> {
                 &Token::Index { idx, .. } => {
                     match tokens.next() {
                         Some(next) => resolve(ary.get(idx).unwrap(), next),
-                        None       => Ok(ary.index(idx)),
+                        None       => Ok(Some(ary.index(idx))),
                     }
                 },
                 &Token::Identifier { ref ident, .. } => {

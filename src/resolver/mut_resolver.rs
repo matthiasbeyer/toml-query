@@ -6,21 +6,16 @@ use toml::Value;
 use tokenizer::Token;
 use error::*;
 
-pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut Value> {
+pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<Option<&'doc mut Value>> {
     match toml {
         &mut Value::Table(ref mut t) => {
             match tokens {
                 &Token::Identifier { ref ident, .. } => {
                     match t.get_mut(ident) {
-                        None    => {
-                            let ek = ErrorKind::IdentifierNotFoundInDocument(ident.clone());
-                            Err(Error::from(ek))
-                        },
-                        Some(sub_document) => {
-                            match tokens.next() {
-                                Some(next) => resolve(sub_document, next),
-                                None => Ok(sub_document),
-                            }
+                        None => Ok(None),
+                        Some(sub_document) => match tokens.next() {
+                            Some(next) => resolve(sub_document, next),
+                            None       => Ok(Some(sub_document)),
                         },
                     }
                 },
@@ -37,7 +32,7 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut 
                 &Token::Index { idx, .. } => {
                     match tokens.next() {
                         Some(next) => resolve(ary.get_mut(idx).unwrap(), next),
-                        None       => Ok(ary.index_mut(idx)),
+                        None       => Ok(Some(ary.index_mut(idx))),
                     }
                 },
                 &Token::Identifier { ref ident, .. } => {
