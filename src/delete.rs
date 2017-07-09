@@ -149,7 +149,8 @@ impl TomlValueDeleteExt for Value {
                 }
             }
         } else {
-            let mut val = try!(resolve(self, &tokens));
+            let mut val = try!(resolve(self, &tokens, true))
+                .unwrap(); // safe because of resolve() guarantees
             let last_token = last_token.unwrap();
             match val {
                 &mut Value::Table(ref mut tab) => {

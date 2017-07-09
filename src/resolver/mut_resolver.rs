@@ -6,15 +6,26 @@ use toml::Value;
 use tokenizer::Token;
 use error::*;
 
-pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<Option<&'doc mut Value>> {
+/// Resolves the path in the passed document recursively
+///
+/// # Guarantees
+///
+/// If error_if_not_found is set to true, this function does not return Ok(None) in any case.
+///
+pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token, error_if_not_found: bool) -> Result<Option<&'doc mut Value>> {
     match toml {
         &mut Value::Table(ref mut t) => {
             match tokens {
                 &Token::Identifier { ref ident, .. } => {
                     match t.get_mut(ident) {
-                        None => Ok(None),
+                        None => if error_if_not_found {
+                            let err = ErrorKind::IdentifierNotFoundInDocument(ident.to_owned());
+                            return Err(Error::from(err))
+                        } else {
+                            Ok(None)
+                        },
                         Some(sub_document) => match tokens.next() {
-                            Some(next) => resolve(sub_document, next),
+                            Some(next) => resolve(sub_document, next, error_if_not_found),
                             None       => Ok(Some(sub_document)),
                         },
                     }
@@ -31,7 +42,7 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<Option<&'d
             match tokens {
                 &Token::Index { idx, .. } => {
                     match tokens.next() {
-                        Some(next) => resolve(ary.get_mut(idx).unwrap(), next),
+                        Some(next) => resolve(ary.get_mut(idx).unwrap(), next, error_if_not_found),
                         None       => Ok(Some(ary.index_mut(idx))),
                     }
                 },

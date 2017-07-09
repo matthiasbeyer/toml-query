@@ -32,13 +32,13 @@ impl<'doc> TomlValueReadExt<'doc> for Value {
     fn read_with_seperator(&'doc self, query: &str, sep: char) -> Result<Option<&'doc Value>> {
         use resolver::non_mut_resolver::resolve;
 
-        tokenize_with_seperator(query, sep).and_then(move |tokens| resolve(self, &tokens))
+        tokenize_with_seperator(query, sep).and_then(move |tokens| resolve(self, &tokens, false))
     }
 
     fn read_mut_with_seperator(&'doc mut self, query: &str, sep: char) -> Result<Option<&'doc mut Value>> {
         use resolver::mut_resolver::resolve;
 
-        tokenize_with_seperator(query, sep).and_then(move |tokens| resolve(self, &tokens))
+        tokenize_with_seperator(query, sep).and_then(move |tokens| resolve(self, &tokens, false))
     }
 
 }
