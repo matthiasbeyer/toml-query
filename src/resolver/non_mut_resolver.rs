@@ -64,7 +64,7 @@ mod test {
 
     macro_rules! do_resolve {
         ( $toml:ident => $query:expr ) => {
-            resolve(&$toml, &tokenize_with_seperator(&String::from($query), '.').unwrap())
+            resolve(&$toml, &tokenize_with_seperator(&String::from($query), '.').unwrap(), true)
         }
     }
 
@@ -88,6 +88,9 @@ mod test {
         assert!(result.is_ok());
         let result = result.unwrap();
 
+        assert!(result.is_some());
+        let result = result.unwrap();
+
         assert!(is_match!(result, &Value::Boolean(true)));
     }
 
@@ -97,6 +100,9 @@ mod test {
         let result = do_resolve!(toml => "example");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &Value::Integer(1)));
@@ -110,6 +116,9 @@ mod test {
         assert!(result.is_ok());
         let result = result.unwrap();
 
+        assert!(result.is_some());
+        let result = result.unwrap();
+
         assert!(is_match!(result, &Value::Float(1.0)));
     }
 
@@ -119,6 +128,9 @@ mod test {
         let result = do_resolve!(toml => "example");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &Value::String(_)));
@@ -134,6 +146,9 @@ mod test {
         let result = do_resolve!(toml => "example");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &Value::Array(_)));
@@ -154,6 +169,9 @@ mod test {
         assert!(result.is_ok());
         let result = result.unwrap();
 
+        assert!(result.is_some());
+        let result = result.unwrap();
+
         assert!(is_match!(result, &Value::Array(_)));
         match result {
             &Value::Array(ref ary) => {
@@ -170,6 +188,9 @@ mod test {
         let result = do_resolve!(toml => "example");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &Value::Array(_)));
@@ -190,6 +211,9 @@ mod test {
         assert!(result.is_ok());
         let result = result.unwrap();
 
+        assert!(result.is_some());
+        let result = result.unwrap();
+
         assert!(is_match!(result, &Value::Integer(1)));
     }
 
@@ -199,6 +223,9 @@ mod test {
         let result = do_resolve!(toml => "example.[4]");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &Value::Integer(5)));
@@ -213,6 +240,9 @@ mod test {
         let result = do_resolve!(toml => "table.value");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &Value::Integer(42)));
@@ -233,6 +263,9 @@ mod test {
         assert!(result.is_ok());
         let result = result.unwrap();
 
+        assert!(result.is_some());
+        let result = result.unwrap();
+
         assert!(is_match!(result, &Value::Integer(42)));
     }
 
@@ -245,6 +278,9 @@ mod test {
         let result = do_resolve!(toml => "table.value1");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &Value::Array(_)));
@@ -268,6 +304,9 @@ mod test {
         assert!(result.is_ok());
         let result = result.unwrap();
 
+        assert!(result.is_some());
+        let result = result.unwrap();
+
         assert!(is_match!(result, &Value::Integer(42)));
     }
 
@@ -286,6 +325,9 @@ mod test {
         let result = do_resolve!(toml => "table1.value.[0]");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &Value::String(_)));
@@ -319,6 +361,9 @@ mod test {
         assert!(result.is_ok());
         let result = result.unwrap();
 
+        assert!(result.is_some());
+        let result = result.unwrap();
+
         assert!(is_match!(result, &Value::String(_)));
         match result {
             &Value::String(ref s) => assert_eq!("apple", s),
@@ -332,6 +377,9 @@ mod test {
         let result = do_resolve!(toml => "fruit.blah.[0].physical");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &Value::Table(_)));
@@ -358,10 +406,16 @@ mod test {
         assert!(result.is_ok());
         let result = result.unwrap();
 
+        assert!(result.is_some());
+        let result = result.unwrap();
+
         let tokens = tokenize_with_seperator(&String::from("color"), '.').unwrap();
-        let result = resolve(result, &tokens);
+        let result = resolve(result, &tokens, true);
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &Value::String(_)));
@@ -379,6 +433,9 @@ mod test {
         let result = do_resolve!(toml => "example");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &Value::Table(_)));

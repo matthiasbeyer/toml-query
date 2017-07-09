@@ -53,10 +53,11 @@ mod test {
         let toml : Value = toml_from_str("").unwrap();
 
         let val  = toml.read_with_seperator(&String::from("a"), '.');
-        assert!(val.is_err());
-        let err = val.unwrap_err();
 
-        assert!(is_match!(err.kind(), &ErrorKind::IdentifierNotFoundInDocument(_)));
+        assert!(val.is_ok());
+        let val = val.unwrap();
+
+        assert!(val.is_none());
     }
 
     #[test]
@@ -66,7 +67,11 @@ mod test {
         "#).unwrap();
 
         let val  = toml.read_with_seperator(&String::from("table"), '.');
+
         assert!(val.is_ok());
+        let val = val.unwrap();
+
+        assert!(val.is_some());
         let val = val.unwrap();
 
         assert!(is_match!(val, &Value::Table(_)));
@@ -84,7 +89,11 @@ mod test {
         "#).unwrap();
 
         let val  = toml.read_with_seperator(&String::from("table.a"), '.');
+
         assert!(val.is_ok());
+        let val = val.unwrap();
+
+        assert!(val.is_some());
         let val = val.unwrap();
 
         assert!(is_match!(val, &Value::Integer(1)));
@@ -97,10 +106,10 @@ mod test {
         "#).unwrap();
 
         let val  = toml.read_with_seperator(&String::from("table.a"), '.');
-        assert!(val.is_err());
-        let err = val.unwrap_err();
+        assert!(val.is_ok());
+        let val = val.unwrap();
 
-        assert!(is_match!(err.kind(), &ErrorKind::IdentifierNotFoundInDocument(_)));
+        assert!(val.is_none());
     }
 
     #[test]
@@ -127,10 +136,10 @@ mod test {
         let toml : Value = toml_from_str("").unwrap();
 
         let val  = toml.read(&String::from("a"));
-        assert!(val.is_err());
-        let err = val.unwrap_err();
+        assert!(val.is_ok());
+        let val = val.unwrap();
 
-        assert!(is_match!(err.kind(), &ErrorKind::IdentifierNotFoundInDocument(_)));
+        assert!(val.is_none());
     }
 
     #[test]
@@ -140,7 +149,11 @@ mod test {
         "#).unwrap();
 
         let val  = toml.read(&String::from("table"));
+
         assert!(val.is_ok());
+        let val = val.unwrap();
+
+        assert!(val.is_some());
         let val = val.unwrap();
 
         assert!(is_match!(val, &Value::Table(_)));
@@ -158,7 +171,11 @@ mod test {
         "#).unwrap();
 
         let val  = toml.read(&String::from("table.a"));
+
         assert!(val.is_ok());
+        let val = val.unwrap();
+
+        assert!(val.is_some());
         let val = val.unwrap();
 
         assert!(is_match!(val, &Value::Integer(1)));
@@ -171,10 +188,10 @@ mod test {
         "#).unwrap();
 
         let val  = toml.read(&String::from("table.a"));
-        assert!(val.is_err());
-        let err = val.unwrap_err();
+        assert!(val.is_ok());
+        let val = val.unwrap();
 
-        assert!(is_match!(err.kind(), &ErrorKind::IdentifierNotFoundInDocument(_)));
+        assert!(val.is_none());
     }
 
     #[test]
