@@ -149,7 +149,8 @@ impl TomlValueDeleteExt for Value {
                 }
             }
         } else {
-            let mut val = try!(resolve(self, &tokens));
+            let mut val = try!(resolve(self, &tokens, true))
+                .unwrap(); // safe because of resolve() guarantees
             let last_token = last_token.unwrap();
             match val {
                 &mut Value::Table(ref mut tab) => {
@@ -535,7 +536,7 @@ mod test {
         array = [ 1 ]
         "#).unwrap();
 
-        let mut ary = toml.read_mut(&String::from("array")).unwrap();
+        let mut ary = toml.read_mut(&String::from("array")).unwrap().unwrap();
         let res     = ary.delete_with_seperator(&String::from("[0]"), '.');
 
         assert!(res.is_ok());
@@ -552,7 +553,7 @@ mod test {
         array = [ 1 ]
         "#).unwrap();
 
-        let mut ary = toml.read_mut(&String::from("array.[0]")).unwrap();
+        let mut ary = toml.read_mut(&String::from("array.[0]")).unwrap().unwrap();
         let res     = ary.delete_with_seperator(&String::from("nonexist"), '.');
 
         assert!(res.is_err());
@@ -569,7 +570,7 @@ mod test {
         array = 1
         "#).unwrap();
 
-        let mut ary = toml.read_mut(&String::from("array")).unwrap();
+        let mut ary = toml.read_mut(&String::from("array")).unwrap().unwrap();
         let res     = ary.delete_with_seperator(&String::from("[0]"), '.');
 
         assert!(res.is_err());
@@ -656,7 +657,7 @@ mod test {
         array = [ { t = 1 }, { t = 2 } ]
         "#).unwrap();
 
-        let mut ary = toml.read_mut(&String::from("array")).unwrap();
+        let mut ary = toml.read_mut(&String::from("array")).unwrap().unwrap();
         let res     = ary.delete_with_seperator(&String::from("[1]"), '.');
 
         assert!(res.is_err());

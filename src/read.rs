@@ -9,19 +9,19 @@ pub trait TomlValueReadExt<'doc> {
 
     /// Extension function for reading a value from the current toml::Value document
     /// using a custom seperator
-    fn read_with_seperator(&'doc self, query: &str, sep: char) -> Result<&'doc Value>;
+    fn read_with_seperator(&'doc self, query: &str, sep: char) -> Result<Option<&'doc Value>>;
 
     /// Extension function for reading a value from the current toml::Value document mutably
     /// using a custom seperator
-    fn read_mut_with_seperator(&'doc mut self, query: &str, sep: char) -> Result<&'doc mut Value>;
+    fn read_mut_with_seperator(&'doc mut self, query: &str, sep: char) -> Result<Option<&'doc mut Value>>;
 
     /// Extension function for reading a value from the current toml::Value document
-    fn read(&'doc self, query: &str) -> Result<&'doc Value> {
+    fn read(&'doc self, query: &str) -> Result<Option<&'doc Value>> {
         self.read_with_seperator(query, '.')
     }
 
     /// Extension function for reading a value from the current toml::Value document mutably
-    fn read_mut(&'doc mut self, query: &str) -> Result<&'doc mut Value> {
+    fn read_mut(&'doc mut self, query: &str) -> Result<Option<&'doc mut Value>> {
         self.read_mut_with_seperator(query, '.')
     }
 
@@ -29,16 +29,16 @@ pub trait TomlValueReadExt<'doc> {
 
 impl<'doc> TomlValueReadExt<'doc> for Value {
 
-    fn read_with_seperator(&'doc self, query: &str, sep: char) -> Result<&'doc Value> {
+    fn read_with_seperator(&'doc self, query: &str, sep: char) -> Result<Option<&'doc Value>> {
         use resolver::non_mut_resolver::resolve;
 
-        tokenize_with_seperator(query, sep).and_then(move |tokens| resolve(self, &tokens))
+        tokenize_with_seperator(query, sep).and_then(move |tokens| resolve(self, &tokens, false))
     }
 
-    fn read_mut_with_seperator(&'doc mut self, query: &str, sep: char) -> Result<&'doc mut Value> {
+    fn read_mut_with_seperator(&'doc mut self, query: &str, sep: char) -> Result<Option<&'doc mut Value>> {
         use resolver::mut_resolver::resolve;
 
-        tokenize_with_seperator(query, sep).and_then(move |tokens| resolve(self, &tokens))
+        tokenize_with_seperator(query, sep).and_then(move |tokens| resolve(self, &tokens, false))
     }
 
 }
@@ -53,10 +53,11 @@ mod test {
         let toml : Value = toml_from_str("").unwrap();
 
         let val  = toml.read_with_seperator(&String::from("a"), '.');
-        assert!(val.is_err());
-        let err = val.unwrap_err();
 
-        assert!(is_match!(err.kind(), &ErrorKind::IdentifierNotFoundInDocument(_)));
+        assert!(val.is_ok());
+        let val = val.unwrap();
+
+        assert!(val.is_none());
     }
 
     #[test]
@@ -66,7 +67,11 @@ mod test {
         "#).unwrap();
 
         let val  = toml.read_with_seperator(&String::from("table"), '.');
+
         assert!(val.is_ok());
+        let val = val.unwrap();
+
+        assert!(val.is_some());
         let val = val.unwrap();
 
         assert!(is_match!(val, &Value::Table(_)));
@@ -84,7 +89,11 @@ mod test {
         "#).unwrap();
 
         let val  = toml.read_with_seperator(&String::from("table.a"), '.');
+
         assert!(val.is_ok());
+        let val = val.unwrap();
+
+        assert!(val.is_some());
         let val = val.unwrap();
 
         assert!(is_match!(val, &Value::Integer(1)));
@@ -97,10 +106,10 @@ mod test {
         "#).unwrap();
 
         let val  = toml.read_with_seperator(&String::from("table.a"), '.');
-        assert!(val.is_err());
-        let err = val.unwrap_err();
+        assert!(val.is_ok());
+        let val = val.unwrap();
 
-        assert!(is_match!(err.kind(), &ErrorKind::IdentifierNotFoundInDocument(_)));
+        assert!(val.is_none());
     }
 
     #[test]
@@ -127,10 +136,10 @@ mod test {
         let toml : Value = toml_from_str("").unwrap();
 
         let val  = toml.read(&String::from("a"));
-        assert!(val.is_err());
-        let err = val.unwrap_err();
+        assert!(val.is_ok());
+        let val = val.unwrap();
 
-        assert!(is_match!(err.kind(), &ErrorKind::IdentifierNotFoundInDocument(_)));
+        assert!(val.is_none());
     }
 
     #[test]
@@ -140,7 +149,11 @@ mod test {
         "#).unwrap();
 
         let val  = toml.read(&String::from("table"));
+
         assert!(val.is_ok());
+        let val = val.unwrap();
+
+        assert!(val.is_some());
         let val = val.unwrap();
 
         assert!(is_match!(val, &Value::Table(_)));
@@ -158,7 +171,11 @@ mod test {
         "#).unwrap();
 
         let val  = toml.read(&String::from("table.a"));
+
         assert!(val.is_ok());
+        let val = val.unwrap();
+
+        assert!(val.is_some());
         let val = val.unwrap();
 
         assert!(is_match!(val, &Value::Integer(1)));
@@ -171,10 +188,10 @@ mod test {
         "#).unwrap();
 
         let val  = toml.read(&String::from("table.a"));
-        assert!(val.is_err());
-        let err = val.unwrap_err();
+        assert!(val.is_ok());
+        let val = val.unwrap();
 
-        assert!(is_match!(err.kind(), &ErrorKind::IdentifierNotFoundInDocument(_)));
+        assert!(val.is_none());
     }
 
     #[test]

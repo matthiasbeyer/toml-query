@@ -6,21 +6,27 @@ use toml::Value;
 use tokenizer::Token;
 use error::*;
 
-pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut Value> {
+/// Resolves the path in the passed document recursively
+///
+/// # Guarantees
+///
+/// If error_if_not_found is set to true, this function does not return Ok(None) in any case.
+///
+pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token, error_if_not_found: bool) -> Result<Option<&'doc mut Value>> {
     match toml {
         &mut Value::Table(ref mut t) => {
             match tokens {
                 &Token::Identifier { ref ident, .. } => {
                     match t.get_mut(ident) {
-                        None    => {
-                            let ek = ErrorKind::IdentifierNotFoundInDocument(ident.clone());
-                            Err(Error::from(ek))
+                        None => if error_if_not_found {
+                            let err = ErrorKind::IdentifierNotFoundInDocument(ident.to_owned());
+                            return Err(Error::from(err))
+                        } else {
+                            Ok(None)
                         },
-                        Some(sub_document) => {
-                            match tokens.next() {
-                                Some(next) => resolve(sub_document, next),
-                                None => Ok(sub_document),
-                            }
+                        Some(sub_document) => match tokens.next() {
+                            Some(next) => resolve(sub_document, next, error_if_not_found),
+                            None       => Ok(Some(sub_document)),
                         },
                     }
                 },
@@ -36,8 +42,8 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut 
             match tokens {
                 &Token::Index { idx, .. } => {
                     match tokens.next() {
-                        Some(next) => resolve(ary.get_mut(idx).unwrap(), next),
-                        None       => Ok(ary.index_mut(idx)),
+                        Some(next) => resolve(ary.get_mut(idx).unwrap(), next, error_if_not_found),
+                        None       => Ok(Some(ary.index_mut(idx))),
                     }
                 },
                 &Token::Identifier { ref ident, .. } => {
@@ -69,7 +75,7 @@ mod test {
 
     macro_rules! do_resolve {
         ( $toml:ident => $query:expr ) => {
-            resolve(&mut $toml, &tokenize_with_seperator(&String::from($query), '.').unwrap())
+            resolve(&mut $toml, &tokenize_with_seperator(&String::from($query), '.').unwrap(), true)
         }
     }
 
@@ -93,7 +99,7 @@ mod test {
         assert!(result.is_ok());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::Boolean(true)));
+        assert!(is_match!(result, Some(&mut Value::Boolean(true))));
     }
 
     #[test]
@@ -104,7 +110,7 @@ mod test {
         assert!(result.is_ok());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::Integer(1)));
+        assert!(is_match!(result, Some(&mut Value::Integer(1))));
     }
 
     #[test]
@@ -113,6 +119,9 @@ mod test {
         let result = do_resolve!(toml => "example");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &mut Value::Float(1.0)));
@@ -124,6 +133,9 @@ mod test {
         let result = do_resolve!(toml => "example");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &mut Value::String(_)));
@@ -139,6 +151,9 @@ mod test {
         let result = do_resolve!(toml => "example");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &mut Value::Array(_)));
@@ -159,6 +174,9 @@ mod test {
         assert!(result.is_ok());
         let result = result.unwrap();
 
+        assert!(result.is_some());
+        let result = result.unwrap();
+
         assert!(is_match!(result, &mut Value::Array(_)));
         match result {
             &mut Value::Array(ref ary) => {
@@ -175,6 +193,9 @@ mod test {
         let result = do_resolve!(toml => "example");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &mut Value::Array(_)));
@@ -195,6 +216,9 @@ mod test {
         assert!(result.is_ok());
         let result = result.unwrap();
 
+        assert!(result.is_some());
+        let result = result.unwrap();
+
         assert!(is_match!(result, &mut Value::Integer(1)));
     }
 
@@ -204,6 +228,9 @@ mod test {
         let result = do_resolve!(toml => "example.[4]");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &mut Value::Integer(5)));
@@ -218,6 +245,9 @@ mod test {
         let result = do_resolve!(toml => "table.value");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &mut Value::Integer(42)));
@@ -238,6 +268,9 @@ mod test {
         assert!(result.is_ok());
         let result = result.unwrap();
 
+        assert!(result.is_some());
+        let result = result.unwrap();
+
         assert!(is_match!(result, &mut Value::Integer(42)));
     }
 
@@ -250,6 +283,9 @@ mod test {
         let result = do_resolve!(toml => "table.value1");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &mut Value::Array(_)));
@@ -273,6 +309,9 @@ mod test {
         assert!(result.is_ok());
         let result = result.unwrap();
 
+        assert!(result.is_some());
+        let result = result.unwrap();
+
         assert!(is_match!(result, &mut Value::Integer(42)));
     }
 
@@ -291,6 +330,9 @@ mod test {
         let result = do_resolve!(toml => "table1.value.[0]");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &mut Value::String(_)));
@@ -324,6 +366,9 @@ mod test {
         assert!(result.is_ok());
         let result = result.unwrap();
 
+        assert!(result.is_some());
+        let result = result.unwrap();
+
         assert!(is_match!(result, &mut Value::String(_)));
         match result {
             &mut Value::String(ref s) => assert_eq!("apple", s),
@@ -337,6 +382,9 @@ mod test {
         let result = do_resolve!(toml => "fruit.blah.[0].physical");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &mut Value::Table(_)));
@@ -361,12 +409,18 @@ mod test {
         let result = do_resolve!(toml => "fruit.blah.[1].physical");
 
         assert!(result.is_ok());
-        let mut result = result.unwrap();
+        let result = result.unwrap();
+
+        assert!(result.is_some());
+        let result = result.unwrap();
 
         let tokens = tokenize_with_seperator(&String::from("color"), '.').unwrap();
-        let result = resolve(result, &tokens);
+        let result = resolve(result, &tokens, true);
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &mut Value::String(_)));
@@ -384,6 +438,9 @@ mod test {
         let result = do_resolve!(toml => "example");
 
         assert!(result.is_ok());
+        let result = result.unwrap();
+
+        assert!(result.is_some());
         let result = result.unwrap();
 
         assert!(is_match!(result, &mut Value::Table(_)));
