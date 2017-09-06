@@ -93,8 +93,11 @@ impl TomlValueInsertExt for Value {
         use resolver::mut_creating_resolver::resolve;
 
         let mut tokens = try!(tokenize_with_seperator(query, sep));
-        let last       = tokens.pop_last().unwrap();
-        let mut val    = try!(resolve(self, &tokens));
+        let (mut val, last) = match tokens.pop_last() {
+            None       => (self, Box::new(tokens)),
+            Some(last) => (try!(resolve(self, &tokens)), last),
+
+        };
 
         match *last {
             Token::Identifier { ident, .. } => {
@@ -130,6 +133,33 @@ mod test {
     use super::*;
     use toml::Value;
     use toml::from_str as toml_from_str;
+
+    #[test]
+    fn test_insert_one_token() {
+        use std::collections::BTreeMap;
+        let mut toml = Value::Table(BTreeMap::new());
+
+        let res = toml.insert(&String::from("value"), Value::Integer(1));
+        println!("TOML: {:?}", toml);
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(res.is_none());
+
+        assert!(is_match!(toml, Value::Table(_)));
+        match toml {
+            Value::Table(ref t) => {
+                assert!(!t.is_empty());
+
+                let val = t.get("value");
+                assert!(val.is_some(), "'value' from table {:?} should be Some(_), is None", t);
+                let val = val.unwrap();
+
+                assert!(is_match!(val, &Value::Integer(1)), "Is not one: {:?}", val);
+            },
+            _ => panic!("What just happenend?"),
+        }
+    }
 
     #[test]
     fn test_insert_with_seperator_into_table() {
