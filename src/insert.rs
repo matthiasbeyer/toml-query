@@ -132,6 +132,33 @@ mod test {
     use toml::from_str as toml_from_str;
 
     #[test]
+    fn test_insert_one_token() {
+        use std::collections::BTreeMap;
+        let mut toml = Value::Table(BTreeMap::new());
+
+        let res = toml.insert(&String::from("value"), Value::Integer(1));
+        println!("TOML: {:?}", toml);
+        assert!(res.is_ok());
+
+        let res = res.unwrap();
+        assert!(res.is_none());
+
+        assert!(is_match!(toml, Value::Table(_)));
+        match toml {
+            Value::Table(ref t) => {
+                assert!(!t.is_empty());
+
+                let val = t.get("value");
+                assert!(val.is_some(), "'value' from table {:?} should be Some(_), is None", t);
+                let val = val.unwrap();
+
+                assert!(is_match!(val, &Value::Integer(1)), "Is not one: {:?}", val);
+            },
+            _ => panic!("What just happenend?"),
+        }
+    }
+
+    #[test]
     fn test_insert_with_seperator_into_table() {
         let mut toml : Value = toml_from_str(r#"
         [table]
