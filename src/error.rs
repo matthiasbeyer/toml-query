@@ -81,5 +81,15 @@ error_chain! {
             display("Cannot delete in array at {}, array has length {}", idx, arrlen)
         }
 
+        TypeError(requested: &'static str, got: &'static str) {
+            description("Type error")
+            display("Type Error. Requested {}, but got {}", requested, got)
+        }
+
+        NotAvailable(query: String) {
+            description("Value missing error")
+            display("Value at '{}' not there", query)
+        }
+
     }
 }
