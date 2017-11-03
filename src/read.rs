@@ -43,6 +43,53 @@ impl<'doc> TomlValueReadExt<'doc> for Value {
 
 }
 
+pub trait TomlValueReadTypeExt<'doc> {
+    fn read_string(&'doc self, query: &str) -> Result<String>;
+    fn read_int(&'doc self, query: &str) -> Result<i64>;
+    fn read_float(&'doc self, query: &str) -> Result<f64>;
+    fn read_bool(&'doc self, query: &str) -> Result<bool>;
+}
+
+macro_rules! make_type_getter {
+    ($fnname:ident, $type:ty, $typename:expr, $matcher:pat => $impl:expr) => {
+        fn $fnname(&'doc self, query: &str) -> Result<$type> {
+            self.read_with_seperator(query, '.').and_then(|o| match o {
+                $matcher => $impl,
+                Some(o)  => Err(ErrorKind::TypeError($typename, type_to_name(o)).into()),
+                None     => Err(ErrorKind::NotAvailable(String::from(query)).into()),
+            })
+        }
+    };
+}
+
+impl<'doc, T> TomlValueReadTypeExt<'doc> for T
+    where T: TomlValueReadExt<'doc>
+{
+    make_type_getter!(read_string, String, "String",
+                      Some(&Value::String(ref obj)) => Ok(obj.clone()));
+
+    make_type_getter!(read_int, i64, "Integer",
+                      Some(&Value::Integer(obj)) => Ok(obj));
+
+    make_type_getter!(read_float, f64, "Float",
+                      Some(&Value::Float(obj)) => Ok(obj));
+
+    make_type_getter!(read_bool, bool, "Boolean",
+                      Some(&Value::Boolean(obj)) => Ok(obj));
+}
+
+fn type_to_name(obj: &Value) -> &'static str {
+    match *obj {
+        Value::String(_)   => "String",
+        Value::Integer(_)  => "Integer",
+        Value::Float(_)    => "Float",
+        Value::Boolean(_)  => "Boolean",
+        Value::Datetime(_) => "Datetime",
+        Value::Array(_)    => "Array",
+        Value::Table(_)    => "Table",
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -205,6 +252,26 @@ mod test {
         let err = val.unwrap_err();
 
         assert!(is_match!(err.kind(), &ErrorKind::NoIndexInTable(_)));
+    }
+
+}
+
+#[cfg(test)]
+mod high_level_fn_test {
+    use super::*;
+    use toml::from_str as toml_from_str;
+
+    #[test]
+    fn test_read_table_value() {
+        let toml : Value = toml_from_str(r#"
+        [table]
+        a = 1
+        "#).unwrap();
+
+        let val  = toml.read_int(&String::from("table.a"));
+
+        assert!(val.is_ok());
+        assert_eq!(val.unwrap(), 1);
     }
 
 }
