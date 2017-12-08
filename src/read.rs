@@ -55,7 +55,7 @@ macro_rules! make_type_getter {
         fn $fnname(&'doc self, query: &str) -> Result<$type> {
             self.read_with_seperator(query, '.').and_then(|o| match o {
                 $matcher => $impl,
-                Some(o)  => Err(ErrorKind::TypeError($typename, type_to_name(o)).into()),
+                Some(o)  => Err(ErrorKind::TypeError($typename, ::util::name_of_val(&o)).into()),
                 None     => Err(ErrorKind::NotAvailable(String::from(query)).into()),
             })
         }
@@ -76,18 +76,6 @@ impl<'doc, T> TomlValueReadTypeExt<'doc> for T
 
     make_type_getter!(read_bool, bool, "Boolean",
                       Some(&Value::Boolean(obj)) => Ok(obj));
-}
-
-fn type_to_name(obj: &Value) -> &'static str {
-    match *obj {
-        Value::String(_)   => "String",
-        Value::Integer(_)  => "Integer",
-        Value::Float(_)    => "Float",
-        Value::Boolean(_)  => "Boolean",
-        Value::Datetime(_) => "Datetime",
-        Value::Array(_)    => "Array",
-        Value::Table(_)    => "Table",
-    }
 }
 
 #[cfg(test)]

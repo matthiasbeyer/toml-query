@@ -78,15 +78,7 @@ impl TomlValueDeleteExt for Value {
 
         #[inline]
         fn name_of_val(val: Option<&Value>) -> &'static str {
-            val.map(|v| match v {
-                &Value::Array(_)    => "Array",
-                &Value::Boolean(_)  => "Boolean",
-                &Value::Datetime(_) => "Datetime",
-                &Value::Float(_)    => "Float",
-                &Value::Integer(_)  => "Integer",
-                &Value::String(_)   => "String",
-                &Value::Table(_)    => "Table",
-            }).unwrap_or("None")
+            val.map(::util::name_of_val).unwrap_or("None")
         }
 
         if last_token.is_none() {
