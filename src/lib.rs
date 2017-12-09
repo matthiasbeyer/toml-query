@@ -31,6 +31,7 @@ pub mod set;
 pub mod insert;
 pub mod delete;
 pub mod value;
+mod util;
 
 // private modules
 
