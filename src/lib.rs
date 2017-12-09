@@ -14,12 +14,17 @@
 extern crate regex;
 extern crate toml;
 
+#[cfg(feature = "log")]
+#[macro_use] extern crate log;
+
 #[cfg(test)]
 #[macro_use] extern crate quickcheck;
 
 // public modules
 
+#[cfg(not(feature = "log"))]
 #[macro_use] pub mod log;
+
 pub mod error;
 pub mod read;
 pub mod set;
