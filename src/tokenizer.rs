@@ -156,11 +156,10 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
         }
 
         if !has_array_brackets(s) {
-            trace!("returning Ok(Identifier{ident: {:?}, next: None})", s);
+            trace!("returning Ok(Identifier(ident: {:?}, next: None))", s);
             return Ok(Token::Identifier { ident: String::from(s), next: None });
         }
 
-        trace!("Capturing with Regex: {:?}", RE);
         match RE.captures(s) {
             None => return Err(Error::from(ErrorKind::ArrayAccessWithoutIndex)),
             Some(captures) => {
@@ -175,7 +174,7 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
 
                         let i : usize = FromStr::from_str(&mtch).unwrap(); // save because regex
 
-                        trace!("returning Ok(Index {idx: {}, next: None}", i);
+                        trace!("returning Ok(Index(idx: {}, next: None)", i);
                         Ok(Token::Index {
                             idx: i,
                             next: None,
