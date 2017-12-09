@@ -15,6 +15,11 @@ matrix:
   allow_failures:
     - rust: nightly
 cache: cargo
+
+script:
+  - cargo build --all-features --verbose -j 1
+  - cargo test  --all-features --verbose -j 1
+
 notifications:
   irc:
     channels:
