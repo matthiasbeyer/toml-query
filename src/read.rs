@@ -51,10 +51,10 @@ pub trait TomlValueReadTypeExt<'doc> {
 }
 
 macro_rules! make_type_getter {
-    ($fnname:ident, $type:ty, $typename:expr, $matcher:pat => $impl:expr) => {
-        fn $fnname(&'doc self, query: &str) -> Result<$type> {
+    ($fnname:ident, $rettype:ty, $typename:expr, $matcher:pat => $implementation:expr) => {
+        fn $fnname(&'doc self, query: &str) -> Result<$rettype> {
             self.read_with_seperator(query, '.').and_then(|o| match o {
-                $matcher => $impl,
+                $matcher => $implementation,
                 Some(o)  => Err(ErrorKind::TypeError($typename, ::util::name_of_val(&o)).into()),
                 None     => Err(ErrorKind::NotAvailable(String::from(query)).into()),
             })
