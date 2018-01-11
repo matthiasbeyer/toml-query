@@ -5,6 +5,8 @@ that version.
 
 # Next
 
+* Minimum required rust compiler version is now 1.20.0
+* Dependencies were updated
 * Added method for requesting a type directly from the TOML document:
   The method returns the requested type directly, or fails with
   `Err(_)` and appropriate message:
