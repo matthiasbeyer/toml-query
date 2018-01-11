@@ -45,7 +45,7 @@ impl TomlValueSetExt for Value {
         let mut tokens = try!(tokenize_with_seperator(query, sep));
         let last = tokens.pop_last();
 
-        let mut val = try!(resolve(self, &tokens, true))
+        let val = try!(resolve(self, &tokens, true))
             .unwrap(); // safe because of resolve() guarantees
         let last = last.unwrap_or_else(|| Box::new(tokens));
 

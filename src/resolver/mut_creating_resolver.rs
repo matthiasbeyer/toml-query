@@ -386,7 +386,7 @@ mod test {
         let result = do_resolve!(toml => "fruit.blah.[1].physical");
 
         assert!(result.is_ok());
-        let mut result = result.unwrap();
+        let result = result.unwrap();
 
         let tokens = tokenize_with_seperator(&String::from("color"), '.').unwrap();
         let result = resolve(result, &tokens);
