@@ -93,7 +93,7 @@ impl TomlValueInsertExt for Value {
         use resolver::mut_creating_resolver::resolve;
 
         let mut tokens = try!(tokenize_with_seperator(query, sep));
-        let (mut val, last) = match tokens.pop_last() {
+        let (val, last) = match tokens.pop_last() {
             None       => (self, Box::new(tokens)),
             Some(last) => (try!(resolve(self, &tokens)), last),
 
