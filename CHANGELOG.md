@@ -5,6 +5,8 @@ that version.
 
 # Next
 
+* `TomlValueReadTypeExt` requires now `TomlValueReadExt`.
+
 # 0.5.0
 
 * Minimum required rust compiler version is now 1.20.0
