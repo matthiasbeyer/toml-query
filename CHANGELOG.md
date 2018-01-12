@@ -5,6 +5,8 @@ that version.
 
 # Next
 
+# 0.6.0
+
 * `TomlValueReadTypeExt` requires now `TomlValueReadExt`.
 * Changed API semantics for the typed read API: The functions return
   `Result<Option<_>>` again, not only `Result<_>`
