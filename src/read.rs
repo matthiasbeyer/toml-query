@@ -43,7 +43,7 @@ impl<'doc> TomlValueReadExt<'doc> for Value {
 
 }
 
-pub trait TomlValueReadTypeExt<'doc> {
+pub trait TomlValueReadTypeExt<'doc> : TomlValueReadExt<'doc> {
     fn read_string(&'doc self, query: &str) -> Result<String>;
     fn read_int(&'doc self, query: &str) -> Result<i64>;
     fn read_float(&'doc self, query: &str) -> Result<f64>;
