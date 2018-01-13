@@ -17,6 +17,9 @@ extern crate toml;
 #[cfg(feature = "log")]
 #[macro_use] extern crate log;
 
+#[cfg(feature = "typed")]
+extern crate serde;
+
 #[cfg(test)]
 #[macro_use] extern crate quickcheck;
 

@@ -1,5 +1,7 @@
 /// The Toml Set extensions
 
+#[cfg(feature = "typed")]
+use serde::Serialize;
 use toml::Value;
 
 use tokenizer::tokenize_with_seperator;
@@ -33,6 +35,13 @@ pub trait TomlValueSetExt {
     /// See documentation of `TomlValueSetExt::set_with_seperator`
     fn set(&mut self, query: &str, value: Value) -> Result<Option<Value>> {
         self.set_with_seperator(query, '.', value)
+    }
+
+    /// A convenience method for setting any arbitrary serializable value.
+    #[cfg(feature = "typed")]
+    fn set_serialized<S: Serialize>(&mut self, query: &str, value: S) -> Result<Option<Value>> {
+        let value = Value::try_from(value)?;
+        self.set(query, value)
     }
 
 }

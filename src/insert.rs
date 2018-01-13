@@ -1,5 +1,7 @@
 /// The Toml Insert extensions
 
+#[cfg(feature = "typed")]
+use serde::Serialize;
 use toml::Value;
 
 use tokenizer::Token;
@@ -83,6 +85,13 @@ pub trait TomlValueInsertExt {
     /// See documentation of `TomlValueinsertExt::insert_with_seperator`
     fn insert(&mut self, query: &str, value: Value) -> Result<Option<Value>> {
         self.insert_with_seperator(query, '.', value)
+    }
+
+    /// A convenience method for inserting any arbitrary serializable value.
+    #[cfg(feature = "typed")]
+    fn insert_serialized<S: Serialize>(&mut self, query: &str, value: S) -> Result<Option<Value>> {
+        let value = Value::try_from(value)?;
+        self.insert(query, value)
     }
 
 }
