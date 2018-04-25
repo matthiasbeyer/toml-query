@@ -415,5 +415,49 @@ mod test {
         assert!(is_match!(res.kind(), &ErrorKind::QueryingValueAsArray(_)));
     }
 
+    #[cfg(feature = "typed")]
+    #[test]
+    fn test_serialize() {
+        use std::collections::BTreeMap;
+        use insert::TomlValueInsertExt;
+        use read::TomlValueReadExt;
+
+        #[derive(Serialize, Deserialize, Debug)]
+        struct Test {
+            a: u64,
+            s: String,
+        }
+
+        let mut toml = Value::Table(BTreeMap::new());
+        let test     = Test {
+            a: 15,
+            s: String::from("Helloworld"),
+        };
+
+        assert!(toml.insert_serialized("table.value", test).unwrap().is_none());
+
+        eprintln!("{:#}", toml);
+
+        match toml {
+            Value::Table(ref tab) => match tab.get("table").unwrap() {
+                &Value::Table(ref inner) => {
+                    match inner.get("value").unwrap() {
+                        &Value::Table(ref data) => {
+                            assert!(is_match!(data.get("a").unwrap(), &Value::Integer(15)));
+                            match data.get("s").unwrap() {
+                                &Value::String(ref s) => assert_eq!(s, "Helloworld"),
+                                _ => assert!(false),
+                            };
+                        }
+                        _ => assert!(false),
+                    }
+                },
+                _ => assert!(false)
+            },
+            _ => assert!(false),
+        }
+
+    }
+
 }
 
