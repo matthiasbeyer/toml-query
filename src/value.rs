@@ -29,25 +29,25 @@ pub trait TomlValueExt<'doc> :
 
     /// See documentation of `TomlValueReadExt`
     #[inline]
-    fn read_with_seperator(&'doc self, query: &String, sep: char) -> Result<Option<&'doc Value>> {
+    fn read_with_seperator(&'doc self, query: &str, sep: char) -> Result<Option<&'doc Value>> {
         TomlValueReadExt::read_with_seperator(self, query, sep)
     }
 
     /// See documentation of `TomlValueReadExt`
     #[inline]
-    fn read_mut_with_seperator(&'doc mut self, query: &String, sep: char) -> Result<Option<&'doc mut Value>> {
+    fn read_mut_with_seperator(&'doc mut self, query: &str, sep: char) -> Result<Option<&'doc mut Value>> {
         TomlValueReadExt::read_mut_with_seperator(self, query, sep)
     }
 
     /// See documentation of `TomlValueReadExt`
     #[inline]
-    fn read(&'doc self, query: &String) -> Result<Option<&'doc Value>> {
+    fn read(&'doc self, query: &str) -> Result<Option<&'doc Value>> {
         TomlValueReadExt::read_with_seperator(self, query, '.')
     }
 
     /// See documentation of `TomlValueReadExt`
     #[inline]
-    fn read_mut(&'doc mut self, query: &String) -> Result<Option<&'doc mut Value>> {
+    fn read_mut(&'doc mut self, query: &str) -> Result<Option<&'doc mut Value>> {
         TomlValueReadExt::read_mut_with_seperator(self, query, '.')
     }
 
@@ -57,13 +57,13 @@ pub trait TomlValueExt<'doc> :
 
     /// See documentation of `TomlValueSetExt`
     #[inline]
-    fn set_with_seperator(&mut self, query: &String, sep: char, value: Value) -> Result<Option<Value>> {
+    fn set_with_seperator(&mut self, query: &str, sep: char, value: Value) -> Result<Option<Value>> {
         TomlValueSetExt::set_with_seperator(self, query, sep, value)
     }
 
     /// See documentation of `TomlValueSetExt`
     #[inline]
-    fn set(&mut self, query: &String, value: Value) -> Result<Option<Value>> {
+    fn set(&mut self, query: &str, value: Value) -> Result<Option<Value>> {
         TomlValueSetExt::set_with_seperator(self, query, '.', value)
     }
 
@@ -73,13 +73,13 @@ pub trait TomlValueExt<'doc> :
 
     /// See documentation of `TomlValueDeleteExt`
     #[inline]
-    fn delete_with_seperator(&mut self, query: &String, sep: char) -> Result<Option<Value>> {
+    fn delete_with_seperator(&mut self, query: &str, sep: char) -> Result<Option<Value>> {
         TomlValueDeleteExt::delete_with_seperator(self, query, sep)
     }
 
     /// See documentation of `TomlValueDeleteExt`
     #[inline]
-    fn delete(&mut self, query: &String) -> Result<Option<Value>> {
+    fn delete(&mut self, query: &str) -> Result<Option<Value>> {
         TomlValueDeleteExt::delete(self, query)
     }
 
@@ -89,13 +89,13 @@ pub trait TomlValueExt<'doc> :
 
     /// See documentation of `TomlValueInsertExt`
     #[inline]
-    fn insert_with_seperator(&mut self, query: &String, sep: char, value: Value) -> Result<Option<Value>> {
+    fn insert_with_seperator(&mut self, query: &str, sep: char, value: Value) -> Result<Option<Value>> {
         TomlValueInsertExt::insert_with_seperator(self, query, sep, value)
     }
 
     /// See documentation of `TomlValueInsertExt`
     #[inline]
-    fn insert(&mut self, query: &String, value: Value) -> Result<Option<Value>> {
+    fn insert(&mut self, query: &str, value: Value) -> Result<Option<Value>> {
         TomlValueInsertExt::insert(self, query, value)
     }
 }
