@@ -281,5 +281,30 @@ mod high_level_fn_test {
         assert_eq!(val, 1);
     }
 
+    #[cfg(feature = "typed")]
+    #[test]
+    fn test_deser() {
+        use std::collections::BTreeMap;
+        use insert::TomlValueInsertExt;
+        use read::TomlValueReadExt;
+
+        #[derive(Serialize, Deserialize, Debug)]
+        struct Test {
+            a: u64,
+            s: String,
+        }
+
+        let mut toml = Value::Table(BTreeMap::new());
+        let test     = Test {
+            a: 15,
+            s: String::from("Helloworld"),
+        };
+
+        assert!(toml.insert_serialized("table.value", test).unwrap().is_none());
+        let val : Test = toml.read_deserialized("table.value").unwrap().unwrap();
+
+        assert!(true);
+    }
+
 }
 
