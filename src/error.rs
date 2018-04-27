@@ -5,6 +5,11 @@ error_chain! {
         Error, ErrorKind, ResultExt, Result;
     }
 
+    foreign_links {
+        TomlSerialize(::toml::ser::Error) #[cfg(feature = "typed")];
+        TomlDeserialize(::toml::de::Error) #[cfg(feature = "typed")];
+    }
+
     errors {
 
         // Errors for tokenizer
@@ -92,4 +97,5 @@ error_chain! {
         }
 
     }
+
 }

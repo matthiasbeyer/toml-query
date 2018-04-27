@@ -1,5 +1,7 @@
 /// The Toml Read extensions
 
+#[cfg(feature = "typed")]
+use serde::Deserialize;
 use toml::Value;
 
 use tokenizer::tokenize_with_seperator;
@@ -25,6 +27,18 @@ pub trait TomlValueReadExt<'doc> {
         self.read_mut_with_seperator(query, '.')
     }
 
+    #[cfg(feature = "typed")]
+    fn read_deserialized<'de, D: Deserialize<'de>>(&'doc self, query: &str) -> Result<Option<D>> {
+        let raw = self.read(query)?;
+
+        match raw {
+            Some(value) => {
+                let deserialized = value.clone().try_into()?;
+                Ok(Some(deserialized))
+            } 
+            None => Ok(None)
+        }
+    }
 }
 
 impl<'doc> TomlValueReadExt<'doc> for Value {
@@ -252,6 +266,44 @@ mod high_level_fn_test {
         let val = toml.read_int("table.a").unwrap();
 
         assert_eq!(val.unwrap(), 1);
+    }
+
+    #[cfg(feature = "typed")]
+    #[test]
+    fn test_name() {
+        let toml : Value = toml_from_str(r#"
+        [table]
+        a = 1
+        "#).unwrap();
+
+        let val: u32 = toml.read_deserialized("table.a").unwrap().unwrap();
+
+        assert_eq!(val, 1);
+    }
+
+    #[cfg(feature = "typed")]
+    #[test]
+    fn test_deser() {
+        use std::collections::BTreeMap;
+        use insert::TomlValueInsertExt;
+        use read::TomlValueReadExt;
+
+        #[derive(Serialize, Deserialize, Debug)]
+        struct Test {
+            a: u64,
+            s: String,
+        }
+
+        let mut toml = Value::Table(BTreeMap::new());
+        let test     = Test {
+            a: 15,
+            s: String::from("Helloworld"),
+        };
+
+        assert!(toml.insert_serialized("table.value", test).unwrap().is_none());
+        let val : Test = toml.read_deserialized("table.value").unwrap().unwrap();
+
+        assert!(true);
     }
 
 }

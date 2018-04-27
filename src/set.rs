@@ -1,5 +1,7 @@
 /// The Toml Set extensions
 
+#[cfg(feature = "typed")]
+use serde::Serialize;
 use toml::Value;
 
 use tokenizer::tokenize_with_seperator;
@@ -33,6 +35,13 @@ pub trait TomlValueSetExt {
     /// See documentation of `TomlValueSetExt::set_with_seperator`
     fn set(&mut self, query: &str, value: Value) -> Result<Option<Value>> {
         self.set_with_seperator(query, '.', value)
+    }
+
+    /// A convenience method for setting any arbitrary serializable value.
+    #[cfg(feature = "typed")]
+    fn set_serialized<S: Serialize>(&mut self, query: &str, value: S) -> Result<Option<Value>> {
+        let value = Value::try_from(value)?;
+        self.set(query, value)
     }
 
 }
@@ -404,6 +413,50 @@ mod test {
         let res = res.unwrap_err();
 
         assert!(is_match!(res.kind(), &ErrorKind::QueryingValueAsArray(_)));
+    }
+
+    #[cfg(feature = "typed")]
+    #[test]
+    fn test_serialize() {
+        use std::collections::BTreeMap;
+        use insert::TomlValueInsertExt;
+        use read::TomlValueReadExt;
+
+        #[derive(Serialize, Deserialize, Debug)]
+        struct Test {
+            a: u64,
+            s: String,
+        }
+
+        let mut toml = Value::Table(BTreeMap::new());
+        let test     = Test {
+            a: 15,
+            s: String::from("Helloworld"),
+        };
+
+        assert!(toml.insert_serialized("table.value", test).unwrap().is_none());
+
+        eprintln!("{:#}", toml);
+
+        match toml {
+            Value::Table(ref tab) => match tab.get("table").unwrap() {
+                &Value::Table(ref inner) => {
+                    match inner.get("value").unwrap() {
+                        &Value::Table(ref data) => {
+                            assert!(is_match!(data.get("a").unwrap(), &Value::Integer(15)));
+                            match data.get("s").unwrap() {
+                                &Value::String(ref s) => assert_eq!(s, "Helloworld"),
+                                _ => assert!(false),
+                            };
+                        }
+                        _ => assert!(false),
+                    }
+                },
+                _ => assert!(false)
+            },
+            _ => assert!(false),
+        }
+
     }
 
 }
