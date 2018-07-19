@@ -5,6 +5,15 @@ that version.
 
 # Next
 
+# 0.7.0
+
+* API CHANGE: The `read`, `set`, `delete` and `insert` function took a
+  `&String` before for the value path. This changed, they now want a `&str`.
+  Existing Code _should_ work, as `String` derefs to `&str`.
+* Dependencies "error-chain" and "regex" were updated (thanks Bruce Mitchener)
+* Automatic de/serialization was added (See the new
+  {read,insert,delete,set}_serialize functions)
+
 # 0.6.0
 
 * `TomlValueReadTypeExt` requires now `TomlValueReadExt`.
