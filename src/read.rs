@@ -5,7 +5,7 @@ use serde::Deserialize;
 use toml::Value;
 
 use tokenizer::tokenize_with_seperator;
-use error::*;
+use error::{Error, Result};
 
 pub trait TomlValueReadExt<'doc> {
 
@@ -33,9 +33,9 @@ pub trait TomlValueReadExt<'doc> {
 
         match raw {
             Some(value) => {
-                let deserialized = value.clone().try_into()?;
+                let deserialized = value.clone().try_into().map_err(Error::TomlDeserialize)?;
                 Ok(Some(deserialized))
-            } 
+            }
             None => Ok(None)
         }
     }
@@ -69,7 +69,7 @@ macro_rules! make_type_getter {
         fn $fnname(&'doc self, query: &str) -> Result<Option<$rettype>> {
             self.read_with_seperator(query, '.').and_then(|o| match o {
                 $matcher => Ok(Some($implementation)),
-                Some(o)  => Err(ErrorKind::TypeError($typename, ::util::name_of_val(&o)).into()),
+                Some(o)  => Err(Error::TypeError($typename, ::util::name_of_val(&o)).into()),
                 None     => Ok(None),
             })
         }
@@ -164,7 +164,7 @@ mod test {
         assert!(val.is_err());
         let err = val.unwrap_err();
 
-        assert!(is_match!(err.kind(), &ErrorKind::NoIndexInTable(_)));
+        assert!(is_match!(err.kind(), &Error::NoIndexInTable(_)));
     }
 
     ///
@@ -246,7 +246,7 @@ mod test {
         assert!(val.is_err());
         let err = val.unwrap_err();
 
-        assert!(is_match!(err.kind(), &ErrorKind::NoIndexInTable(_)));
+        assert!(is_match!(err.kind(), &Error::NoIndexInTable(_)));
     }
 
 }

@@ -4,7 +4,7 @@ use std::ops::IndexMut;
 
 use toml::Value;
 use tokenizer::Token;
-use error::*;
+use error::{Error, Result};
 
 /// Resolves the path in the passed document recursively
 ///
@@ -19,8 +19,7 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token, error_if_not_found: 
                 &Token::Identifier { ref ident, .. } => {
                     match t.get_mut(ident) {
                         None => if error_if_not_found {
-                            let err = ErrorKind::IdentifierNotFoundInDocument(ident.to_owned());
-                            return Err(Error::from(err))
+                            return Err(Error::IdentifierNotFoundInDocument(ident.to_owned()))
                         } else {
                             Ok(None)
                         },
@@ -31,10 +30,7 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token, error_if_not_found: 
                     }
                 },
 
-                &Token::Index { idx, .. } => {
-                    let kind = ErrorKind::NoIndexInTable(idx);
-                    Err(Error::from(kind))
-                },
+                &Token::Index { idx, .. } => Err(Error::NoIndexInTable(idx)),
             }
         },
 
@@ -47,20 +43,14 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token, error_if_not_found: 
                     }
                 },
                 &Token::Identifier { ref ident, .. } => {
-                    let kind = ErrorKind::NoIdentifierInArray(ident.clone());
-                    Err(Error::from(kind))
+                    Err(Error::NoIdentifierInArray(ident.clone()))
                 },
             }
         },
 
         _ => match tokens {
-            &Token::Identifier { ref ident, .. } => {
-                Err(Error::from(ErrorKind::QueryingValueAsTable(ident.clone())))
-            },
-
-            &Token::Index { idx, .. } => {
-                Err(Error::from(ErrorKind::QueryingValueAsArray(idx)))
-            },
+            &Token::Identifier { ref ident, .. } => Err(Error::QueryingValueAsTable(ident.clone())),
+            &Token::Index { idx, .. }            => Err(Error::QueryingValueAsArray(idx)),
         }
     }
 }
@@ -88,7 +78,7 @@ mod test {
         let result = result.unwrap_err();
 
         let errkind = result.kind();
-        assert!(is_match!(errkind, &ErrorKind::IdentifierNotFoundInDocument { .. }));
+        assert!(is_match!(errkind, &Error::IdentifierNotFoundInDocument { .. }));
     }
 
     #[test]
@@ -461,7 +451,7 @@ mod test {
         let result = result.unwrap_err();
 
         let errkind = result.kind();
-        assert!(is_match!(errkind, &ErrorKind::IdentifierNotFoundInDocument { .. }));
+        assert!(is_match!(errkind, &Error::IdentifierNotFoundInDocument { .. }));
     }
 
     #[test]
@@ -475,7 +465,7 @@ mod test {
         let result = result.unwrap_err();
 
         let errkind = result.kind();
-        assert!(is_match!(errkind, &ErrorKind::NoIndexInTable { .. }));
+        assert!(is_match!(errkind, &Error::NoIndexInTable { .. }));
     }
 
     #[test]
@@ -490,7 +480,7 @@ mod test {
         let result = result.unwrap_err();
 
         let errkind = result.kind();
-        assert!(is_match!(errkind, &ErrorKind::NoIdentifierInArray { .. }));
+        assert!(is_match!(errkind, &Error::NoIdentifierInArray { .. }));
     }
 
     #[test]
@@ -505,7 +495,7 @@ mod test {
         let result = result.unwrap_err();
 
         let errkind = result.kind();
-        assert!(is_match!(errkind, &ErrorKind::QueryingValueAsTable { .. }));
+        assert!(is_match!(errkind, &Error::QueryingValueAsTable { .. }));
     }
 
     #[test]
@@ -520,7 +510,7 @@ mod test {
         let result = result.unwrap_err();
 
         let errkind = result.kind();
-        assert!(is_match!(errkind, &ErrorKind::QueryingValueAsArray { .. }));
+        assert!(is_match!(errkind, &Error::QueryingValueAsArray { .. }));
     }
 
 }

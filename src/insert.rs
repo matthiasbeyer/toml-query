@@ -6,7 +6,7 @@ use toml::Value;
 
 use tokenizer::Token;
 use tokenizer::tokenize_with_seperator;
-use error::*;
+use error::{Error, Result};
 
 pub trait TomlValueInsertExt {
 
@@ -90,7 +90,7 @@ pub trait TomlValueInsertExt {
     /// A convenience method for inserting any arbitrary serializable value.
     #[cfg(feature = "typed")]
     fn insert_serialized<S: Serialize>(&mut self, query: &str, value: S) -> Result<Option<Value>> {
-        let value = Value::try_from(value)?;
+        let value = Value::try_from(value).map_err(Error::TomlSerialize)?;
         self.insert(query, value)
     }
 
@@ -114,7 +114,7 @@ impl TomlValueInsertExt for Value {
                     &mut Value::Table(ref mut t) => {
                         Ok(t.insert(ident, value))
                     },
-                    _ => Err(Error::from(ErrorKind::NoIdentifierInArray(ident.clone())))
+                    _ => Err(Error::NoIdentifierInArray(ident.clone()))
                 }
             },
 
@@ -129,7 +129,7 @@ impl TomlValueInsertExt for Value {
                             Ok(None)
                         }
                     },
-                    _ => Err(Error::from(ErrorKind::NoIndexInTable(idx)))
+                    _ => Err(Error::NoIndexInTable(idx))
                 }
             },
         }
@@ -321,7 +321,7 @@ mod test {
         assert!(res.is_err());
 
         let err = res.unwrap_err();
-        assert!(is_match!(err.kind(), &ErrorKind::NoIdentifierInArray(_)));
+        assert!(is_match!(err.kind(), &Error::NoIdentifierInArray(_)));
     }
 
     #[test]
@@ -335,7 +335,7 @@ mod test {
         assert!(res.is_err());
 
         let err = res.unwrap_err();
-        assert!(is_match!(err.kind(), &ErrorKind::NoIndexInTable(_)));
+        assert!(is_match!(err.kind(), &Error::NoIndexInTable(_)));
     }
 
     #[test]

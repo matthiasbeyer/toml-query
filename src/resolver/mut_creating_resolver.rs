@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 
 use toml::Value;
 use tokenizer::Token;
-use error::*;
+use error::{Error, Result};
 
 pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut Value> {
 
@@ -41,19 +41,13 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut 
                         }
                     }
                 },
-                &mut Value::Array(_) => {
-                    let kind = ErrorKind::NoIdentifierInArray(ident.clone());
-                    Err(Error::from_kind(kind))
-                }
+                &mut Value::Array(_) => Err(Error::NoIdentifierInArray(ident.clone())),
                 _ => unimplemented!()
             }
         }
         Token::Index { idx , .. } => {
             match toml {
-                &mut Value::Table(_) => {
-                    let kind = ErrorKind::NoIndexInTable(idx);
-                    Err(Error::from_kind(kind))
-                },
+                &mut Value::Table(_) => Err(Error::NoIndexInTable(idx)),
                 &mut Value::Array(ref mut ary) => {
                     if ary.len() > idx {
                         match tokens.next() {
