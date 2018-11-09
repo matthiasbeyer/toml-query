@@ -408,7 +408,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::CannotDeleteNonEmptyTable(_)));
+        assert!(is_match!(res, Error::CannotDeleteNonEmptyTable(_)));
     }
 
     #[test]
@@ -422,7 +422,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::CannotDeleteNonEmptyArray(_)));
+        assert!(is_match!(res, Error::CannotDeleteNonEmptyArray(_)));
     }
 
     #[test]
@@ -529,7 +529,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::QueryingValueAsTable(_)));
+        assert!(is_match!(res, Error::QueryingValueAsTable(_)));
     }
 
     #[test]
@@ -546,7 +546,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::QueryingValueAsArray(_)));
+        assert!(is_match!(res, Error::QueryingValueAsArray(_)));
     }
 
     #[test]
@@ -560,7 +560,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::NoIndexInTable(0)));
+        assert!(is_match!(res, Error::NoIndexInTable(0)));
     }
 
     #[test]
@@ -574,7 +574,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::NoIdentifierInArray(_)));
+        assert!(is_match!(res, Error::NoIdentifierInArray(_)));
     }
 
     #[test]
@@ -588,7 +588,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::ArrayIndexOutOfBounds(22, 3)));
+        assert!(is_match!(res, Error::ArrayIndexOutOfBounds(22, 3)));
     }
 
     #[test]
@@ -602,7 +602,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::CannotDeleteNonEmptyArray(None)));
+        assert!(is_match!(res, Error::CannotDeleteNonEmptyArray(None)));
     }
 
     #[test]
@@ -616,7 +616,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::CannotDeleteNonEmptyTable(None)));
+        assert!(is_match!(res, Error::CannotDeleteNonEmptyTable(None)));
     }
 
     #[test]
@@ -633,7 +633,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::CannotDeleteNonEmptyTable(None)));
+        assert!(is_match!(res, Error::CannotDeleteNonEmptyTable(None)));
     }
 
     #[test]
@@ -647,7 +647,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::QueryingValueAsTable(_)));
+        assert!(is_match!(res, Error::QueryingValueAsTable(_)));
     }
 
     #[test]
@@ -661,7 +661,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::QueryingValueAsArray(0)));
+        assert!(is_match!(res, Error::QueryingValueAsArray(0)));
     }
 
 }

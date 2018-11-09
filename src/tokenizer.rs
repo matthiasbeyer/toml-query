@@ -259,8 +259,7 @@ mod test {
         assert!(tokens.is_err());
         let tokens = tokens.unwrap_err();
 
-        let errkind = tokens.kind();
-        assert!(is_match!(errkind, &Error::EmptyQueryError { .. }));
+        assert!(is_match!(tokens, Error::EmptyQueryError { .. }));
     }
 
     #[test]
@@ -269,8 +268,7 @@ mod test {
         assert!(tokens.is_err());
         let tokens = tokens.unwrap_err();
 
-        let errkind = tokens.kind();
-        assert!(is_match!(errkind, &Error::EmptyIdentifier { .. }));
+        assert!(is_match!(tokens, Error::EmptyIdentifier { .. }));
     }
 
     #[test]
@@ -279,8 +277,7 @@ mod test {
         assert!(tokens.is_err());
         let tokens = tokens.unwrap_err();
 
-        let errkind = tokens.kind();
-        assert!(is_match!(errkind, &Error::ArrayAccessWithoutIndex { .. }));
+        assert!(is_match!(tokens, Error::ArrayAccessWithoutIndex { .. }));
     }
 
     #[test]
@@ -289,8 +286,7 @@ mod test {
         assert!(tokens.is_err());
         let tokens = tokens.unwrap_err();
 
-        let errkind = tokens.kind();
-        assert!(is_match!(errkind, &Error::ArrayAccessWithoutIndex { .. }));
+        assert!(is_match!(tokens, Error::ArrayAccessWithoutIndex { .. }));
     }
 
     #[test]
@@ -299,8 +295,7 @@ mod test {
         assert!(tokens.is_err());
         let tokens = tokens.unwrap_err();
 
-        let errkind = tokens.kind();
-        assert!(is_match!(errkind, &Error::ArrayAccessWithoutIndex { .. }));
+        assert!(is_match!(tokens, Error::ArrayAccessWithoutIndex { .. }));
     }
 
     #[test]
@@ -387,8 +382,7 @@ mod test {
         assert!(tokens.is_err());
         let tokens = tokens.unwrap_err();
 
-        let errkind = tokens.kind();
-        assert!(is_match!(errkind, &Error::EmptyIdentifier { .. }));
+        assert!(is_match!(tokens, Error::EmptyIdentifier { .. }));
     }
 
     quickcheck! {

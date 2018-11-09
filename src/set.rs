@@ -332,7 +332,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &Error::IdentifierNotFoundInDocument(_)));
+        assert!(is_match!(res, Error::IdentifierNotFoundInDocument(_)));
     }
 
     #[test]
@@ -344,7 +344,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &Error::NoIndexInTable(0)));
+        assert!(is_match!(res, Error::NoIndexInTable(0)));
     }
 
     #[test]
@@ -358,7 +358,7 @@ mod test {
         assert!(res.is_err());
         let res = res.unwrap_err();
 
-        assert!(is_match!(res.kind(), &Error::NoIdentifierInArray(_)));
+        assert!(is_match!(res, Error::NoIdentifierInArray(_)));
     }
 
     #[test]
@@ -372,7 +372,7 @@ mod test {
         assert!(res.is_err());
         let res = res.unwrap_err();
 
-        assert!(is_match!(res.kind(), &Error::NoIndexInTable(_)));
+        assert!(is_match!(res, Error::NoIndexInTable(_)));
     }
 
     #[test]
@@ -386,7 +386,7 @@ mod test {
         assert!(res.is_err());
         let res = res.unwrap_err();
 
-        assert!(is_match!(res.kind(), &Error::QueryingValueAsTable(_)));
+        assert!(is_match!(res, Error::QueryingValueAsTable(_)));
     }
 
     #[test]
@@ -400,7 +400,7 @@ mod test {
         assert!(res.is_err());
         let res = res.unwrap_err();
 
-        assert!(is_match!(res.kind(), &Error::QueryingValueAsArray(_)));
+        assert!(is_match!(res, Error::QueryingValueAsArray(_)));
     }
 
     #[cfg(feature = "typed")]

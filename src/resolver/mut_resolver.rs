@@ -77,8 +77,7 @@ mod test {
         assert!(result.is_err());
         let result = result.unwrap_err();
 
-        let errkind = result.kind();
-        assert!(is_match!(errkind, &Error::IdentifierNotFoundInDocument { .. }));
+        assert!(is_match!(result, Error::IdentifierNotFoundInDocument { .. }));
     }
 
     #[test]
@@ -114,7 +113,8 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::Float(1.0)));
+        assert!(is_match!(result, &mut Value::Float(_)));
+        assert_eq!(result.as_float(), Some(1.0))
     }
 
     #[test]
@@ -191,8 +191,10 @@ mod test {
         assert!(is_match!(result, &mut Value::Array(_)));
         match result {
             &mut Value::Array(ref ary) => {
-                assert_eq!(ary[0], Value::Float(1.0));
-                assert_eq!(ary[1], Value::Float(133.25));
+                assert!(is_match!(ary[0], Value::Float(_)));
+                assert_eq!(ary[0].as_float(), Some(1.0));
+                assert!(is_match!(ary[1], Value::Float(_)));
+                assert_eq!(ary[1].as_float(), Some(133.25));
             },
             _ => panic!("What just happened?"),
         }
@@ -281,8 +283,10 @@ mod test {
         assert!(is_match!(result, &mut Value::Array(_)));
         match result {
             &mut Value::Array(ref ary) => {
-                assert_eq!(ary[0], Value::Float(42.0));
-                assert_eq!(ary[1], Value::Float(50.0));
+                assert!(is_match!(ary[0], Value::Float(_)));
+                assert_eq!(ary[0].as_float(), Some(42.0));
+                assert!(is_match!(ary[1], Value::Float(_)));
+                assert_eq!(ary[1].as_float(), Some(50.0));
             },
             _ => panic!("What just happened?"),
         }
@@ -450,8 +454,7 @@ mod test {
         assert!(result.is_err());
         let result = result.unwrap_err();
 
-        let errkind = result.kind();
-        assert!(is_match!(errkind, &Error::IdentifierNotFoundInDocument { .. }));
+        assert!(is_match!(result, Error::IdentifierNotFoundInDocument { .. }));
     }
 
     #[test]
@@ -464,8 +467,7 @@ mod test {
         assert!(result.is_err());
         let result = result.unwrap_err();
 
-        let errkind = result.kind();
-        assert!(is_match!(errkind, &Error::NoIndexInTable { .. }));
+        assert!(is_match!(result, Error::NoIndexInTable { .. }));
     }
 
     #[test]
@@ -479,8 +481,7 @@ mod test {
         assert!(result.is_err());
         let result = result.unwrap_err();
 
-        let errkind = result.kind();
-        assert!(is_match!(errkind, &Error::NoIdentifierInArray { .. }));
+        assert!(is_match!(result, Error::NoIdentifierInArray { .. }));
     }
 
     #[test]
@@ -494,8 +495,7 @@ mod test {
         assert!(result.is_err());
         let result = result.unwrap_err();
 
-        let errkind = result.kind();
-        assert!(is_match!(errkind, &Error::QueryingValueAsTable { .. }));
+        assert!(is_match!(result, Error::QueryingValueAsTable { .. }));
     }
 
     #[test]
@@ -509,8 +509,7 @@ mod test {
         assert!(result.is_err());
         let result = result.unwrap_err();
 
-        let errkind = result.kind();
-        assert!(is_match!(errkind, &Error::QueryingValueAsArray { .. }));
+        assert!(is_match!(result, Error::QueryingValueAsArray { .. }));
     }
 
 }

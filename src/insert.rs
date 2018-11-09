@@ -321,7 +321,7 @@ mod test {
         assert!(res.is_err());
 
         let err = res.unwrap_err();
-        assert!(is_match!(err.kind(), &Error::NoIdentifierInArray(_)));
+        assert!(is_match!(err, Error::NoIdentifierInArray(_)));
     }
 
     #[test]
@@ -335,7 +335,7 @@ mod test {
         assert!(res.is_err());
 
         let err = res.unwrap_err();
-        assert!(is_match!(err.kind(), &Error::NoIndexInTable(_)));
+        assert!(is_match!(err, Error::NoIndexInTable(_)));
     }
 
     #[test]

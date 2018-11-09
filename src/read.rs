@@ -164,7 +164,7 @@ mod test {
         assert!(val.is_err());
         let err = val.unwrap_err();
 
-        assert!(is_match!(err.kind(), &Error::NoIndexInTable(_)));
+        assert!(is_match!(err, Error::NoIndexInTable(_)));
     }
 
     ///
@@ -246,7 +246,7 @@ mod test {
         assert!(val.is_err());
         let err = val.unwrap_err();
 
-        assert!(is_match!(err.kind(), &Error::NoIndexInTable(_)));
+        assert!(is_match!(err, Error::NoIndexInTable(_)));
     }
 
 }
