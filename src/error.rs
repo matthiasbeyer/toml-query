@@ -1,101 +1,68 @@
 /// Error types
 
-error_chain! {
-    types {
-        Error, ErrorKind, ResultExt, Result;
-    }
+pub type Result<T> = ::std::result::Result<T, Error>;
 
-    foreign_links {
-        TomlSerialize(::toml::ser::Error) #[cfg(feature = "typed")];
-        TomlDeserialize(::toml::de::Error) #[cfg(feature = "typed")];
-    }
+#[derive(Debug, Fail)]
+pub enum Error {
+    #[cfg(feature = "typed")]
+    #[fail(display = "{}", _0)]
+    TomlSerialize(#[cause] ::toml::ser::Error),
 
-    errors {
+    #[cfg(feature = "typed")]
+    #[fail(display = "{}", _0)]
+    TomlDeserialize(#[cause] ::toml::de::Error),
 
-        // Errors for tokenizer
+    // Errors for tokenizer
 
-        QueryParsingError(query: String) {
-            description("parsing the query failed")
-            display("Parsing the query '{}' failed", query)
-        }
+    #[fail(display = "Parsing the query '{}' failed", _0)]
+    QueryParsingError(String),
 
-        EmptyQueryError {
-            description("the query is empty")
-            display("The query on the TOML is empty")
-        }
+    #[fail(display = "The query on the TOML is empty")]
+    EmptyQueryError,
 
-        EmptyIdentifier {
-            description("Query an empty identifier: ''")
-            display("The passed query has an empty identifier")
-        }
+    #[fail(display = "The passed query has an empty identifier")]
+    EmptyIdentifier,
 
-        ArrayAccessWithoutIndex {
-            description("trying to access array without index")
-            display("The passed query tries to access an array but does not specify the index")
-        }
+    #[fail(display = "The passed query tries to access an array but does not specify the index")]
+    ArrayAccessWithoutIndex,
 
-        ArrayAccessWithInvalidIndex {
-            description("trying to pass an invalid index")
-            display("The passed query tries to access an array but does not specify a valid index")
-        }
+    #[fail(display = "The passed query tries to access an array but does not specify a valid index")]
+    ArrayAccessWithInvalidIndex,
 
-        // Errors for Resolver
+    // Errors for Resolver
 
-        IdentifierNotFoundInDocument(ident: String) {
-            description("Identifier missing in document")
-            display("The identfier '{}' is not present in the document", ident)
-        }
+    #[fail(display = "The identfier '{}' is not present in the document", _0)]
+    IdentifierNotFoundInDocument(String),
 
-        NoIndexInTable(i: usize) {
-            description("Cannot deref index from table")
-            display("Got an index query '[{}]' but have table", i)
-        }
+    #[fail(display = "Got an index query '[{}]' but have table", _0)]
+    NoIndexInTable(usize),
 
-        NoIdentifierInArray(s: String) {
-            description("Cannot query identifier in array")
-            display("Got an identifier query '{}' but have array", s)
-        }
+    #[fail(display = "Got an identifier query '{}' but have array", _0)]
+    NoIdentifierInArray(String),
 
-        QueryingValueAsTable(s: String) {
-            description("Querying a table where a value is")
-            display("Got an identifier query '{}' but have value", s)
-        }
+    #[fail(display = "Got an identifier query '{}' but have value", _0)]
+    QueryingValueAsTable(String),
 
-        QueryingValueAsArray(i: usize) {
-            description("Querying a table where a value is")
-            display("Got an index query '{}' but have value", i)
-        }
+    #[fail(display = "Got an index query '{}' but have value", _0)]
+    QueryingValueAsArray(usize),
 
-        CannotDeleteNonEmptyTable(tabname: Option<String>) {
-            description("Cannot delete Table that is not empty")
-            display("Cannot delete table '{:?}' which is not empty", tabname)
-        }
+    #[fail(display = "Cannot delete table '{:?}' which is not empty", _0)]
+    CannotDeleteNonEmptyTable(Option<String>),
 
-        CannotDeleteNonEmptyArray(arrname: Option<String>) {
-            description("Cannot delete Array that is not empty")
-            display("Cannot delete array '{:?}' which is not empty", arrname)
-        }
+    #[fail(display = "Cannot delete array '{:?}' which is not empty", _0)]
+    CannotDeleteNonEmptyArray(Option<String>),
 
-        CannotAccessBecauseTypeMismatch(expected: &'static str, actual: &'static str) {
-            description("Cannot access value because of type mismatch")
-            display("Cannot access {} because expected {}", actual, expected)
-        }
+    #[fail(display = "Cannot access {} because expected {}", _0, _1)]
+    CannotAccessBecauseTypeMismatch(&'static str, &'static str),
 
-        ArrayIndexOutOfBounds(idx: usize, arrlen: usize) {
-            description("Delete index out of bounds")
-            display("Cannot delete in array at {}, array has length {}", idx, arrlen)
-        }
+    #[fail(display = "Cannot delete in array at {}, array has length {}", _0, _1)]
+    ArrayIndexOutOfBounds( usize, usize),
 
-        TypeError(requested: &'static str, got: &'static str) {
-            description("Type error")
-            display("Type Error. Requested {}, but got {}", requested, got)
-        }
+    #[fail(display = "Type Error. Requested {}, but got {}", _0, _1)]
+    TypeError(&'static str, &'static str),
 
-        NotAvailable(query: String) {
-            description("Value missing error")
-            display("Value at '{}' not there", query)
-        }
-
-    }
+    #[fail(display = "Value at '{}' not there", _0)]
+    NotAvailable(String),
 
 }
+

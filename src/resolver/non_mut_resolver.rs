@@ -4,7 +4,7 @@ use std::ops::Index;
 
 use toml::Value;
 use tokenizer::Token;
-use error::*;
+use error::{Error, Result};
 
 /// Resolves the path in the passed document recursively
 ///
@@ -19,8 +19,7 @@ pub fn resolve<'doc>(toml: &'doc Value, tokens: &Token, error_if_not_found: bool
                 &Token::Identifier { ref ident, .. } => {
                     match t.get(ident) {
                         None => if error_if_not_found {
-                            let err = ErrorKind::IdentifierNotFoundInDocument(ident.to_owned());
-                            return Err(Error::from(err))
+                            return Err(Error::IdentifierNotFoundInDocument(ident.to_owned()))
                         } else {
                             Ok(None)
                         },
@@ -31,10 +30,7 @@ pub fn resolve<'doc>(toml: &'doc Value, tokens: &Token, error_if_not_found: bool
                     }
                 },
 
-                &Token::Index { idx, .. } => {
-                    let kind = ErrorKind::NoIndexInTable(idx);
-                    Err(Error::from(kind))
-                },
+                &Token::Index { idx, .. } => Err(Error::NoIndexInTable(idx)),
             }
         },
 
@@ -47,19 +43,18 @@ pub fn resolve<'doc>(toml: &'doc Value, tokens: &Token, error_if_not_found: bool
                     }
                 },
                 &Token::Identifier { ref ident, .. } => {
-                    let kind = ErrorKind::NoIdentifierInArray(ident.clone());
-                    Err(Error::from(kind))
+                    Err(Error::NoIdentifierInArray(ident.clone()))
                 },
             }
         },
 
         _ => match tokens {
             &Token::Identifier { ref ident, .. } => {
-                Err(Error::from(ErrorKind::QueryingValueAsTable(ident.clone())))
+                Err(Error::QueryingValueAsTable(ident.clone()))
             },
 
             &Token::Index { idx, .. } => {
-                Err(Error::from(ErrorKind::QueryingValueAsArray(idx)))
+                Err(Error::QueryingValueAsArray(idx))
             },
         }
     }
@@ -87,8 +82,7 @@ mod test {
         assert!(result.is_err());
         let result = result.unwrap_err();
 
-        let errkind = result.kind();
-        assert!(is_match!(errkind, &ErrorKind::IdentifierNotFoundInDocument { .. }));
+        assert!(is_match!(result, Error::IdentifierNotFoundInDocument { .. }));
     }
 
     #[test]
@@ -130,7 +124,8 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::Float(1.0)));
+        assert!(is_match!(result, &Value::Float(_)));
+        assert_eq!(result.as_float(), Some(1.0))
     }
 
     #[test]
@@ -207,8 +202,10 @@ mod test {
         assert!(is_match!(result, &Value::Array(_)));
         match result {
             &Value::Array(ref ary) => {
-                assert_eq!(ary[0], Value::Float(1.0));
-                assert_eq!(ary[1], Value::Float(133.25));
+                assert!(is_match!(ary[0], Value::Float(_)));
+                assert_eq!(ary[0].as_float(), Some(1.0));
+                assert!(is_match!(ary[1], Value::Float(_)));
+                assert_eq!(ary[1].as_float(), Some(133.25));
             },
             _ => panic!("What just happened?"),
         }
@@ -297,8 +294,10 @@ mod test {
         assert!(is_match!(result, &Value::Array(_)));
         match result {
             &Value::Array(ref ary) => {
-                assert_eq!(ary[0], Value::Float(42.0));
-                assert_eq!(ary[1], Value::Float(50.0));
+                assert!(is_match!(ary[0], Value::Float(_)));
+                assert_eq!(ary[0].as_float(), Some(42.0));
+                assert!(is_match!(ary[1], Value::Float(_)));
+                assert_eq!(ary[1].as_float(), Some(50.0));
             },
             _ => panic!("What just happened?"),
         }
@@ -466,8 +465,7 @@ mod test {
         assert!(result.is_err());
         let result = result.unwrap_err();
 
-        let errkind = result.kind();
-        assert!(is_match!(errkind, &ErrorKind::IdentifierNotFoundInDocument { .. }));
+        assert!(is_match!(result, Error::IdentifierNotFoundInDocument { .. }));
     }
 
     #[test]
@@ -480,8 +478,7 @@ mod test {
         assert!(result.is_err());
         let result = result.unwrap_err();
 
-        let errkind = result.kind();
-        assert!(is_match!(errkind, &ErrorKind::NoIndexInTable { .. }));
+        assert!(is_match!(result, Error::NoIndexInTable { .. }));
     }
 
     #[test]
@@ -495,8 +492,7 @@ mod test {
         assert!(result.is_err());
         let result = result.unwrap_err();
 
-        let errkind = result.kind();
-        assert!(is_match!(errkind, &ErrorKind::NoIdentifierInArray { .. }));
+        assert!(is_match!(result, Error::NoIdentifierInArray { .. }));
     }
 
     #[test]
@@ -510,8 +506,7 @@ mod test {
         assert!(result.is_err());
         let result = result.unwrap_err();
 
-        let errkind = result.kind();
-        assert!(is_match!(errkind, &ErrorKind::QueryingValueAsTable { .. }));
+        assert!(is_match!(result, Error::QueryingValueAsTable { .. }));
     }
 
     #[test]
@@ -525,8 +520,7 @@ mod test {
         assert!(result.is_err());
         let result = result.unwrap_err();
 
-        let errkind = result.kind();
-        assert!(is_match!(errkind, &ErrorKind::QueryingValueAsArray { .. }));
+        assert!(is_match!(result, Error::QueryingValueAsArray { .. }));
     }
 
 }

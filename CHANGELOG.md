@@ -5,6 +5,10 @@ that version.
 
 # Next
 
+# 0.8.0
+
+* Switch error handling to `failure`.
+
 # 0.7.0
 
 * API CHANGE: The `read`, `set`, `delete` and `insert` function took a

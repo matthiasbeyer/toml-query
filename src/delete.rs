@@ -4,7 +4,7 @@ use toml::Value;
 
 use tokenizer::Token;
 use tokenizer::tokenize_with_seperator;
-use error::*;
+use error::{Error, Result};
 
 pub trait TomlValueDeleteExt {
 
@@ -90,16 +90,13 @@ impl TomlValueDeleteExt for Value {
                                 Ok(tab.remove(&ident))
                             } else {
                                 if is_table(tab.get(&ident)) {
-                                    let kind = ErrorKind::CannotDeleteNonEmptyTable(Some(ident.clone()));
-                                    Err(Error::from(kind))
+                                    Err(Error::CannotDeleteNonEmptyTable(Some(ident.clone())))
                                 } else if is_array(tab.get(&ident)) {
-                                    let kind = ErrorKind::CannotDeleteNonEmptyArray(Some(ident.clone()));
-                                    Err(Error::from(kind))
+                                    Err(Error::CannotDeleteNonEmptyArray(Some(ident.clone())))
                                 } else {
                                     let act = name_of_val(tab.get(&ident));
                                     let tbl = "table";
-                                    let k   = ErrorKind::CannotAccessBecauseTypeMismatch(tbl, act);
-                                    Err(Error::from(k))
+                                    Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
                                 }
                             }
                         },
@@ -108,25 +105,19 @@ impl TomlValueDeleteExt for Value {
                 },
                 &mut Value::Array(ref mut arr) => {
                     match tokens {
-                        Token::Identifier { ident, .. } => {
-                            let ek = ErrorKind::NoIdentifierInArray(ident);
-                            Err(Error::from(ek))
-                        },
+                        Token::Identifier { ident, .. } => Err(Error::NoIdentifierInArray(ident)),
                         Token::Index { idx , .. } => {
                             if is_empty(Some(arr.index(idx)), true) {
                                 Ok(Some(arr.remove(idx)))
                             } else {
                                 if is_table(Some(arr.index(idx))) {
-                                    let kind = ErrorKind::CannotDeleteNonEmptyTable(None);
-                                    Err(Error::from(kind))
+                                    Err(Error::CannotDeleteNonEmptyTable(None))
                                 } else if is_array(Some(arr.index(idx))) {
-                                    let kind = ErrorKind::CannotDeleteNonEmptyArray(None);
-                                    Err(Error::from(kind))
+                                    Err(Error::CannotDeleteNonEmptyArray(None))
                                 } else {
                                     let act = name_of_val(Some(arr.index(idx)));
                                     let tbl = "table";
-                                    let k   = ErrorKind::CannotAccessBecauseTypeMismatch(tbl, act);
-                                    Err(Error::from(k))
+                                    Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
                                 }
                             }
                         },
@@ -134,8 +125,8 @@ impl TomlValueDeleteExt for Value {
                 },
                 _ => {
                     let kind = match tokens {
-                        Token::Identifier { ident, .. } => ErrorKind::QueryingValueAsTable(ident),
-                        Token::Index { idx , .. } => ErrorKind::QueryingValueAsArray(idx),
+                        Token::Identifier { ident, .. } => Error::QueryingValueAsTable(ident),
+                        Token::Index { idx , .. } => Error::QueryingValueAsArray(idx),
                     };
                     Err(Error::from(kind))
                 }
@@ -152,50 +143,37 @@ impl TomlValueDeleteExt for Value {
                                 Ok(tab.remove(ident))
                             } else {
                                 if is_table(tab.get(ident)) {
-                                    let kind = ErrorKind::CannotDeleteNonEmptyTable(Some(ident.clone()));
-                                    Err(Error::from(kind))
+                                    Err(Error::CannotDeleteNonEmptyTable(Some(ident.clone())))
                                 } else if is_array(tab.get(ident)) {
-                                    let kind = ErrorKind::CannotDeleteNonEmptyArray(Some(ident.clone()));
-                                    Err(Error::from(kind))
+                                    Err(Error::CannotDeleteNonEmptyArray(Some(ident.clone())))
                                 } else {
                                     let act = name_of_val(tab.get(ident));
                                     let tbl = "table";
-                                    let k   = ErrorKind::CannotAccessBecauseTypeMismatch(tbl, act);
-                                    Err(Error::from(k))
+                                    Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
                                 }
                             }
                         },
-                        Token::Index { idx, .. } => {
-                            let kind = ErrorKind::NoIndexInTable(idx);
-                            Err(Error::from(kind))
-                        },
+                        Token::Index { idx, .. } => Err(Error::NoIndexInTable(idx)),
                     }
                 },
                 &mut Value::Array(ref mut arr) => {
                     match *last_token {
-                        Token::Identifier { ident, .. } => {
-                            let kind = ErrorKind::NoIdentifierInArray(ident);
-                            Err(Error::from(kind))
-                        },
+                        Token::Identifier { ident, .. } => Err(Error::NoIdentifierInArray(ident)),
                         Token::Index { idx, .. } => {
                             if idx > arr.len() {
-                                let kind = ErrorKind::ArrayIndexOutOfBounds(idx, arr.len());
-                                return Err(Error::from(kind))
+                                return Err(Error::ArrayIndexOutOfBounds(idx, arr.len()))
                             }
                             if is_empty(Some(&arr.index(idx)), true) {
                                 Ok(Some(arr.remove(idx)))
                             } else {
                                 if is_table(Some(&arr.index(idx))) {
-                                    let kind = ErrorKind::CannotDeleteNonEmptyTable(None);
-                                    Err(Error::from(kind))
+                                    Err(Error::CannotDeleteNonEmptyTable(None))
                                 } else if is_array(Some(&arr.index(idx))) {
-                                    let kind = ErrorKind::CannotDeleteNonEmptyArray(None);
-                                    Err(Error::from(kind))
+                                    Err(Error::CannotDeleteNonEmptyArray(None))
                                 } else {
                                     let act = name_of_val(Some(arr.index(idx)));
                                     let tbl = "table";
-                                    let k   = ErrorKind::CannotAccessBecauseTypeMismatch(tbl, act);
-                                    Err(Error::from(k))
+                                    Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
                                 }
                             }
                         },
@@ -203,8 +181,8 @@ impl TomlValueDeleteExt for Value {
                 },
                 _ => {
                     let kind = match *last_token {
-                        Token::Identifier { ident, .. } => ErrorKind::QueryingValueAsTable(ident),
-                        Token::Index { idx, .. } => ErrorKind::QueryingValueAsArray(idx),
+                        Token::Identifier { ident, .. } => Error::QueryingValueAsTable(ident),
+                        Token::Index { idx, .. }        => Error::QueryingValueAsArray(idx),
                     };
                     Err(Error::from(kind))
                 }
@@ -430,7 +408,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::CannotDeleteNonEmptyTable(_)));
+        assert!(is_match!(res, Error::CannotDeleteNonEmptyTable(_)));
     }
 
     #[test]
@@ -444,7 +422,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::CannotDeleteNonEmptyArray(_)));
+        assert!(is_match!(res, Error::CannotDeleteNonEmptyArray(_)));
     }
 
     #[test]
@@ -551,7 +529,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::QueryingValueAsTable(_)));
+        assert!(is_match!(res, Error::QueryingValueAsTable(_)));
     }
 
     #[test]
@@ -568,7 +546,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::QueryingValueAsArray(_)));
+        assert!(is_match!(res, Error::QueryingValueAsArray(_)));
     }
 
     #[test]
@@ -582,7 +560,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::NoIndexInTable(0)));
+        assert!(is_match!(res, Error::NoIndexInTable(0)));
     }
 
     #[test]
@@ -596,7 +574,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::NoIdentifierInArray(_)));
+        assert!(is_match!(res, Error::NoIdentifierInArray(_)));
     }
 
     #[test]
@@ -610,7 +588,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::ArrayIndexOutOfBounds(22, 3)));
+        assert!(is_match!(res, Error::ArrayIndexOutOfBounds(22, 3)));
     }
 
     #[test]
@@ -624,7 +602,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::CannotDeleteNonEmptyArray(None)));
+        assert!(is_match!(res, Error::CannotDeleteNonEmptyArray(None)));
     }
 
     #[test]
@@ -638,7 +616,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::CannotDeleteNonEmptyTable(None)));
+        assert!(is_match!(res, Error::CannotDeleteNonEmptyTable(None)));
     }
 
     #[test]
@@ -655,7 +633,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::CannotDeleteNonEmptyTable(None)));
+        assert!(is_match!(res, Error::CannotDeleteNonEmptyTable(None)));
     }
 
     #[test]
@@ -669,7 +647,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::QueryingValueAsTable(_)));
+        assert!(is_match!(res, Error::QueryingValueAsTable(_)));
     }
 
     #[test]
@@ -683,7 +661,7 @@ mod test {
         assert!(res.is_err());
 
         let res = res.unwrap_err();
-        assert!(is_match!(res.kind(), &ErrorKind::QueryingValueAsArray(0)));
+        assert!(is_match!(res, Error::QueryingValueAsArray(0)));
     }
 
 }

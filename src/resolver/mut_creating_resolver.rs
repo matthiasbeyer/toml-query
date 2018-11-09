@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 
 use toml::Value;
 use tokenizer::Token;
-use error::*;
+use error::{Error, Result};
 
 pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut Value> {
 
@@ -41,19 +41,13 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut 
                         }
                     }
                 },
-                &mut Value::Array(_) => {
-                    let kind = ErrorKind::NoIdentifierInArray(ident.clone());
-                    Err(Error::from_kind(kind))
-                }
+                &mut Value::Array(_) => Err(Error::NoIdentifierInArray(ident.clone())),
                 _ => unimplemented!()
             }
         }
         Token::Index { idx , .. } => {
             match toml {
-                &mut Value::Table(_) => {
-                    let kind = ErrorKind::NoIndexInTable(idx);
-                    Err(Error::from_kind(kind))
-                },
+                &mut Value::Table(_) => Err(Error::NoIndexInTable(idx)),
                 &mut Value::Array(ref mut ary) => {
                     if ary.len() > idx {
                         match tokens.next() {
@@ -140,7 +134,8 @@ mod test {
         assert!(result.is_ok());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::Float(1.0)));
+        assert!(is_match!(result, &mut Value::Float(_)));
+        assert_eq!(result.as_float(), Some(1.0));
     }
 
     #[test]
@@ -205,8 +200,10 @@ mod test {
         assert!(is_match!(result, &mut Value::Array(_)));
         match result {
             &mut Value::Array(ref ary) => {
-                assert_eq!(ary[0], Value::Float(1.0));
-                assert_eq!(ary[1], Value::Float(133.25));
+                assert!(is_match!(ary[0], Value::Float(_)));
+                assert_eq!(ary[0].as_float(), Some(1.0));
+                assert!(is_match!(ary[1], Value::Float(_)));
+                assert_eq!(ary[1].as_float(), Some(133.25));
             },
             _ => panic!("What just happened?"),
         }
@@ -280,8 +277,10 @@ mod test {
         assert!(is_match!(result, &mut Value::Array(_)));
         match result {
             &mut Value::Array(ref ary) => {
-                assert_eq!(ary[0], Value::Float(42.0));
-                assert_eq!(ary[1], Value::Float(50.0));
+                assert!(is_match!(ary[0], Value::Float(_)));
+                assert_eq!(ary[0].as_float(), Some(42.0));
+                assert!(is_match!(ary[1], Value::Float(_)));
+                assert_eq!(ary[1].as_float(), Some(50.0));
             },
             _ => panic!("What just happened?"),
         }
