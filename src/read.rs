@@ -1,7 +1,10 @@
 /// The Toml Read extensions
 
 #[cfg(feature = "typed")]
-use serde::Deserialize;
+use std::fmt::Debug;
+
+#[cfg(feature = "typed")]
+use serde::{Serialize, Deserialize};
 use toml::Value;
 
 use tokenizer::tokenize_with_seperator;
@@ -39,7 +42,23 @@ pub trait TomlValueReadExt<'doc> {
             None => Ok(None)
         }
     }
+
+    #[cfg(feature = "typed")]
+    fn read_partial<'a, P: Partial<'a>>(&'doc self) -> Result<Option<P::Output>> {
+        self.read_deserialized::<P::Output>(P::LOCATION)
+    }
 }
+
+/// Describes a _part_ of a document
+#[cfg(feature = "typed")]
+pub trait Partial<'a> {
+    // The location ("section") of the header where to find the struct
+    const LOCATION: &'static str;
+
+    // The type which represents the data
+    type Output: Serialize + Deserialize<'a> + Debug;
+}
+
 
 impl<'doc> TomlValueReadExt<'doc> for Value {
 
@@ -308,3 +327,35 @@ mod high_level_fn_test {
 
 }
 
+#[cfg(all(test, typed))]
+mod partial_tests {
+    use super::*;
+
+    use std::path::PathBuf;
+    use std::sync::Arc;
+    use std::collections::BTreeMap;
+
+    use toml::Value;
+
+    #[derive(Debug, Deserialize, Serialize)]
+    struct TestObj {
+        pub value: String,
+    }
+
+    impl<'a> Partial<'a> for TestObj {
+        const LOCATION: &'static str = "foo";
+        type Output                  = Self;
+    }
+
+    #[test]
+    fn test_compiles() {
+        let tbl = {
+            let mut tbl = BTreeMap::new();
+            tbl.insert(String::from("value"), Value::String(String::from("foobar")));
+            Value::Table(tbl)
+        };
+
+        let obj : TestObj = tbl.read_partial::<TestObj>().unwrap().unwrap();
+        assert_eq!(obj.value, "foobar");
+    }
+}
