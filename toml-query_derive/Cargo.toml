@@ -1,0 +1,17 @@
+[package]
+name = "toml-query_derive"
+version = "0.8.0"
+authors = ["Matthias Beyer <mail@beyermatthias.de>"]
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn     = "0.15"
+quote   = "0.6"
+darling = "0.8"
+
+[dev-dependencies]
+serde        = "1"
+serde_derive = "1"
+
