@@ -358,4 +358,28 @@ mod partial_tests {
         let obj : TestObj = tbl.read_partial::<TestObj>().unwrap().unwrap();
         assert_eq!(obj.value, "foobar");
     }
+
+
+    //
+    // Tests with proc macro
+    //
+
+    #[derive(Debug, Deserialize, Serialize)]
+    #[tq_partial_document(location = "foo")]
+    struct TestObjDerived {
+        pub value : String,
+    }
+
+    #[test]
+    fn test_compiles_derived() {
+        let tbl = {
+            let mut tbl = BTreeMap::new();
+            tbl.insert(String::from("value"), Value::String(String::from("foobar")));
+            Value::Table(tbl)
+        };
+
+        let obj : TestObjDerived = tbl.read_partial::<TestObjDerived>().unwrap().unwrap();
+        assert_eq!(obj.value, "foobar");
+    }
+
 }
