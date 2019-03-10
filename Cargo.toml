@@ -32,7 +32,15 @@ optional = true
 version = "1.0"
 optional = true
 
+[dependencies.toml-query_derive]
+version = "0.8.0"
+path    = "./toml-query_derive/"
+
 [dev-dependencies]
 quickcheck = "0.6"
 serde_derive = "1"
+
+
+[workspace]
+members = [ "toml-query_derive" ]
 

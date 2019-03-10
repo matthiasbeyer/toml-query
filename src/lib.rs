@@ -33,6 +33,11 @@ extern crate serde_derive;
 #[cfg(not(feature = "log"))]
 #[macro_use] pub mod log;
 
+extern crate toml_query_derive;
+
+#[doc(hidden)]
+pub use toml_query_derive::*;
+
 pub mod error;
 pub mod read;
 pub mod set;
