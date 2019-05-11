@@ -320,7 +320,7 @@ mod high_level_fn_test {
         };
 
         assert!(toml.insert_serialized("table.value", test).unwrap().is_none());
-        let val : Test = toml.read_deserialized("table.value").unwrap().unwrap();
+        let _ : Test = toml.read_deserialized("table.value").unwrap().unwrap();
 
         assert!(true);
     }
