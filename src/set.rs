@@ -408,7 +408,6 @@ mod test {
     fn test_serialize() {
         use std::collections::BTreeMap;
         use insert::TomlValueInsertExt;
-        use read::TomlValueReadExt;
 
         #[derive(Serialize, Deserialize, Debug)]
         struct Test {
