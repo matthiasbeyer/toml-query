@@ -349,7 +349,11 @@ mod partial_tests {
     fn test_compiles() {
         let tbl = {
             let mut tbl = BTreeMap::new();
-            tbl.insert(String::from("value"), Value::String(String::from("foobar")));
+            tbl.insert(String::from("foo"), {
+                let mut tbl = BTreeMap::new();
+                tbl.insert(String::from("value"), Value::String(String::from("foobar")));
+                Value::Table(tbl)
+            });
             Value::Table(tbl)
         };
 
