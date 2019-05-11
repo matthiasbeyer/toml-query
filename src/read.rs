@@ -327,12 +327,10 @@ mod high_level_fn_test {
 
 }
 
-#[cfg(all(test, typed))]
+#[cfg(all(test, feature = "typed"))]
 mod partial_tests {
     use super::*;
 
-    use std::path::PathBuf;
-    use std::sync::Arc;
     use std::collections::BTreeMap;
 
     use toml::Value;
@@ -364,8 +362,8 @@ mod partial_tests {
     // Tests with proc macro
     //
 
-    #[derive(Debug, Deserialize, Serialize)]
-    #[tq_partial_document(location = "foo")]
+    #[derive(Partial, Debug, Deserialize, Serialize)]
+    #[location = "foo"]
     struct TestObjDerived {
         pub value : String,
     }

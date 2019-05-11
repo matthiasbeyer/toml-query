@@ -1,7 +1,7 @@
 extern crate proc_macro;
 extern crate darling;
 extern crate syn;
-#[macro_use] extern crate quote;
+extern crate quote;
 
 #[cfg(test)]
 #[macro_use]
@@ -10,37 +10,45 @@ extern crate serde_derive;
 #[cfg(test)]
 extern crate serde;
 
-use darling::FromMeta;
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{AttributeArgs, ItemFn};
-use syn::parse_macro_input;
+use syn::{
+    Lit,
+    Meta,
+    MetaNameValue,
+};
 
-#[derive(Debug, FromMeta)]
-struct PartialArgs {
-    location: String,
-}
+#[proc_macro_derive(Partial, attributes(location))]
+pub fn derive_partial(tokens: TokenStream) -> TokenStream {
+    let ast: syn::DeriveInput = syn::parse(tokens).unwrap();
+    let mut location: Option<String> = None;
+    let name = &ast.ident;
 
-#[proc_macro_attribute]
-pub fn tq_partial_document(args: TokenStream, input: TokenStream) -> TokenStream {
-    let attr_args = parse_macro_input!(args as AttributeArgs);
-    let input     = parse_macro_input!(input as ItemFn);
+    // Iterate over the struct's #[...] attributes
+    for option in ast.attrs.into_iter() {
+        let option = option.parse_meta().unwrap();
+        match option {
+            // Match '#[ident = lit]' attributes. Match guard makes it '#[prefix = lit]'
+            Meta::NameValue(MetaNameValue{ref ident, ref lit, ..}) if ident == "location" => {
+                if let Lit::Str(lit) = lit {
+                    location = Some(lit.value());
+                }
+            },
+            _ => {},
+            // ...
+        }
+    }
 
-    let args = match PartialArgs::from_list(&attr_args) {
-        Ok(v)  => v,
-        Err(e) => return e.write_errors().into(),
-    };
-
-    let name     = &input.ident;
-    let location = args.location;
+    let location = location.unwrap();
 
     let gen = quote! {
-        impl ::toml_query::read::Partial for #name {
-            type LOCATION : &'static str = #location;
-            type Output = Self;
+        impl<'a> ::toml_query::read::Partial<'a> for #name {
+            const LOCATION : &'static str = #location;
+            type  Output                  = Self;
         }
     };
 
     gen.into()
 }
+
 
