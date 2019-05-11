@@ -327,12 +327,10 @@ mod high_level_fn_test {
 
 }
 
-#[cfg(all(test, typed))]
+#[cfg(all(test, feature = "typed"))]
 mod partial_tests {
     use super::*;
 
-    use std::path::PathBuf;
-    use std::sync::Arc;
     use std::collections::BTreeMap;
 
     use toml::Value;
@@ -351,34 +349,15 @@ mod partial_tests {
     fn test_compiles() {
         let tbl = {
             let mut tbl = BTreeMap::new();
-            tbl.insert(String::from("value"), Value::String(String::from("foobar")));
+            tbl.insert(String::from("foo"), {
+                let mut tbl = BTreeMap::new();
+                tbl.insert(String::from("value"), Value::String(String::from("foobar")));
+                Value::Table(tbl)
+            });
             Value::Table(tbl)
         };
 
         let obj : TestObj = tbl.read_partial::<TestObj>().unwrap().unwrap();
-        assert_eq!(obj.value, "foobar");
-    }
-
-
-    //
-    // Tests with proc macro
-    //
-
-    #[derive(Debug, Deserialize, Serialize)]
-    #[tq_partial_document(location = "foo")]
-    struct TestObjDerived {
-        pub value : String,
-    }
-
-    #[test]
-    fn test_compiles_derived() {
-        let tbl = {
-            let mut tbl = BTreeMap::new();
-            tbl.insert(String::from("value"), Value::String(String::from("foobar")));
-            Value::Table(tbl)
-        };
-
-        let obj : TestObjDerived = tbl.read_partial::<TestObjDerived>().unwrap().unwrap();
         assert_eq!(obj.value, "foobar");
     }
 
