@@ -406,7 +406,7 @@ mod test {
     #[cfg(feature = "typed")]
     #[test]
     fn test_serialize() {
-        use std::collections::BTreeMap;
+        use toml::map::Map;
         use crate::insert::TomlValueInsertExt;
 
         #[derive(Serialize, Deserialize, Debug)]
@@ -415,7 +415,7 @@ mod test {
             s: String,
         }
 
-        let mut toml = Value::Table(BTreeMap::new());
+        let mut toml = Value::Table(Map::new());
         let test     = Test {
             a: 15,
             s: String::from("Helloworld"),

@@ -1,8 +1,6 @@
 /// The query resolver that operates on the AST and the TOML object
 
-use std::collections::BTreeMap;
-
-use toml::Value;
+use toml::{map::Map, Value};
 use crate::tokenizer::Token;
 use crate::error::{Error, Result};
 
@@ -34,10 +32,10 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut 
                     } else {
                         match tokens.next() {
                             Some(next) => {
-                                let subdoc = t.entry(ident.clone()).or_insert(Value::Table(BTreeMap::new()));
+                                let subdoc = t.entry(ident.clone()).or_insert(Value::Table(Map::new()));
                                 resolve(subdoc, next)
                             },
-                            None => Ok(t.entry(ident.clone()).or_insert(Value::Table(BTreeMap::new()))),
+                            None => Ok(t.entry(ident.clone()).or_insert(Value::Table(Map::new()))),
                         }
                     }
                 },
@@ -58,7 +56,7 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut 
                         if let Some(next) = tokens.next() {
                             match **next {
                                 Token::Identifier { .. } => {
-                                    ary.push(Value::Table(BTreeMap::new()));
+                                    ary.push(Value::Table(Map::new()));
                                 },
                                 Token::Index { .. } => {
                                     ary.push(Value::Array(vec![]));

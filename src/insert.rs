@@ -145,8 +145,8 @@ mod test {
 
     #[test]
     fn test_insert_one_token() {
-        use std::collections::BTreeMap;
-        let mut toml = Value::Table(BTreeMap::new());
+        use toml::map::Map;
+        let mut toml = Value::Table(Map::new());
 
         let res = toml.insert(&String::from("value"), Value::Integer(1));
         println!("TOML: {:?}", toml);

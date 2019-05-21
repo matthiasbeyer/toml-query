@@ -303,7 +303,7 @@ mod high_level_fn_test {
     #[cfg(feature = "typed")]
     #[test]
     fn test_deser() {
-        use std::collections::BTreeMap;
+        use toml::map::Map;
         use crate::insert::TomlValueInsertExt;
         use crate::read::TomlValueReadExt;
 
@@ -313,7 +313,7 @@ mod high_level_fn_test {
             s: String,
         }
 
-        let mut toml = Value::Table(BTreeMap::new());
+        let mut toml = Value::Table(Map::new());
         let test     = Test {
             a: 15,
             s: String::from("Helloworld"),
@@ -331,8 +331,7 @@ mod high_level_fn_test {
 mod partial_tests {
     use super::*;
 
-    use std::collections::BTreeMap;
-
+    use toml::map::Map;
     use toml::Value;
 
     #[derive(Debug, Deserialize, Serialize)]
@@ -348,9 +347,9 @@ mod partial_tests {
     #[test]
     fn test_compiles() {
         let tbl = {
-            let mut tbl = BTreeMap::new();
+            let mut tbl = Map::new();
             tbl.insert(String::from("foo"), {
-                let mut tbl = BTreeMap::new();
+                let mut tbl = Map::new();
                 tbl.insert(String::from("value"), Value::String(String::from("foobar")));
                 Value::Table(tbl)
             });
