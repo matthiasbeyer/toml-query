@@ -2,9 +2,9 @@
 
 use toml::Value;
 
-use tokenizer::Token;
-use tokenizer::tokenize_with_seperator;
-use error::{Error, Result};
+use crate::tokenizer::Token;
+use crate::tokenizer::tokenize_with_seperator;
+use crate::error::{Error, Result};
 
 pub trait TomlValueDeleteExt {
 
@@ -48,10 +48,10 @@ pub trait TomlValueDeleteExt {
 impl TomlValueDeleteExt for Value {
 
     fn delete_with_seperator(&mut self, query: &str, sep: char) -> Result<Option<Value>> {
-        use resolver::mut_resolver::resolve;
+        use crate::resolver::mut_resolver::resolve;
         use std::ops::Index;
 
-        let mut tokens = try!(tokenize_with_seperator(query, sep));
+        let mut tokens = r#try!(tokenize_with_seperator(query, sep));
         let last_token = tokens.pop_last();
 
         /// Check whether a structure (Table/Array) is empty. If the Value has not these types,
@@ -78,7 +78,7 @@ impl TomlValueDeleteExt for Value {
 
         #[inline]
         fn name_of_val(val: Option<&Value>) -> &'static str {
-            val.map(::util::name_of_val).unwrap_or("None")
+            val.map(crate::util::name_of_val).unwrap_or("None")
         }
 
         if last_token.is_none() {
@@ -132,7 +132,7 @@ impl TomlValueDeleteExt for Value {
                 }
             }
         } else {
-            let val = try!(resolve(self, &tokens, true))
+            let val = r#try!(resolve(self, &tokens, true))
                 .unwrap(); // safe because of resolve() guarantees
             let last_token = last_token.unwrap();
             match val {
@@ -500,7 +500,7 @@ mod test {
 
     #[test]
     fn test_delete_from_array_value() {
-        use read::TomlValueReadExt;
+        use crate::read::TomlValueReadExt;
 
         let mut toml : Value = toml_from_str(r#"
         array = [ 1 ]
@@ -517,7 +517,7 @@ mod test {
 
     #[test]
     fn test_delete_from_int_value() {
-        use read::TomlValueReadExt;
+        use crate::read::TomlValueReadExt;
 
         let mut toml : Value = toml_from_str(r#"
         array = [ 1 ]
@@ -534,7 +534,7 @@ mod test {
 
     #[test]
     fn test_delete_index_from_non_array() {
-        use read::TomlValueReadExt;
+        use crate::read::TomlValueReadExt;
 
         let mut toml : Value = toml_from_str(r#"
         array = 1
@@ -621,7 +621,7 @@ mod test {
 
     #[test]
     fn test_delete_non_empty_table_from_top_level_array() {
-        use read::TomlValueReadExt;
+        use crate::read::TomlValueReadExt;
 
         let mut toml : Value = toml_from_str(r#"
         array = [ { t = 1 }, { t = 2 } ]

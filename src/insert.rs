@@ -4,9 +4,9 @@
 use serde::Serialize;
 use toml::Value;
 
-use tokenizer::Token;
-use tokenizer::tokenize_with_seperator;
-use error::{Error, Result};
+use crate::tokenizer::Token;
+use crate::tokenizer::tokenize_with_seperator;
+use crate::error::{Error, Result};
 
 pub trait TomlValueInsertExt {
 
@@ -99,12 +99,12 @@ pub trait TomlValueInsertExt {
 impl TomlValueInsertExt for Value {
 
     fn insert_with_seperator(&mut self, query: &str, sep: char, value: Value) -> Result<Option<Value>> {
-        use resolver::mut_creating_resolver::resolve;
+        use crate::resolver::mut_creating_resolver::resolve;
 
-        let mut tokens = try!(tokenize_with_seperator(query, sep));
+        let mut tokens = r#try!(tokenize_with_seperator(query, sep));
         let (val, last) = match tokens.pop_last() {
             None       => (self, Box::new(tokens)),
-            Some(last) => (try!(resolve(self, &tokens)), last),
+            Some(last) => (r#try!(resolve(self, &tokens)), last),
 
         };
 

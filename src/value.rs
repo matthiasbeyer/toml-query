@@ -5,11 +5,11 @@
 
 use toml::Value;
 
-use read::TomlValueReadExt;
-use set::TomlValueSetExt;
-use delete::TomlValueDeleteExt;
-use insert::TomlValueInsertExt;
-use error::Result;
+use crate::read::TomlValueReadExt;
+use crate::set::TomlValueSetExt;
+use crate::delete::TomlValueDeleteExt;
+use crate::insert::TomlValueInsertExt;
+use crate::error::Result;
 
 /// Conveniance trait over
 ///

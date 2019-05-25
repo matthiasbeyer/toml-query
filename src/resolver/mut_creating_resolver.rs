@@ -3,8 +3,8 @@
 use std::collections::BTreeMap;
 
 use toml::Value;
-use tokenizer::Token;
-use error::{Error, Result};
+use crate::tokenizer::Token;
+use crate::error::{Error, Result};
 
 pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut Value> {
 
@@ -81,7 +81,7 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut 
 mod test {
     use toml::from_str as toml_from_str;
     use toml::Value;
-    use tokenizer::*;
+    use crate::tokenizer::*;
     use super::resolve;
 
     macro_rules! do_resolve {

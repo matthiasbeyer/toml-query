@@ -7,8 +7,8 @@ use std::fmt::Debug;
 use serde::{Serialize, Deserialize};
 use toml::Value;
 
-use tokenizer::tokenize_with_seperator;
-use error::{Error, Result};
+use crate::tokenizer::tokenize_with_seperator;
+use crate::error::{Error, Result};
 
 pub trait TomlValueReadExt<'doc> {
 
@@ -63,13 +63,13 @@ pub trait Partial<'a> {
 impl<'doc> TomlValueReadExt<'doc> for Value {
 
     fn read_with_seperator(&'doc self, query: &str, sep: char) -> Result<Option<&'doc Value>> {
-        use resolver::non_mut_resolver::resolve;
+        use crate::resolver::non_mut_resolver::resolve;
 
         tokenize_with_seperator(query, sep).and_then(move |tokens| resolve(self, &tokens, false))
     }
 
     fn read_mut_with_seperator(&'doc mut self, query: &str, sep: char) -> Result<Option<&'doc mut Value>> {
-        use resolver::mut_resolver::resolve;
+        use crate::resolver::mut_resolver::resolve;
 
         tokenize_with_seperator(query, sep).and_then(move |tokens| resolve(self, &tokens, false))
     }
@@ -88,7 +88,7 @@ macro_rules! make_type_getter {
         fn $fnname(&'doc self, query: &str) -> Result<Option<$rettype>> {
             self.read_with_seperator(query, '.').and_then(|o| match o {
                 $matcher => Ok(Some($implementation)),
-                Some(o)  => Err(Error::TypeError($typename, ::util::name_of_val(&o)).into()),
+                Some(o)  => Err(Error::TypeError($typename, crate::util::name_of_val(&o)).into()),
                 None     => Ok(None),
             })
         }
@@ -304,8 +304,8 @@ mod high_level_fn_test {
     #[test]
     fn test_deser() {
         use std::collections::BTreeMap;
-        use insert::TomlValueInsertExt;
-        use read::TomlValueReadExt;
+        use crate::insert::TomlValueInsertExt;
+        use crate::read::TomlValueReadExt;
 
         #[derive(Serialize, Deserialize, Debug)]
         struct Test {

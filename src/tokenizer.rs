@@ -1,6 +1,6 @@
 /// The tokenizer for the query interpreter
 
-use error::{Error, Result};
+use crate::error::{Error, Result};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Token {
@@ -209,8 +209,8 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
                     return Err(Error::EmptyIdentifier)
                 }
 
-                let mut token = try!(mk_token_object(token));
-                try!(build_token_tree(split, &mut token));
+                let mut token = r#try!(mk_token_object(token));
+                r#try!(build_token_tree(split, &mut token));
                 last.set_next(token);
             }
         }
@@ -237,8 +237,8 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
                 return Err(Error::EmptyIdentifier);
             }
 
-            let mut tok = try!(mk_token_object(token));
-            let _       = try!(build_token_tree(&mut tokens, &mut tok));
+            let mut tok = r#try!(mk_token_object(token));
+            let _       = r#try!(build_token_tree(&mut tokens, &mut tok));
 
             trace!("Returning Ok({:?})", tok);
             Ok(tok)
@@ -248,7 +248,7 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
 
 #[cfg(test)]
 mod test {
-    use error::Error;
+    use crate::error::Error;
     use super::*;
 
     use std::ops::Deref;

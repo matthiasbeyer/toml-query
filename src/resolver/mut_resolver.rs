@@ -3,8 +3,8 @@
 use std::ops::IndexMut;
 
 use toml::Value;
-use tokenizer::Token;
-use error::{Error, Result};
+use crate::tokenizer::Token;
+use crate::error::{Error, Result};
 
 /// Resolves the path in the passed document recursively
 ///
@@ -59,8 +59,8 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token, error_if_not_found: 
 mod test {
     use toml::from_str as toml_from_str;
     use toml::Value;
-    use tokenizer::*;
-    use error::*;
+    use crate::tokenizer::*;
+    use crate::error::*;
     use super::resolve;
 
     macro_rules! do_resolve {

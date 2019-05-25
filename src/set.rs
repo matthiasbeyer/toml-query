@@ -4,9 +4,9 @@
 use serde::Serialize;
 use toml::Value;
 
-use tokenizer::tokenize_with_seperator;
-use tokenizer::Token;
-use error::{Error, Result};
+use crate::tokenizer::tokenize_with_seperator;
+use crate::tokenizer::Token;
+use crate::error::{Error, Result};
 
 pub trait TomlValueSetExt {
 
@@ -49,12 +49,12 @@ pub trait TomlValueSetExt {
 impl TomlValueSetExt for Value {
 
     fn set_with_seperator(&mut self, query: &str, sep: char, value: Value) -> Result<Option<Value>> {
-        use resolver::mut_resolver::resolve;
+        use crate::resolver::mut_resolver::resolve;
 
-        let mut tokens = try!(tokenize_with_seperator(query, sep));
+        let mut tokens = r#try!(tokenize_with_seperator(query, sep));
         let last = tokens.pop_last();
 
-        let val = try!(resolve(self, &tokens, true))
+        let val = r#try!(resolve(self, &tokens, true))
             .unwrap(); // safe because of resolve() guarantees
         let last = last.unwrap_or_else(|| Box::new(tokens));
 
@@ -407,7 +407,7 @@ mod test {
     #[test]
     fn test_serialize() {
         use std::collections::BTreeMap;
-        use insert::TomlValueInsertExt;
+        use crate::insert::TomlValueInsertExt;
 
         #[derive(Serialize, Deserialize, Debug)]
         struct Test {

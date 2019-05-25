@@ -11,6 +11,8 @@ license     = "MPL-2.0"
 
 repository    = "https://github.com/matthiasbeyer/toml-query"
 
+edition = "2018"
+
 [features]
 default = []
 logging = [ "log" ]
