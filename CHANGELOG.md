@@ -3,7 +3,14 @@
 This changelog was started with the 0.4.0 release, so there are no logs before
 that version.
 
-# Next
+# 0.9.0
+
+* Dependencies were updated to toml 0.5.
+* Sources were updated to use rust 2018
+* A feature was added to read partial documents directly into a structure
+  This feature was introduced as normal trait, but later a proc macro was added
+  to easily derive it.
+
 
 # 0.8.0
 
