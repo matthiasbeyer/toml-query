@@ -4,12 +4,11 @@
 use serde::Serialize;
 use toml::Value;
 
-use crate::tokenizer::Token;
-use crate::tokenizer::tokenize_with_seperator;
 use crate::error::{Error, Result};
+use crate::tokenizer::tokenize_with_seperator;
+use crate::tokenizer::Token;
 
 pub trait TomlValueInsertExt {
-
     /// Extension function for inserting a value in the current toml::Value document
     /// using a custom seperator.
     ///
@@ -78,7 +77,12 @@ pub trait TomlValueInsertExt {
     /// assert!(res.is_ok()); // panics
     /// ```
     ///
-    fn insert_with_seperator(&mut self, query: &str, sep: char, value: Value) -> Result<Option<Value>>;
+    fn insert_with_seperator(
+        &mut self,
+        query: &str,
+        sep: char,
+        value: Value,
+    ) -> Result<Option<Value>>;
 
     /// Extension function for inserting a value from the current toml::Value document
     ///
@@ -93,55 +97,50 @@ pub trait TomlValueInsertExt {
         let value = Value::try_from(value).map_err(Error::TomlSerialize)?;
         self.insert(query, value)
     }
-
 }
 
 impl TomlValueInsertExt for Value {
-
-    fn insert_with_seperator(&mut self, query: &str, sep: char, value: Value) -> Result<Option<Value>> {
+    fn insert_with_seperator(
+        &mut self,
+        query: &str,
+        sep: char,
+        value: Value,
+    ) -> Result<Option<Value>> {
         use crate::resolver::mut_creating_resolver::resolve;
 
-        let mut tokens = r#try!(tokenize_with_seperator(query, sep));
+        let mut tokens = tokenize_with_seperator(query, sep)?;
         let (val, last) = match tokens.pop_last() {
-            None       => (self, Box::new(tokens)),
-            Some(last) => (r#try!(resolve(self, &tokens)), last),
-
+            None => (self, Box::new(tokens)),
+            Some(last) => (resolve(self, &tokens)?, last),
         };
 
         match *last {
-            Token::Identifier { ident, .. } => {
-                match val {
-                    &mut Value::Table(ref mut t) => {
-                        Ok(t.insert(ident, value))
-                    },
-                    _ => Err(Error::NoIdentifierInArray(ident.clone()))
-                }
+            Token::Identifier { ident, .. } => match val {
+                &mut Value::Table(ref mut t) => Ok(t.insert(ident, value)),
+                _ => Err(Error::NoIdentifierInArray(ident.clone())),
             },
 
-            Token::Index { idx , .. } => {
-                match val {
-                    &mut Value::Array(ref mut a) => {
-                        if a.len() > idx {
-                            a.insert(idx, value);
-                            Ok(None)
-                        } else {
-                            a.push(value);
-                            Ok(None)
-                        }
-                    },
-                    _ => Err(Error::NoIndexInTable(idx))
+            Token::Index { idx, .. } => match val {
+                &mut Value::Array(ref mut a) => {
+                    if a.len() > idx {
+                        a.insert(idx, value);
+                        Ok(None)
+                    } else {
+                        a.push(value);
+                        Ok(None)
+                    }
                 }
+                _ => Err(Error::NoIndexInTable(idx)),
             },
         }
     }
-
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-    use toml::Value;
     use toml::from_str as toml_from_str;
+    use toml::Value;
 
     #[test]
     fn test_insert_one_token() {
@@ -161,20 +160,27 @@ mod test {
                 assert!(!t.is_empty());
 
                 let val = t.get("value");
-                assert!(val.is_some(), "'value' from table {:?} should be Some(_), is None", t);
+                assert!(
+                    val.is_some(),
+                    "'value' from table {:?} should be Some(_), is None",
+                    t
+                );
                 let val = val.unwrap();
 
                 assert!(is_match!(val, &Value::Integer(1)), "Is not one: {:?}", val);
-            },
+            }
             _ => panic!("What just happenend?"),
         }
     }
 
     #[test]
     fn test_insert_with_seperator_into_table() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         [table]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.insert_with_seperator(&String::from("table.a"), '.', Value::Integer(1));
 
@@ -202,10 +208,10 @@ mod test {
 
                         let a = a.unwrap();
                         assert!(is_match!(a, &Value::Integer(1)));
-                    },
+                    }
                     _ => panic!("What just happenend?"),
                 }
-            },
+            }
             _ => panic!("What just happenend?"),
         }
     }
@@ -214,9 +220,12 @@ mod test {
     fn test_insert_with_seperator_into_array() {
         use std::ops::Index;
 
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         array = []
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.insert_with_seperator(&String::from("array.[0]"), '.', Value::Integer(1));
 
@@ -239,19 +248,22 @@ mod test {
                     &Value::Array(ref a) => {
                         assert!(!a.is_empty());
                         assert!(is_match!(a.index(0), &Value::Integer(1)));
-                    },
+                    }
                     _ => panic!("What just happenend?"),
                 }
-            },
+            }
             _ => panic!("What just happenend?"),
         }
     }
 
     #[test]
     fn test_insert_with_seperator_into_nested_table() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         [a.b.c]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.insert_with_seperator(&String::from("a.b.c.d"), '.', Value::Integer(1));
 
@@ -296,25 +308,28 @@ mod test {
 
                                         let d = d.unwrap();
                                         assert!(is_match!(d, &Value::Integer(1)));
-                                    },
+                                    }
                                     _ => panic!("What just happenend?"),
                                 }
-                            },
+                            }
                             _ => panic!("What just happenend?"),
                         }
-                    },
+                    }
                     _ => panic!("What just happenend?"),
                 }
-            },
+            }
             _ => panic!("What just happened?"),
         }
     }
 
     #[test]
     fn test_insert_with_seperator_into_table_where_array_is() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         table = []
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.insert_with_seperator(&String::from("table.a"), '.', Value::Integer(1));
 
@@ -326,9 +341,12 @@ mod test {
 
     #[test]
     fn test_insert_with_seperator_into_array_where_table_is() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         [table]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.insert_with_seperator(&String::from("table.[0]"), '.', Value::Integer(1));
 
@@ -342,9 +360,12 @@ mod test {
     fn test_insert_with_seperator_into_array_between_values() {
         use std::ops::Index;
 
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         array = [1, 2, 3, 4, 5]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.insert_with_seperator(&String::from("array.[2]"), '.', Value::Integer(6));
 
@@ -372,18 +393,21 @@ mod test {
                         assert!(is_match!(a.index(3), &Value::Integer(3)));
                         assert!(is_match!(a.index(4), &Value::Integer(4)));
                         assert!(is_match!(a.index(5), &Value::Integer(5)));
-                    },
+                    }
                     _ => panic!("What just happenend?"),
                 }
-            },
+            }
             _ => panic!("What just happenend?"),
         }
     }
 
     #[test]
     fn test_insert_with_seperator_into_table_with_nonexisting_keys() {
-        let mut toml : Value = toml_from_str(r#"
-        "#).unwrap();
+        let mut toml: Value = toml_from_str(
+            r#"
+        "#,
+        )
+        .unwrap();
 
         let res = toml.insert_with_seperator(&String::from("table.a"), '.', Value::Integer(1));
 
@@ -411,13 +435,12 @@ mod test {
 
                         let a = a.unwrap();
                         assert!(is_match!(a, &Value::Integer(1)));
-                    },
+                    }
                     _ => panic!("What just happenend?"),
                 }
-            },
+            }
             _ => panic!("What just happenend?"),
         }
     }
 
 }
-

@@ -13,7 +13,6 @@ pub enum Error {
     TomlDeserialize(#[cause] ::toml::de::Error),
 
     // Errors for tokenizer
-
     #[fail(display = "Parsing the query '{}' failed", _0)]
     QueryParsingError(String),
 
@@ -26,11 +25,12 @@ pub enum Error {
     #[fail(display = "The passed query tries to access an array but does not specify the index")]
     ArrayAccessWithoutIndex,
 
-    #[fail(display = "The passed query tries to access an array but does not specify a valid index")]
+    #[fail(
+        display = "The passed query tries to access an array but does not specify a valid index"
+    )]
     ArrayAccessWithInvalidIndex,
 
     // Errors for Resolver
-
     #[fail(display = "The identfier '{}' is not present in the document", _0)]
     IdentifierNotFoundInDocument(String),
 
@@ -56,13 +56,11 @@ pub enum Error {
     CannotAccessBecauseTypeMismatch(&'static str, &'static str),
 
     #[fail(display = "Cannot delete in array at {}, array has length {}", _0, _1)]
-    ArrayIndexOutOfBounds( usize, usize),
+    ArrayIndexOutOfBounds(usize, usize),
 
     #[fail(display = "Type Error. Requested {}, but got {}", _0, _1)]
     TypeError(&'static str, &'static str),
 
     #[fail(display = "Value at '{}' not there", _0)]
     NotAvailable(String),
-
 }
-

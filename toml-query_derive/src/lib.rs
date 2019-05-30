@@ -1,7 +1,7 @@
-extern crate proc_macro;
 extern crate darling;
-extern crate syn;
+extern crate proc_macro;
 extern crate quote;
+extern crate syn;
 
 #[cfg(test)]
 #[macro_use]
@@ -12,11 +12,7 @@ extern crate serde;
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{
-    Lit,
-    Meta,
-    MetaNameValue,
-};
+use syn::{Lit, Meta, MetaNameValue};
 
 #[proc_macro_derive(Partial, attributes(location))]
 pub fn derive_partial(tokens: TokenStream) -> TokenStream {
@@ -29,13 +25,14 @@ pub fn derive_partial(tokens: TokenStream) -> TokenStream {
         let option = option.parse_meta().unwrap();
         match option {
             // Match '#[ident = lit]' attributes. Match guard makes it '#[prefix = lit]'
-            Meta::NameValue(MetaNameValue{ref ident, ref lit, ..}) if ident == "location" => {
+            Meta::NameValue(MetaNameValue {
+                ref ident, ref lit, ..
+            }) if ident == "location" => {
                 if let Lit::Str(lit) = lit {
                     location = Some(lit.value());
                 }
-            },
-            _ => {},
-            // ...
+            }
+            _ => {} // ...
         }
     }
 
@@ -50,5 +47,3 @@ pub fn derive_partial(tokens: TokenStream) -> TokenStream {
 
     gen.into()
 }
-
-

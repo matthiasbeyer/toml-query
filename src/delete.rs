@@ -1,13 +1,11 @@
 /// The Toml Delete extensions
-
 use toml::Value;
 
-use crate::tokenizer::Token;
-use crate::tokenizer::tokenize_with_seperator;
 use crate::error::{Error, Result};
+use crate::tokenizer::tokenize_with_seperator;
+use crate::tokenizer::Token;
 
 pub trait TomlValueDeleteExt {
-
     /// Extension function for deleting a value in the current toml::Value document
     /// using a custom seperator.
     ///
@@ -42,16 +40,14 @@ pub trait TomlValueDeleteExt {
     fn delete(&mut self, query: &str) -> Result<Option<Value>> {
         self.delete_with_seperator(query, '.')
     }
-
 }
 
 impl TomlValueDeleteExt for Value {
-
     fn delete_with_seperator(&mut self, query: &str, sep: char) -> Result<Option<Value>> {
         use crate::resolver::mut_resolver::resolve;
         use std::ops::Index;
 
-        let mut tokens = r#try!(tokenize_with_seperator(query, sep));
+        let mut tokens = tokenize_with_seperator(query, sep)?;
         let last_token = tokens.pop_last();
 
         /// Check whether a structure (Table/Array) is empty. If the Value has not these types,
@@ -59,11 +55,11 @@ impl TomlValueDeleteExt for Value {
         #[inline]
         fn is_empty(val: Option<&Value>, default: bool) -> bool {
             val.map(|v| match v {
-                    &Value::Table(ref tab) => tab.is_empty(),
-                    &Value::Array(ref arr) => arr.is_empty(),
-                    _                      => default
-                })
-                .unwrap_or(default)
+                &Value::Table(ref tab) => tab.is_empty(),
+                &Value::Array(ref arr) => arr.is_empty(),
+                _ => default,
+            })
+            .unwrap_or(default)
         }
 
         #[inline]
@@ -83,124 +79,114 @@ impl TomlValueDeleteExt for Value {
 
         if last_token.is_none() {
             match self {
-                &mut Value::Table(ref mut tab) => {
-                    match tokens {
-                        Token::Identifier { ident, .. } => {
-                            if is_empty(tab.get(&ident), true) {
-                                Ok(tab.remove(&ident))
+                &mut Value::Table(ref mut tab) => match tokens {
+                    Token::Identifier { ident, .. } => {
+                        if is_empty(tab.get(&ident), true) {
+                            Ok(tab.remove(&ident))
+                        } else {
+                            if is_table(tab.get(&ident)) {
+                                Err(Error::CannotDeleteNonEmptyTable(Some(ident.clone())))
+                            } else if is_array(tab.get(&ident)) {
+                                Err(Error::CannotDeleteNonEmptyArray(Some(ident.clone())))
                             } else {
-                                if is_table(tab.get(&ident)) {
-                                    Err(Error::CannotDeleteNonEmptyTable(Some(ident.clone())))
-                                } else if is_array(tab.get(&ident)) {
-                                    Err(Error::CannotDeleteNonEmptyArray(Some(ident.clone())))
-                                } else {
-                                    let act = name_of_val(tab.get(&ident));
-                                    let tbl = "table";
-                                    Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
-                                }
+                                let act = name_of_val(tab.get(&ident));
+                                let tbl = "table";
+                                Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
                             }
-                        },
-                        _ => Ok(None)
+                        }
                     }
+                    _ => Ok(None),
                 },
-                &mut Value::Array(ref mut arr) => {
-                    match tokens {
-                        Token::Identifier { ident, .. } => Err(Error::NoIdentifierInArray(ident)),
-                        Token::Index { idx , .. } => {
-                            if is_empty(Some(arr.index(idx)), true) {
-                                Ok(Some(arr.remove(idx)))
+                &mut Value::Array(ref mut arr) => match tokens {
+                    Token::Identifier { ident, .. } => Err(Error::NoIdentifierInArray(ident)),
+                    Token::Index { idx, .. } => {
+                        if is_empty(Some(arr.index(idx)), true) {
+                            Ok(Some(arr.remove(idx)))
+                        } else {
+                            if is_table(Some(arr.index(idx))) {
+                                Err(Error::CannotDeleteNonEmptyTable(None))
+                            } else if is_array(Some(arr.index(idx))) {
+                                Err(Error::CannotDeleteNonEmptyArray(None))
                             } else {
-                                if is_table(Some(arr.index(idx))) {
-                                    Err(Error::CannotDeleteNonEmptyTable(None))
-                                } else if is_array(Some(arr.index(idx))) {
-                                    Err(Error::CannotDeleteNonEmptyArray(None))
-                                } else {
-                                    let act = name_of_val(Some(arr.index(idx)));
-                                    let tbl = "table";
-                                    Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
-                                }
+                                let act = name_of_val(Some(arr.index(idx)));
+                                let tbl = "table";
+                                Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
                             }
-                        },
+                        }
                     }
                 },
                 _ => {
                     let kind = match tokens {
                         Token::Identifier { ident, .. } => Error::QueryingValueAsTable(ident),
-                        Token::Index { idx , .. } => Error::QueryingValueAsArray(idx),
+                        Token::Index { idx, .. } => Error::QueryingValueAsArray(idx),
                     };
                     Err(Error::from(kind))
                 }
             }
         } else {
-            let val = r#try!(resolve(self, &tokens, true))
-                .unwrap(); // safe because of resolve() guarantees
+            let val = resolve(self, &tokens, true)?.unwrap(); // safe because of resolve() guarantees
             let last_token = last_token.unwrap();
             match val {
-                &mut Value::Table(ref mut tab) => {
-                    match *last_token {
-                        Token::Identifier { ref ident, .. } => {
-                            if is_empty(tab.get(ident), true) {
-                                Ok(tab.remove(ident))
+                &mut Value::Table(ref mut tab) => match *last_token {
+                    Token::Identifier { ref ident, .. } => {
+                        if is_empty(tab.get(ident), true) {
+                            Ok(tab.remove(ident))
+                        } else {
+                            if is_table(tab.get(ident)) {
+                                Err(Error::CannotDeleteNonEmptyTable(Some(ident.clone())))
+                            } else if is_array(tab.get(ident)) {
+                                Err(Error::CannotDeleteNonEmptyArray(Some(ident.clone())))
                             } else {
-                                if is_table(tab.get(ident)) {
-                                    Err(Error::CannotDeleteNonEmptyTable(Some(ident.clone())))
-                                } else if is_array(tab.get(ident)) {
-                                    Err(Error::CannotDeleteNonEmptyArray(Some(ident.clone())))
-                                } else {
-                                    let act = name_of_val(tab.get(ident));
-                                    let tbl = "table";
-                                    Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
-                                }
+                                let act = name_of_val(tab.get(ident));
+                                let tbl = "table";
+                                Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
                             }
-                        },
-                        Token::Index { idx, .. } => Err(Error::NoIndexInTable(idx)),
+                        }
                     }
+                    Token::Index { idx, .. } => Err(Error::NoIndexInTable(idx)),
                 },
-                &mut Value::Array(ref mut arr) => {
-                    match *last_token {
-                        Token::Identifier { ident, .. } => Err(Error::NoIdentifierInArray(ident)),
-                        Token::Index { idx, .. } => {
-                            if idx > arr.len() {
-                                return Err(Error::ArrayIndexOutOfBounds(idx, arr.len()))
-                            }
-                            if is_empty(Some(&arr.index(idx)), true) {
-                                Ok(Some(arr.remove(idx)))
+                &mut Value::Array(ref mut arr) => match *last_token {
+                    Token::Identifier { ident, .. } => Err(Error::NoIdentifierInArray(ident)),
+                    Token::Index { idx, .. } => {
+                        if idx > arr.len() {
+                            return Err(Error::ArrayIndexOutOfBounds(idx, arr.len()));
+                        }
+                        if is_empty(Some(&arr.index(idx)), true) {
+                            Ok(Some(arr.remove(idx)))
+                        } else {
+                            if is_table(Some(&arr.index(idx))) {
+                                Err(Error::CannotDeleteNonEmptyTable(None))
+                            } else if is_array(Some(&arr.index(idx))) {
+                                Err(Error::CannotDeleteNonEmptyArray(None))
                             } else {
-                                if is_table(Some(&arr.index(idx))) {
-                                    Err(Error::CannotDeleteNonEmptyTable(None))
-                                } else if is_array(Some(&arr.index(idx))) {
-                                    Err(Error::CannotDeleteNonEmptyArray(None))
-                                } else {
-                                    let act = name_of_val(Some(arr.index(idx)));
-                                    let tbl = "table";
-                                    Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
-                                }
+                                let act = name_of_val(Some(arr.index(idx)));
+                                let tbl = "table";
+                                Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
                             }
-                        },
+                        }
                     }
                 },
                 _ => {
                     let kind = match *last_token {
                         Token::Identifier { ident, .. } => Error::QueryingValueAsTable(ident),
-                        Token::Index { idx, .. }        => Error::QueryingValueAsArray(idx),
+                        Token::Index { idx, .. } => Error::QueryingValueAsArray(idx),
                     };
                     Err(Error::from(kind))
                 }
             }
         }
     }
-
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-    use toml::Value;
     use toml::from_str as toml_from_str;
+    use toml::Value;
 
     #[test]
     fn test_delete_from_empty_document() {
-        let mut toml : Value = toml_from_str("").unwrap();
+        let mut toml: Value = toml_from_str("").unwrap();
 
         let res = toml.delete_with_seperator(&String::from("a"), '.');
 
@@ -212,9 +198,12 @@ mod test {
 
     #[test]
     fn test_delete_from_empty_table() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         [table]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("table.a"), '.');
 
@@ -226,9 +215,12 @@ mod test {
 
     #[test]
     fn test_delete_integer() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         value = 1
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("value"), '.');
 
@@ -242,9 +234,12 @@ mod test {
 
     #[test]
     fn test_delete_integer_removes_entry_from_document() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         value = 1
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("value"), '.');
 
@@ -257,15 +252,18 @@ mod test {
 
         match toml {
             Value::Table(tab) => assert!(tab.is_empty()),
-            _                 => assert!(false, "Strange things are happening"),
+            _ => assert!(false, "Strange things are happening"),
         }
     }
 
     #[test]
     fn test_delete_string() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         value = "foo"
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("value"), '.');
 
@@ -283,9 +281,12 @@ mod test {
 
     #[test]
     fn test_delete_string_removes_entry_from_document() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         value = "foo"
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("value"), '.');
 
@@ -302,15 +303,18 @@ mod test {
 
         match toml {
             Value::Table(tab) => assert!(tab.is_empty()),
-            _                 => assert!(false, "Strange things are happening"),
+            _ => assert!(false, "Strange things are happening"),
         }
     }
 
     #[test]
     fn test_delete_empty_table() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         [table]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("table"), '.');
 
@@ -328,9 +332,12 @@ mod test {
 
     #[test]
     fn test_delete_empty_table_removes_entry_from_document() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         [table]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("table"), '.');
 
@@ -347,15 +354,18 @@ mod test {
 
         match toml {
             Value::Table(tab) => assert!(tab.is_empty()),
-            _                 => assert!(false, "Strange things are happening"),
+            _ => assert!(false, "Strange things are happening"),
         }
     }
 
     #[test]
     fn test_delete_empty_array() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         array = []
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("array"), '.');
 
@@ -373,9 +383,12 @@ mod test {
 
     #[test]
     fn test_delete_empty_array_removes_entry_from_document() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         array = []
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("array"), '.');
 
@@ -392,16 +405,19 @@ mod test {
 
         match toml {
             Value::Table(tab) => assert!(tab.is_empty()),
-            _                 => assert!(false, "Strange things are happening"),
+            _ => assert!(false, "Strange things are happening"),
         }
     }
 
     #[test]
     fn test_delete_nonempty_table() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         [table]
         a = 1
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("table"), '.');
 
@@ -413,9 +429,12 @@ mod test {
 
     #[test]
     fn test_delete_nonempty_array() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         array = [ 1 ]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("array"), '.');
 
@@ -427,10 +446,13 @@ mod test {
 
     #[test]
     fn test_delete_int_from_table() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         [table]
         int = 1
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("table.int"), '.');
 
@@ -442,10 +464,13 @@ mod test {
 
     #[test]
     fn test_delete_array_from_table() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         [table]
         array = []
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("table.array"), '.');
 
@@ -457,10 +482,13 @@ mod test {
 
     #[test]
     fn test_delete_int_from_array_from_table() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         [table]
         array = [ 1 ]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("table.array.[0]"), '.');
 
@@ -472,9 +500,12 @@ mod test {
 
     #[test]
     fn test_delete_int_from_array() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         array = [ 1 ]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("array.[0]"), '.');
 
@@ -486,9 +517,12 @@ mod test {
 
     #[test]
     fn test_delete_int_from_table_from_array() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         array = [ { table = { int = 1 } } ]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("array.[0].table.int"), '.');
 
@@ -502,9 +536,12 @@ mod test {
     fn test_delete_from_array_value() {
         use crate::read::TomlValueReadExt;
 
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         array = [ 1 ]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let ary = toml.read_mut(&String::from("array")).unwrap().unwrap();
         let res = ary.delete_with_seperator(&String::from("[0]"), '.');
@@ -519,9 +556,12 @@ mod test {
     fn test_delete_from_int_value() {
         use crate::read::TomlValueReadExt;
 
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         array = [ 1 ]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let ary = toml.read_mut(&String::from("array.[0]")).unwrap().unwrap();
         let res = ary.delete_with_seperator(&String::from("nonexist"), '.');
@@ -536,9 +576,12 @@ mod test {
     fn test_delete_index_from_non_array() {
         use crate::read::TomlValueReadExt;
 
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         array = 1
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let ary = toml.read_mut(&String::from("array")).unwrap().unwrap();
         let res = ary.delete_with_seperator(&String::from("[0]"), '.');
@@ -551,11 +594,14 @@ mod test {
 
     #[test]
     fn test_delete_index_from_table_in_table() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         table = { another = { int = 1 } }
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
-        let res     = toml.delete_with_seperator(&String::from("table.another.[0]"), '.');
+        let res = toml.delete_with_seperator(&String::from("table.another.[0]"), '.');
 
         assert!(res.is_err());
 
@@ -565,11 +611,14 @@ mod test {
 
     #[test]
     fn test_delete_identifier_from_array_in_table() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         table = { another = [ 1, 2, 3, 4, 5, 6 ] }
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
-        let res     = toml.delete_with_seperator(&String::from("table.another.nonexist"), '.');
+        let res = toml.delete_with_seperator(&String::from("table.another.nonexist"), '.');
 
         assert!(res.is_err());
 
@@ -579,11 +628,14 @@ mod test {
 
     #[test]
     fn test_delete_nonexistent_array_idx() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         array = [ 1, 2, 3 ]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
-        let res     = toml.delete_with_seperator(&String::from("array.[22]"), '.');
+        let res = toml.delete_with_seperator(&String::from("array.[22]"), '.');
 
         assert!(res.is_err());
 
@@ -593,9 +645,12 @@ mod test {
 
     #[test]
     fn test_delete_non_empty_array_from_array() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         array = [ [ 1 ], [ 2 ] ]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("array.[1]"), '.');
 
@@ -607,9 +662,12 @@ mod test {
 
     #[test]
     fn test_delete_non_empty_table_from_array() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         array = [ { t = 1 }, { t = 2 } ]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("array.[1]"), '.');
 
@@ -623,9 +681,12 @@ mod test {
     fn test_delete_non_empty_table_from_top_level_array() {
         use crate::read::TomlValueReadExt;
 
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         array = [ { t = 1 }, { t = 2 } ]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let ary = toml.read_mut(&String::from("array")).unwrap().unwrap();
         let res = ary.delete_with_seperator(&String::from("[1]"), '.');
@@ -638,9 +699,12 @@ mod test {
 
     #[test]
     fn test_delete_from_value_like_it_was_table() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         val = 5
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("val.foo"), '.');
 
@@ -652,9 +716,12 @@ mod test {
 
     #[test]
     fn test_delete_from_value_like_it_was_array() {
-        let mut toml : Value = toml_from_str(r#"
+        let mut toml: Value = toml_from_str(
+            r#"
         val = 5
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let res = toml.delete_with_seperator(&String::from("val.[0]"), '.');
 
@@ -665,4 +732,3 @@ mod test {
     }
 
 }
-

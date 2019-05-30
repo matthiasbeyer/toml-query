@@ -4,21 +4,24 @@
 use std::fmt::Debug;
 
 #[cfg(feature = "typed")]
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use toml::Value;
 
-use crate::tokenizer::tokenize_with_seperator;
 use crate::error::{Error, Result};
+use crate::tokenizer::tokenize_with_seperator;
 
 pub trait TomlValueReadExt<'doc> {
-
     /// Extension function for reading a value from the current toml::Value document
     /// using a custom seperator
     fn read_with_seperator(&'doc self, query: &str, sep: char) -> Result<Option<&'doc Value>>;
 
     /// Extension function for reading a value from the current toml::Value document mutably
     /// using a custom seperator
-    fn read_mut_with_seperator(&'doc mut self, query: &str, sep: char) -> Result<Option<&'doc mut Value>>;
+    fn read_mut_with_seperator(
+        &'doc mut self,
+        query: &str,
+        sep: char,
+    ) -> Result<Option<&'doc mut Value>>;
 
     /// Extension function for reading a value from the current toml::Value document
     fn read(&'doc self, query: &str) -> Result<Option<&'doc Value>> {
@@ -39,7 +42,7 @@ pub trait TomlValueReadExt<'doc> {
                 let deserialized = value.clone().try_into().map_err(Error::TomlDeserialize)?;
                 Ok(Some(deserialized))
             }
-            None => Ok(None)
+            None => Ok(None),
         }
     }
 
@@ -59,28 +62,29 @@ pub trait Partial<'a> {
     type Output: Serialize + Deserialize<'a> + Debug;
 }
 
-
 impl<'doc> TomlValueReadExt<'doc> for Value {
-
     fn read_with_seperator(&'doc self, query: &str, sep: char) -> Result<Option<&'doc Value>> {
         use crate::resolver::non_mut_resolver::resolve;
 
         tokenize_with_seperator(query, sep).and_then(move |tokens| resolve(self, &tokens, false))
     }
 
-    fn read_mut_with_seperator(&'doc mut self, query: &str, sep: char) -> Result<Option<&'doc mut Value>> {
+    fn read_mut_with_seperator(
+        &'doc mut self,
+        query: &str,
+        sep: char,
+    ) -> Result<Option<&'doc mut Value>> {
         use crate::resolver::mut_resolver::resolve;
 
         tokenize_with_seperator(query, sep).and_then(move |tokens| resolve(self, &tokens, false))
     }
-
 }
 
-pub trait TomlValueReadTypeExt<'doc> : TomlValueReadExt<'doc> {
+pub trait TomlValueReadTypeExt<'doc>: TomlValueReadExt<'doc> {
     fn read_string(&'doc self, query: &str) -> Result<Option<String>>;
-    fn read_int(&'doc self, query: &str)    -> Result<Option<i64>>;
-    fn read_float(&'doc self, query: &str)  -> Result<Option<f64>>;
-    fn read_bool(&'doc self, query: &str)   -> Result<Option<bool>>;
+    fn read_int(&'doc self, query: &str) -> Result<Option<i64>>;
+    fn read_float(&'doc self, query: &str) -> Result<Option<f64>>;
+    fn read_bool(&'doc self, query: &str) -> Result<Option<bool>>;
 }
 
 macro_rules! make_type_getter {
@@ -96,7 +100,8 @@ macro_rules! make_type_getter {
 }
 
 impl<'doc, T> TomlValueReadTypeExt<'doc> for T
-    where T: TomlValueReadExt<'doc>
+where
+    T: TomlValueReadExt<'doc>,
 {
     make_type_getter!(read_string, String, "String", Some(&Value::String(ref obj)) => obj.clone());
     make_type_getter!(read_int, i64, "Integer", Some(&Value::Integer(obj)) => obj);
@@ -111,9 +116,9 @@ mod test {
 
     #[test]
     fn test_read_empty() {
-        let toml : Value = toml_from_str("").unwrap();
+        let toml: Value = toml_from_str("").unwrap();
 
-        let val  = toml.read_with_seperator(&String::from("a"), '.');
+        let val = toml.read_with_seperator(&String::from("a"), '.');
 
         assert!(val.is_ok());
         let val = val.unwrap();
@@ -123,11 +128,14 @@ mod test {
 
     #[test]
     fn test_read_table() {
-        let toml : Value = toml_from_str(r#"
+        let toml: Value = toml_from_str(
+            r#"
         [table]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
-        let val  = toml.read_with_seperator(&String::from("table"), '.');
+        let val = toml.read_with_seperator(&String::from("table"), '.');
 
         assert!(val.is_ok());
         let val = val.unwrap();
@@ -144,12 +152,15 @@ mod test {
 
     #[test]
     fn test_read_table_value() {
-        let toml : Value = toml_from_str(r#"
+        let toml: Value = toml_from_str(
+            r#"
         [table]
         a = 1
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
-        let val  = toml.read_with_seperator(&String::from("table.a"), '.');
+        let val = toml.read_with_seperator(&String::from("table.a"), '.');
 
         assert!(val.is_ok());
         let val = val.unwrap();
@@ -162,11 +173,14 @@ mod test {
 
     #[test]
     fn test_read_empty_table_value() {
-        let toml : Value = toml_from_str(r#"
+        let toml: Value = toml_from_str(
+            r#"
         [table]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
-        let val  = toml.read_with_seperator(&String::from("table.a"), '.');
+        let val = toml.read_with_seperator(&String::from("table.a"), '.');
         assert!(val.is_ok());
         let val = val.unwrap();
 
@@ -175,11 +189,14 @@ mod test {
 
     #[test]
     fn test_read_table_index() {
-        let toml : Value = toml_from_str(r#"
+        let toml: Value = toml_from_str(
+            r#"
         [table]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
-        let val  = toml.read_with_seperator(&String::from("table.[0]"), '.');
+        let val = toml.read_with_seperator(&String::from("table.[0]"), '.');
         assert!(val.is_err());
         let err = val.unwrap_err();
 
@@ -194,9 +211,9 @@ mod test {
 
     #[test]
     fn test_read_empty_without_seperator() {
-        let toml : Value = toml_from_str("").unwrap();
+        let toml: Value = toml_from_str("").unwrap();
 
-        let val  = toml.read(&String::from("a"));
+        let val = toml.read(&String::from("a"));
         assert!(val.is_ok());
         let val = val.unwrap();
 
@@ -205,11 +222,14 @@ mod test {
 
     #[test]
     fn test_read_table_without_seperator() {
-        let toml : Value = toml_from_str(r#"
+        let toml: Value = toml_from_str(
+            r#"
         [table]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
-        let val  = toml.read(&String::from("table"));
+        let val = toml.read(&String::from("table"));
 
         assert!(val.is_ok());
         let val = val.unwrap();
@@ -226,12 +246,15 @@ mod test {
 
     #[test]
     fn test_read_table_value_without_seperator() {
-        let toml : Value = toml_from_str(r#"
+        let toml: Value = toml_from_str(
+            r#"
         [table]
         a = 1
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
-        let val  = toml.read(&String::from("table.a"));
+        let val = toml.read(&String::from("table.a"));
 
         assert!(val.is_ok());
         let val = val.unwrap();
@@ -244,11 +267,14 @@ mod test {
 
     #[test]
     fn test_read_empty_table_value_without_seperator() {
-        let toml : Value = toml_from_str(r#"
+        let toml: Value = toml_from_str(
+            r#"
         [table]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
-        let val  = toml.read(&String::from("table.a"));
+        let val = toml.read(&String::from("table.a"));
         assert!(val.is_ok());
         let val = val.unwrap();
 
@@ -257,11 +283,14 @@ mod test {
 
     #[test]
     fn test_read_table_index_without_seperator() {
-        let toml : Value = toml_from_str(r#"
+        let toml: Value = toml_from_str(
+            r#"
         [table]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
-        let val  = toml.read(&String::from("table.[0]"));
+        let val = toml.read(&String::from("table.[0]"));
         assert!(val.is_err());
         let err = val.unwrap_err();
 
@@ -277,10 +306,13 @@ mod high_level_fn_test {
 
     #[test]
     fn test_read_table_value() {
-        let toml : Value = toml_from_str(r#"
+        let toml: Value = toml_from_str(
+            r#"
         [table]
         a = 1
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let val = toml.read_int("table.a").unwrap();
 
@@ -290,10 +322,13 @@ mod high_level_fn_test {
     #[cfg(feature = "typed")]
     #[test]
     fn test_name() {
-        let toml : Value = toml_from_str(r#"
+        let toml: Value = toml_from_str(
+            r#"
         [table]
         a = 1
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
 
         let val: u32 = toml.read_deserialized("table.a").unwrap().unwrap();
 
@@ -303,9 +338,9 @@ mod high_level_fn_test {
     #[cfg(feature = "typed")]
     #[test]
     fn test_deser() {
-        use toml::map::Map;
         use crate::insert::TomlValueInsertExt;
         use crate::read::TomlValueReadExt;
+        use toml::map::Map;
 
         #[derive(Serialize, Deserialize, Debug)]
         struct Test {
@@ -314,13 +349,16 @@ mod high_level_fn_test {
         }
 
         let mut toml = Value::Table(Map::new());
-        let test     = Test {
+        let test = Test {
             a: 15,
             s: String::from("Helloworld"),
         };
 
-        assert!(toml.insert_serialized("table.value", test).unwrap().is_none());
-        let _ : Test = toml.read_deserialized("table.value").unwrap().unwrap();
+        assert!(toml
+            .insert_serialized("table.value", test)
+            .unwrap()
+            .is_none());
+        let _: Test = toml.read_deserialized("table.value").unwrap().unwrap();
 
         assert!(true);
     }
@@ -341,7 +379,7 @@ mod partial_tests {
 
     impl<'a> Partial<'a> for TestObj {
         const LOCATION: &'static str = "foo";
-        type Output                  = Self;
+        type Output = Self;
     }
 
     #[test]
@@ -356,7 +394,7 @@ mod partial_tests {
             Value::Table(tbl)
         };
 
-        let obj : TestObj = tbl.read_partial::<TestObj>().unwrap().unwrap();
+        let obj: TestObj = tbl.read_partial::<TestObj>().unwrap().unwrap();
         assert_eq!(obj.value, "foobar");
     }
 

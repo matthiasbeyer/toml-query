@@ -2,14 +2,13 @@
 ///
 /// Extension trait for the toml::Value type
 ///
-
 use toml::Value;
 
+use crate::delete::TomlValueDeleteExt;
+use crate::error::Result;
+use crate::insert::TomlValueInsertExt;
 use crate::read::TomlValueReadExt;
 use crate::set::TomlValueSetExt;
-use crate::delete::TomlValueDeleteExt;
-use crate::insert::TomlValueInsertExt;
-use crate::error::Result;
 
 /// Conveniance trait over
 ///
@@ -19,10 +18,9 @@ use crate::error::Result;
 /// for ease of use.
 ///
 /// The very same goal can be achieved by importing each trait seperately.
-pub trait TomlValueExt<'doc> :
+pub trait TomlValueExt<'doc>:
     TomlValueReadExt<'doc> + TomlValueSetExt + TomlValueDeleteExt + TomlValueInsertExt
 {
-
     //
     // READ functionality
     //
@@ -35,7 +33,11 @@ pub trait TomlValueExt<'doc> :
 
     /// See documentation of `TomlValueReadExt`
     #[inline]
-    fn read_mut_with_seperator(&'doc mut self, query: &str, sep: char) -> Result<Option<&'doc mut Value>> {
+    fn read_mut_with_seperator(
+        &'doc mut self,
+        query: &str,
+        sep: char,
+    ) -> Result<Option<&'doc mut Value>> {
         TomlValueReadExt::read_mut_with_seperator(self, query, sep)
     }
 
@@ -57,7 +59,12 @@ pub trait TomlValueExt<'doc> :
 
     /// See documentation of `TomlValueSetExt`
     #[inline]
-    fn set_with_seperator(&mut self, query: &str, sep: char, value: Value) -> Result<Option<Value>> {
+    fn set_with_seperator(
+        &mut self,
+        query: &str,
+        sep: char,
+        value: Value,
+    ) -> Result<Option<Value>> {
         TomlValueSetExt::set_with_seperator(self, query, sep, value)
     }
 
@@ -89,7 +96,12 @@ pub trait TomlValueExt<'doc> :
 
     /// See documentation of `TomlValueInsertExt`
     #[inline]
-    fn insert_with_seperator(&mut self, query: &str, sep: char, value: Value) -> Result<Option<Value>> {
+    fn insert_with_seperator(
+        &mut self,
+        query: &str,
+        sep: char,
+        value: Value,
+    ) -> Result<Option<Value>> {
         TomlValueInsertExt::insert_with_seperator(self, query, sep, value)
     }
 
@@ -100,5 +112,4 @@ pub trait TomlValueExt<'doc> :
     }
 }
 
-impl<'doc> TomlValueExt<'doc> for Value { }
-
+impl<'doc> TomlValueExt<'doc> for Value {}
