@@ -213,8 +213,8 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
                     return Err(Error::EmptyIdentifier);
                 }
 
-                let mut token = r#try!(mk_token_object(token));
-                r#try!(build_token_tree(split, &mut token));
+                let mut token = mk_token_object(token)?;
+                build_token_tree(split, &mut token)?;
                 last.set_next(token);
             }
         }
@@ -241,8 +241,8 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
                 return Err(Error::EmptyIdentifier);
             }
 
-            let mut tok = r#try!(mk_token_object(token));
-            let _ = r#try!(build_token_tree(&mut tokens, &mut tok));
+            let mut tok = mk_token_object(token)?;
+            let _ = build_token_tree(&mut tokens, &mut tok)?;
 
             trace!("Returning Ok({:?})", tok);
             Ok(tok)

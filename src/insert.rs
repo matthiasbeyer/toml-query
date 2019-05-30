@@ -108,10 +108,10 @@ impl TomlValueInsertExt for Value {
     ) -> Result<Option<Value>> {
         use crate::resolver::mut_creating_resolver::resolve;
 
-        let mut tokens = r#try!(tokenize_with_seperator(query, sep));
+        let mut tokens = tokenize_with_seperator(query, sep)?;
         let (val, last) = match tokens.pop_last() {
             None => (self, Box::new(tokens)),
-            Some(last) => (r#try!(resolve(self, &tokens)), last),
+            Some(last) => (resolve(self, &tokens)?, last),
         };
 
         match *last {

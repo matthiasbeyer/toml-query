@@ -54,10 +54,10 @@ impl TomlValueSetExt for Value {
     ) -> Result<Option<Value>> {
         use crate::resolver::mut_resolver::resolve;
 
-        let mut tokens = r#try!(tokenize_with_seperator(query, sep));
+        let mut tokens = tokenize_with_seperator(query, sep)?;
         let last = tokens.pop_last();
 
-        let val = r#try!(resolve(self, &tokens, true)).unwrap(); // safe because of resolve() guarantees
+        let val = resolve(self, &tokens, true)?.unwrap(); // safe because of resolve() guarantees
         let last = last.unwrap_or_else(|| Box::new(tokens));
 
         match *last {

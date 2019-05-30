@@ -32,8 +32,7 @@ pub fn derive_partial(tokens: TokenStream) -> TokenStream {
                     location = Some(lit.value());
                 }
             }
-            _ => {}
-            // ...
+            _ => {} // ...
         }
     }
 

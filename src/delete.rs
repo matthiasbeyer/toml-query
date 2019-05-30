@@ -47,7 +47,7 @@ impl TomlValueDeleteExt for Value {
         use crate::resolver::mut_resolver::resolve;
         use std::ops::Index;
 
-        let mut tokens = r#try!(tokenize_with_seperator(query, sep));
+        let mut tokens = tokenize_with_seperator(query, sep)?;
         let last_token = tokens.pop_last();
 
         /// Check whether a structure (Table/Array) is empty. If the Value has not these types,
@@ -124,7 +124,7 @@ impl TomlValueDeleteExt for Value {
                 }
             }
         } else {
-            let val = r#try!(resolve(self, &tokens, true)).unwrap(); // safe because of resolve() guarantees
+            let val = resolve(self, &tokens, true)?.unwrap(); // safe because of resolve() guarantees
             let last_token = last_token.unwrap();
             match val {
                 &mut Value::Table(ref mut tab) => match *last_token {
