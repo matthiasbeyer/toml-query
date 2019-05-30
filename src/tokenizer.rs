@@ -1,27 +1,25 @@
 /// The tokenizer for the query interpreter
-
 use crate::error::{Error, Result};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Token {
     Identifier {
         ident: String,
-        next: Option<Box<Token>>
+        next: Option<Box<Token>>,
     },
 
     Index {
         idx: usize,
-        next: Option<Box<Token>>
-    }
+        next: Option<Box<Token>>,
+    },
 }
 
 impl Token {
-
     pub fn next(&self) -> Option<&Box<Token>> {
         trace!("Matching token (self): {:?}", self);
         match self {
             &Token::Identifier { ref next, .. } => next.as_ref(),
-            &Token::Index { ref next, .. }      => next.as_ref(),
+            &Token::Index { ref next, .. } => next.as_ref(),
         }
     }
 
@@ -35,7 +33,7 @@ impl Token {
         trace!("self.set_next({:?})", token);
         match self {
             &mut Token::Identifier { ref mut next, .. } => *next = Some(Box::new(token)),
-            &mut Token::Index { ref mut next, .. }      => *next = Some(Box::new(token)),
+            &mut Token::Index { ref mut next, .. } => *next = Some(Box::new(token)),
         }
     }
 
@@ -73,7 +71,7 @@ impl Token {
                         trace!("self.pop_last(): next is none, returning None");
                         None
                     }
-                },
+                }
 
                 &mut Token::Index { ref mut next, .. } => {
                     trace!("self.pop_last(): self is Index");
@@ -99,7 +97,7 @@ impl Token {
                         trace!("self.pop_last(): next is none, returning None");
                         None
                     }
-                },
+                }
             }
         }
     }
@@ -121,12 +119,15 @@ impl Token {
             _ => unreachable!(),
         }
     }
-
 }
 
 pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
     use std::str::Split;
-    trace!("tokenize_with_seperator(query: {:?}, seperator: {:?})", query, seperator);
+    trace!(
+        "tokenize_with_seperator(query: {:?}, seperator: {:?})",
+        query,
+        seperator
+    );
 
     /// Creates a Token object from a string
     ///
@@ -157,7 +158,10 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
 
         if !has_array_brackets(s) {
             trace!("returning Ok(Identifier(ident: {:?}, next: None))", s);
-            return Ok(Token::Identifier { ident: String::from(s), next: None });
+            return Ok(Token::Identifier {
+                ident: String::from(s),
+                next: None,
+            });
         }
 
         match RE.captures(s) {
@@ -165,20 +169,20 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
             Some(captures) => {
                 trace!("Captured: {:?}", captures);
                 match captures.get(0) {
-                    None => Ok(Token::Identifier { ident: String::from(s), next: None }),
+                    None => Ok(Token::Identifier {
+                        ident: String::from(s),
+                        next: None,
+                    }),
                     Some(mtch) => {
                         trace!("First capture: {:?}", mtch);
 
                         let mtch = without_array_brackets(mtch.as_str());
                         trace!(".. without array brackets: {:?}", mtch);
 
-                        let i : usize = FromStr::from_str(&mtch).unwrap(); // save because regex
+                        let i: usize = FromStr::from_str(&mtch).unwrap(); // save because regex
 
                         trace!("returning Ok(Index(idx: {}, next: None)", i);
-                        Ok(Token::Index {
-                            idx: i,
-                            next: None,
-                        })
+                        Ok(Token::Index { idx: i, next: None })
                     }
                 }
             }
@@ -194,19 +198,19 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
     /// Remove '[' and ']' from a str
     fn without_array_brackets(s: &str) -> String {
         trace!("without_array_brackets({:?})", s);
-        s.replace("[","").replace("]","")
+        s.replace("[", "").replace("]", "")
     }
 
     fn build_token_tree(split: &mut Split<char>, last: &mut Token) -> Result<()> {
         trace!("build_token_tree(split: {:?}, last: {:?})", split, last);
         match split.next() {
-            None        => { /* No more tokens */ }
+            None => { /* No more tokens */ }
             Some(token) => {
                 trace!("build_token_tree(...): next from split: {:?}", token);
 
                 if token.len() == 0 {
                     trace!("build_token_tree(...): Empty identifier... returning Error");
-                    return Err(Error::EmptyIdentifier)
+                    return Err(Error::EmptyIdentifier);
                 }
 
                 let mut token = r#try!(mk_token_object(token));
@@ -221,14 +225,14 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
 
     if query.is_empty() {
         trace!("Query is empty. Returning error");
-        return Err(Error::EmptyQueryError)
+        return Err(Error::EmptyQueryError);
     }
 
     let mut tokens = query.split(seperator);
     trace!("Tokens splitted: {:?}", tokens);
 
     match tokens.next() {
-        None        => Err(Error::EmptyQueryError),
+        None => Err(Error::EmptyQueryError),
         Some(token) => {
             trace!("next Token: {:?}", token);
 
@@ -238,7 +242,7 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
             }
 
             let mut tok = r#try!(mk_token_object(token));
-            let _       = r#try!(build_token_tree(&mut tokens, &mut tok));
+            let _ = r#try!(build_token_tree(&mut tokens, &mut tok));
 
             trace!("Returning Ok({:?})", tok);
             Ok(tok)
@@ -248,8 +252,8 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
 
 #[cfg(test)]
 mod test {
-    use crate::error::Error;
     use super::*;
+    use crate::error::Error;
 
     use std::ops::Deref;
 
@@ -305,10 +309,13 @@ mod test {
         let tokens = tokens.unwrap();
 
         assert!(match tokens {
-            Token::Identifier { ref ident, next: None } => {
+            Token::Identifier {
+                ref ident,
+                next: None,
+            } => {
                 assert_eq!("example", ident);
                 true
-            },
+            }
             _ => false,
         });
     }
@@ -320,13 +327,16 @@ mod test {
         let tokens = tokens.unwrap();
 
         assert!(match tokens {
-            Token::Identifier { next: Some(ref next), .. } => { 
+            Token::Identifier {
+                next: Some(ref next),
+                ..
+            } => {
                 assert_eq!("b", next.deref().identifier());
                 match next.deref() {
                     &Token::Identifier { next: None, .. } => true,
-                    _ => false
+                    _ => false,
                 }
-            },
+            }
             _ => false,
         });
         assert_eq!("a", tokens.identifier());
@@ -340,11 +350,12 @@ mod test {
 
         assert_eq!("a", tokens.identifier());
         assert!(match tokens {
-            Token::Identifier { next: Some(ref next), .. } => {
-                match next.deref() {
-                    &Token::Index { idx: 0, next: None } => true,
-                    _ => false
-                }
+            Token::Identifier {
+                next: Some(ref next),
+                ..
+            } => match next.deref() {
+                &Token::Index { idx: 0, next: None } => true,
+                _ => false,
             },
             _ => false,
         });
@@ -358,20 +369,19 @@ mod test {
 
         assert_eq!("a", tokens.identifier());
 
-        let expected =
-            Token::Identifier {
-                ident: String::from("a"),
+        let expected = Token::Identifier {
+            ident: String::from("a"),
+            next: Some(Box::new(Token::Identifier {
+                ident: String::from("b"),
                 next: Some(Box::new(Token::Identifier {
-                    ident: String::from("b"),
-                    next: Some(Box::new(Token::Identifier {
-                        ident: String::from("c"),
-                        next: Some(Box::new(Token::Index {
-                            idx: 1000,
-                            next: None,
-                        })),
+                    ident: String::from("c"),
+                    next: Some(Box::new(Token::Index {
+                        idx: 1000,
+                        next: None,
                     })),
                 })),
-            };
+            })),
+        };
 
         assert_eq!(expected, tokens);
     }
@@ -407,10 +417,7 @@ mod test {
 
     #[test]
     fn test_pop_last_token_from_single_index_token_is_none() {
-        let mut token = Token::Index {
-            idx: 0,
-            next: None,
-        };
+        let mut token = Token::Index { idx: 0, next: None };
 
         let last = token.pop_last();
         assert!(last.is_none());
@@ -444,10 +451,7 @@ mod test {
     fn test_pop_last_token_from_single_index_token_is_one() {
         let mut token = Token::Index {
             idx: 0,
-            next: Some(Box::new(Token::Index {
-                idx: 1,
-                next: None,
-            })),
+            next: Some(Box::new(Token::Index { idx: 1, next: None })),
         };
 
         let last = token.pop_last();

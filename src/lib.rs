@@ -8,15 +8,19 @@
 
 // external crates
 
-#[macro_use] extern crate is_match;
-#[macro_use] extern crate lazy_static;
-#[macro_use] extern crate failure_derive;
+#[macro_use]
+extern crate is_match;
+#[macro_use]
+extern crate lazy_static;
+#[macro_use]
+extern crate failure_derive;
 extern crate failure;
 extern crate regex;
 extern crate toml;
 
 #[cfg(feature = "log")]
-#[macro_use] extern crate log;
+#[macro_use]
+extern crate log;
 
 #[cfg(feature = "typed")]
 extern crate serde;
@@ -26,28 +30,29 @@ extern crate serde;
 extern crate serde_derive;
 
 #[cfg(test)]
-#[macro_use] extern crate quickcheck;
+#[macro_use]
+extern crate quickcheck;
 
 // public modules
 
 #[cfg(not(feature = "log"))]
-#[macro_use] pub mod log;
+#[macro_use]
+pub mod log;
 
 extern crate toml_query_derive;
 
 #[doc(hidden)]
 pub use toml_query_derive::*;
 
+pub mod delete;
 pub mod error;
+pub mod insert;
 pub mod read;
 pub mod set;
-pub mod insert;
-pub mod delete;
-pub mod value;
 mod util;
+pub mod value;
 
 // private modules
 
-mod tokenizer;
 mod resolver;
-
+mod tokenizer;

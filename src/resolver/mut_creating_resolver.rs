@@ -1,11 +1,9 @@
-/// The query resolver that operates on the AST and the TOML object
-
-use toml::{map::Map, Value};
-use crate::tokenizer::Token;
 use crate::error::{Error, Result};
+use crate::tokenizer::Token;
+/// The query resolver that operates on the AST and the TOML object
+use toml::{map::Map, Value};
 
 pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut Value> {
-
     // Cases:
     //
     //  1. Identifier, toml: table, ident present       -> traverse
@@ -21,29 +19,27 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut 
     //      then traverse
 
     match *tokens {
-        Token::Identifier { ref ident, .. } => {
-            match toml {
-                &mut Value::Table(ref mut t) => {
-                    if t.contains_key(ident) {
-                        match tokens.next() {
-                            Some(next) => resolve(t.get_mut(ident).unwrap(), next),
-                            None => t.get_mut(ident).ok_or_else(|| unreachable!()),
-                        }
-                    } else {
-                        match tokens.next() {
-                            Some(next) => {
-                                let subdoc = t.entry(ident.clone()).or_insert(Value::Table(Map::new()));
-                                resolve(subdoc, next)
-                            },
-                            None => Ok(t.entry(ident.clone()).or_insert(Value::Table(Map::new()))),
-                        }
+        Token::Identifier { ref ident, .. } => match toml {
+            &mut Value::Table(ref mut t) => {
+                if t.contains_key(ident) {
+                    match tokens.next() {
+                        Some(next) => resolve(t.get_mut(ident).unwrap(), next),
+                        None => t.get_mut(ident).ok_or_else(|| unreachable!()),
                     }
-                },
-                &mut Value::Array(_) => Err(Error::NoIdentifierInArray(ident.clone())),
-                _ => unimplemented!()
+                } else {
+                    match tokens.next() {
+                        Some(next) => {
+                            let subdoc = t.entry(ident.clone()).or_insert(Value::Table(Map::new()));
+                            resolve(subdoc, next)
+                        }
+                        None => Ok(t.entry(ident.clone()).or_insert(Value::Table(Map::new()))),
+                    }
+                }
             }
-        }
-        Token::Index { idx , .. } => {
+            &mut Value::Array(_) => Err(Error::NoIdentifierInArray(ident.clone())),
+            _ => unimplemented!(),
+        },
+        Token::Index { idx, .. } => {
             match toml {
                 &mut Value::Table(_) => Err(Error::NoIndexInTable(idx)),
                 &mut Value::Array(ref mut ary) => {
@@ -57,7 +53,7 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut 
                             match **next {
                                 Token::Identifier { .. } => {
                                     ary.push(Value::Table(Map::new()));
-                                },
+                                }
                                 Token::Index { .. } => {
                                     ary.push(Value::Array(vec![]));
                                 }
@@ -69,7 +65,7 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut 
                         }
                     }
                 }
-                _ => unimplemented!()
+                _ => unimplemented!(),
             }
         }
     }
@@ -77,15 +73,18 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut 
 
 #[cfg(test)]
 mod test {
+    use super::resolve;
+    use crate::tokenizer::*;
     use toml::from_str as toml_from_str;
     use toml::Value;
-    use crate::tokenizer::*;
-    use super::resolve;
 
     macro_rules! do_resolve {
         ( $toml:ident => $query:expr ) => {
-            resolve(&mut $toml, &tokenize_with_seperator(&String::from($query), '.').unwrap())
-        }
+            resolve(
+                &mut $toml,
+                &tokenize_with_seperator(&String::from($query), '.').unwrap(),
+            )
+        };
     }
 
     #[test]
@@ -164,7 +163,7 @@ mod test {
             &mut Value::Array(ref ary) => {
                 assert_eq!(ary[0], Value::Boolean(true));
                 assert_eq!(ary[1], Value::Boolean(false));
-            },
+            }
             _ => panic!("What just happened?"),
         }
     }
@@ -182,7 +181,7 @@ mod test {
             &mut Value::Array(ref ary) => {
                 assert_eq!(ary[0], Value::Integer(1));
                 assert_eq!(ary[1], Value::Integer(1337));
-            },
+            }
             _ => panic!("What just happened?"),
         }
     }
@@ -202,7 +201,7 @@ mod test {
                 assert_eq!(ary[0].as_float(), Some(1.0));
                 assert!(is_match!(ary[1], Value::Float(_)));
                 assert_eq!(ary[1].as_float(), Some(133.25));
-            },
+            }
             _ => panic!("What just happened?"),
         }
     }
@@ -231,10 +230,13 @@ mod test {
 
     #[test]
     fn test_resolve_table_element_query() {
-        let mut toml = toml_from_str(r#"
+        let mut toml = toml_from_str(
+            r#"
         [table]
         value = 42
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
         let result = do_resolve!(toml => "table.value");
 
         assert!(result.is_ok());
@@ -245,14 +247,17 @@ mod test {
 
     #[test]
     fn test_resolve_table_with_many_elements_element_query() {
-        let mut toml = toml_from_str(r#"
+        let mut toml = toml_from_str(
+            r#"
         [table]
         value1 = 42
         value2 = 43
         value3 = 44
         value4 = 45
         value5 = 46
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
         let result = do_resolve!(toml => "table.value1");
 
         assert!(result.is_ok());
@@ -263,10 +268,13 @@ mod test {
 
     #[test]
     fn test_resolve_table_array_query() {
-        let mut toml = toml_from_str(r#"
+        let mut toml = toml_from_str(
+            r#"
         [table]
         value1 = [ 42.0, 50.0 ]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
         let result = do_resolve!(toml => "table.value1");
 
         assert!(result.is_ok());
@@ -279,17 +287,20 @@ mod test {
                 assert_eq!(ary[0].as_float(), Some(42.0));
                 assert!(is_match!(ary[1], Value::Float(_)));
                 assert_eq!(ary[1].as_float(), Some(50.0));
-            },
+            }
             _ => panic!("What just happened?"),
         }
     }
 
     #[test]
     fn test_resolve_table_array_element_query() {
-        let mut toml = toml_from_str(r#"
+        let mut toml = toml_from_str(
+            r#"
         [table]
         value1 = [ 42 ]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
         let result = do_resolve!(toml => "table.value1.[0]");
 
         assert!(result.is_ok());
@@ -300,7 +311,8 @@ mod test {
 
     #[test]
     fn test_resolve_multi_table_query() {
-        let mut toml = toml_from_str(r#"
+        let mut toml = toml_from_str(
+            r#"
         [table0]
         value = [ 1 ]
         [table1]
@@ -309,7 +321,9 @@ mod test {
         value = [ 42.0 ]
         [table3]
         value = [ true ]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
         let result = do_resolve!(toml => "table1.value.[0]");
 
         assert!(result.is_ok());
@@ -322,7 +336,7 @@ mod test {
         }
     }
 
-    static FRUIT_TABLE : &'static str = r#"
+    static FRUIT_TABLE: &'static str = r#"
     [[fruit.blah]]
       name = "apple"
 
@@ -372,7 +386,7 @@ mod test {
                     Some(&Value::String(ref s)) => assert_eq!("round", s),
                     _ => assert!(false),
                 }
-            },
+            }
             _ => panic!("What just happened?"),
         }
     }
@@ -400,9 +414,12 @@ mod test {
 
     #[test]
     fn test_resolve_query_empty_table() {
-        let mut toml = toml_from_str(r#"
+        let mut toml = toml_from_str(
+            r#"
         [example]
-        "#).unwrap();
+        "#,
+        )
+        .unwrap();
         let result = do_resolve!(toml => "example");
 
         assert!(result.is_ok());
@@ -425,7 +442,7 @@ mod test {
         assert!(is_match!(result, &mut Value::Table(_)));
         match result {
             &mut Value::Table(ref t) => assert!(t.is_empty()),
-            _                        => panic!("What just happened?"),
+            _ => panic!("What just happened?"),
         }
     }
 
@@ -457,7 +474,7 @@ mod test {
 
         match result {
             &mut Value::Table(ref t) => assert!(t.is_empty()),
-            _                        => panic!("What just happened?"),
+            _ => panic!("What just happened?"),
         }
     }
 
@@ -471,7 +488,7 @@ mod test {
 
         match result {
             &mut Value::Table(ref t) => assert!(t.is_empty()),
-            _                        => panic!("What just happened?"),
+            _ => panic!("What just happened?"),
         }
     }
 
@@ -493,4 +510,3 @@ mod test {
     }
 
 }
-
