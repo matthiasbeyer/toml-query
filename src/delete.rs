@@ -34,9 +34,9 @@ pub trait TomlValueDeleteExt {
     ///
     fn delete_with_seperator(&mut self, query: &str, sep: char) -> Result<Option<Value>>;
 
-    /// Extension function for inserting a value from the current toml::Value document
+    /// Extension function for deleting a value from the current toml::Value document
     ///
-    /// See documentation of `TomlValueinsertExt::insert_with_seperator`
+    /// See documentation of `TomlValueDeleteExt::delete_with_seperator`
     fn delete(&mut self, query: &str) -> Result<Option<Value>> {
         self.delete_with_seperator(query, '.')
     }

@@ -86,7 +86,7 @@ pub trait TomlValueInsertExt {
 
     /// Extension function for inserting a value from the current toml::Value document
     ///
-    /// See documentation of `TomlValueinsertExt::insert_with_seperator`
+    /// See documentation of `TomlValueInsertExt::insert_with_seperator`
     fn insert(&mut self, query: &str, value: Value) -> Result<Option<Value>> {
         self.insert_with_seperator(query, '.', value)
     }
