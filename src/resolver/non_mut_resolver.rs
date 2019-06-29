@@ -39,7 +39,11 @@ pub fn resolve<'doc>(toml: &'doc Value, tokens: &Token, error_if_not_found: bool
                 &Token::Index { idx, .. } => {
                     match tokens.next() {
                         Some(next) => resolve(ary.get(idx).unwrap(), next, error_if_not_found),
-                        None       => Ok(Some(ary.index(idx))),
+                        None => if ary.len() < idx {
+                            Err(Error::IndexOutOfBounds(idx, ary.len()))
+                        } else {
+                            Ok(Some(ary.index(idx)))
+                        },
                     }
                 },
                 &Token::Identifier { ref ident, .. } => {
