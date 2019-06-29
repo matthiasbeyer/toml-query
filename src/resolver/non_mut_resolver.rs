@@ -38,7 +38,11 @@ pub fn resolve<'doc>(
         &Value::Array(ref ary) => match tokens {
             &Token::Index { idx, .. } => match tokens.next() {
                 Some(next) => resolve(ary.get(idx).unwrap(), next, error_if_not_found),
-                None => Ok(Some(ary.index(idx))),
+                None => if ary.len() < idx {
+                    Err(Error::IndexOutOfBounds(idx, ary.len()))
+                } else {
+                    Ok(Some(ary.index(idx)))
+                },
             },
             &Token::Identifier { ref ident, .. } => Err(Error::NoIdentifierInArray(ident.clone())),
         },
@@ -549,6 +553,23 @@ mod test {
         let result = result.unwrap_err();
 
         assert!(is_match!(result, Error::QueryingValueAsArray { .. }));
+    }
+
+    #[test]
+    fn test_indexing_out_of_bounds() {
+        let toml = toml_from_str(
+            r#"
+        [example]
+        foo = [ 1, 2, 3 ]
+        "#,
+        )
+        .unwrap();
+        let result = do_resolve!(toml => "example.foo.[12]");
+
+        assert!(result.is_err());
+        let result = result.unwrap_err();
+
+        assert!(is_match!(result, Error::IndexOutOfBounds { .. }));
     }
 
 }
