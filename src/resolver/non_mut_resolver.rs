@@ -544,5 +544,38 @@ mod test {
         assert!(is_match!(result, Error::IndexOutOfBounds { .. }));
     }
 
+    #[test]
+    fn test_indexing_out_of_bounds_edgecase_1() {
+        let toml = toml_from_str(
+            r#"
+        [example]
+        foo = []
+        "#,
+        )
+        .unwrap();
+        let result = do_resolve!(toml => "example.foo.[0]");
+
+        assert!(result.is_err());
+        let result = result.unwrap_err();
+
+        assert!(is_match!(result, Error::IndexOutOfBounds { .. }));
+    }
+
+    #[test]
+    fn test_indexing_out_of_bounds_edgecase_2() {
+        let toml = toml_from_str(
+            r#"
+        [example]
+        foo = [ 1 ]
+        "#,
+        )
+        .unwrap();
+        let result = do_resolve!(toml => "example.foo.[1]");
+
+        assert!(result.is_err());
+        let result = result.unwrap_err();
+
+        assert!(is_match!(result, Error::IndexOutOfBounds { .. }));
+    }
 }
 
