@@ -58,6 +58,9 @@ pub enum Error {
     #[fail(display = "Cannot delete in array at {}, array has length {}", _0, _1)]
     ArrayIndexOutOfBounds(usize, usize),
 
+    #[fail(display = "Cannot access array at {}, array has length {}", _0, _1)]
+    IndexOutOfBounds(usize, usize),
+
     #[fail(display = "Type Error. Requested {}, but got {}", _0, _1)]
     TypeError(&'static str, &'static str),
 
