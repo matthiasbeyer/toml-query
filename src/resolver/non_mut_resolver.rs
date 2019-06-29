@@ -38,7 +38,7 @@ pub fn resolve<'doc>(
         &Value::Array(ref ary) => match tokens {
             &Token::Index { idx, .. } => match tokens.next() {
                 Some(next) => resolve(ary.get(idx).unwrap(), next, error_if_not_found),
-                None => if ary.len() < idx {
+                None => if ary.get(idx).is_none() {
                     Err(Error::IndexOutOfBounds(idx, ary.len()))
                 } else {
                     Ok(Some(ary.index(idx)))
@@ -572,4 +572,37 @@ mod test {
         assert!(is_match!(result, Error::IndexOutOfBounds { .. }));
     }
 
+    #[test]
+    fn test_indexing_out_of_bounds_edgecase_1() {
+        let toml = toml_from_str(
+            r#"
+        [example]
+        foo = []
+        "#,
+        )
+        .unwrap();
+        let result = do_resolve!(toml => "example.foo.[0]");
+
+        assert!(result.is_err());
+        let result = result.unwrap_err();
+
+        assert!(is_match!(result, Error::IndexOutOfBounds { .. }));
+    }
+
+    #[test]
+    fn test_indexing_out_of_bounds_edgecase_2() {
+        let toml = toml_from_str(
+            r#"
+        [example]
+        foo = [ 1 ]
+        "#,
+        )
+        .unwrap();
+        let result = do_resolve!(toml => "example.foo.[1]");
+
+        assert!(result.is_err());
+        let result = result.unwrap_err();
+
+        assert!(is_match!(result, Error::IndexOutOfBounds { .. }));
+    }
 }
