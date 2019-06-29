@@ -544,4 +544,21 @@ mod test {
         assert!(is_match!(result, Error::QueryingValueAsArray { .. }));
     }
 
+    #[test]
+    fn test_indexing_out_of_bounds() {
+        let mut toml = toml_from_str(
+            r#"
+        [example]
+        foo = [ 1, 2, 3 ]
+        "#,
+        )
+        .unwrap();
+        let result = do_resolve!(toml => "example.foo.[12]");
+
+        assert!(result.is_err());
+        let result = result.unwrap_err();
+
+        assert!(is_match!(result, Error::IndexOutOfBounds { .. }));
+    }
+
 }
