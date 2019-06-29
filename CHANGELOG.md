@@ -3,6 +3,15 @@
 This changelog was started with the 0.4.0 release, so there are no logs before
 that version.
 
+# 0.9.2
+
+Bugfix release:
+
+* Fix a panic in the resolver implementation when indexing arrays: Bounds check
+  did not work in edgecases.
+  Tests are also added for this.
+
+
 # 0.9.1
 
 Bugfix release:
