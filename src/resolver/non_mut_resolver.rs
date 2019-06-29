@@ -38,7 +38,7 @@ pub fn resolve<'doc>(
         &Value::Array(ref ary) => match tokens {
             &Token::Index { idx, .. } => match tokens.next() {
                 Some(next) => resolve(ary.get(idx).unwrap(), next, error_if_not_found),
-                None => if ary.len() < idx {
+                None => if ary.get(idx).is_none() {
                     Err(Error::IndexOutOfBounds(idx, ary.len()))
                 } else {
                     Ok(Some(ary.index(idx)))
