@@ -38,7 +38,11 @@ pub fn resolve<'doc>(
         &mut Value::Array(ref mut ary) => match tokens {
             &Token::Index { idx, .. } => match tokens.next() {
                 Some(next) => resolve(ary.get_mut(idx).unwrap(), next, error_if_not_found),
-                None => Ok(Some(ary.index_mut(idx))),
+                None => if ary.len() < idx {
+                    Err(Error::IndexOutOfBounds(idx, ary.len()))
+                } else {
+                    Ok(Some(ary.index_mut(idx)))
+                },
             },
             &Token::Identifier { ref ident, .. } => Err(Error::NoIdentifierInArray(ident.clone())),
         },
