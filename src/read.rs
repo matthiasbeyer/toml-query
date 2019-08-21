@@ -145,7 +145,7 @@ mod test {
 
         assert!(is_match!(val, &Value::Table(_)));
         match val {
-            &Value::Table(ref t) => assert!(t.is_empty()),
+            Value::Table(ref t) => assert!(t.is_empty()),
             _ => panic!("What just happened?"),
         }
     }
@@ -239,7 +239,7 @@ mod test {
 
         assert!(is_match!(val, &Value::Table(_)));
         match val {
-            &Value::Table(ref t) => assert!(t.is_empty()),
+            Value::Table(ref t) => assert!(t.is_empty()),
             _ => panic!("What just happened?"),
         }
     }

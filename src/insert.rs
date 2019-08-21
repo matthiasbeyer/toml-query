@@ -116,12 +116,12 @@ impl TomlValueInsertExt for Value {
 
         match *last {
             Token::Identifier { ident, .. } => match val {
-                &mut Value::Table(ref mut t) => Ok(t.insert(ident, value)),
+                Value::Table(ref mut t) => Ok(t.insert(ident, value)),
                 _ => Err(Error::NoIdentifierInArray(ident.clone())),
             },
 
             Token::Index { idx, .. } => match val {
-                &mut Value::Array(ref mut a) => {
+                Value::Array(ref mut a) => {
                     if a.len() > idx {
                         a.insert(idx, value);
                         Ok(None)
@@ -167,7 +167,7 @@ mod test {
                 );
                 let val = val.unwrap();
 
-                assert!(is_match!(val, &Value::Integer(1)), "Is not one: {:?}", val);
+                assert!(is_match!(val, Value::Integer(1)), "Is not one: {:?}", val);
             }
             _ => panic!("What just happenend?"),
         }
@@ -198,16 +198,16 @@ mod test {
                 assert!(table.is_some());
 
                 let table = table.unwrap();
-                assert!(is_match!(table, &Value::Table(_)));
+                assert!(is_match!(table, Value::Table(_)));
                 match table {
-                    &Value::Table(ref t) => {
+                    Value::Table(ref t) => {
                         assert!(!t.is_empty());
 
                         let a = t.get("a");
                         assert!(a.is_some());
 
                         let a = a.unwrap();
-                        assert!(is_match!(a, &Value::Integer(1)));
+                        assert!(is_match!(a, Value::Integer(1)));
                     }
                     _ => panic!("What just happenend?"),
                 }
@@ -243,11 +243,11 @@ mod test {
                 assert!(array.is_some());
 
                 let array = array.unwrap();
-                assert!(is_match!(array, &Value::Array(_)));
+                assert!(is_match!(array, Value::Array(_)));
                 match array {
-                    &Value::Array(ref a) => {
+                    Value::Array(ref a) => {
                         assert!(!a.is_empty());
-                        assert!(is_match!(a.index(0), &Value::Integer(1)));
+                        assert!(is_match!(a.index(0), Value::Integer(1)));
                     }
                     _ => panic!("What just happenend?"),
                 }
@@ -280,34 +280,34 @@ mod test {
                 assert!(a_tab.is_some());
 
                 let a_tab = a_tab.unwrap();
-                assert!(is_match!(a_tab, &Value::Table(_)));
+                assert!(is_match!(a_tab, Value::Table(_)));
                 match a_tab {
-                    &Value::Table(ref a) => {
+                    Value::Table(ref a) => {
                         assert!(!a.is_empty());
 
                         let b_tab = a.get("b");
                         assert!(b_tab.is_some());
 
                         let b_tab = b_tab.unwrap();
-                        assert!(is_match!(b_tab, &Value::Table(_)));
+                        assert!(is_match!(b_tab, Value::Table(_)));
                         match b_tab {
-                            &Value::Table(ref b) => {
+                            Value::Table(ref b) => {
                                 assert!(!b.is_empty());
 
                                 let c_tab = b.get("c");
                                 assert!(c_tab.is_some());
 
                                 let c_tab = c_tab.unwrap();
-                                assert!(is_match!(c_tab, &Value::Table(_)));
+                                assert!(is_match!(c_tab, Value::Table(_)));
                                 match c_tab {
-                                    &Value::Table(ref c) => {
+                                    Value::Table(ref c) => {
                                         assert!(!c.is_empty());
 
                                         let d = c.get("d");
                                         assert!(d.is_some());
 
                                         let d = d.unwrap();
-                                        assert!(is_match!(d, &Value::Integer(1)));
+                                        assert!(is_match!(d, Value::Integer(1)));
                                     }
                                     _ => panic!("What just happenend?"),
                                 }
@@ -383,16 +383,16 @@ mod test {
                 assert!(array.is_some());
 
                 let array = array.unwrap();
-                assert!(is_match!(array, &Value::Array(_)));
+                assert!(is_match!(array, Value::Array(_)));
                 match array {
-                    &Value::Array(ref a) => {
+                    Value::Array(ref a) => {
                         assert!(!a.is_empty());
-                        assert!(is_match!(a.index(0), &Value::Integer(1)));
-                        assert!(is_match!(a.index(1), &Value::Integer(2)));
-                        assert!(is_match!(a.index(2), &Value::Integer(6)));
-                        assert!(is_match!(a.index(3), &Value::Integer(3)));
-                        assert!(is_match!(a.index(4), &Value::Integer(4)));
-                        assert!(is_match!(a.index(5), &Value::Integer(5)));
+                        assert!(is_match!(a.index(0), Value::Integer(1)));
+                        assert!(is_match!(a.index(1), Value::Integer(2)));
+                        assert!(is_match!(a.index(2), Value::Integer(6)));
+                        assert!(is_match!(a.index(3), Value::Integer(3)));
+                        assert!(is_match!(a.index(4), Value::Integer(4)));
+                        assert!(is_match!(a.index(5), Value::Integer(5)));
                     }
                     _ => panic!("What just happenend?"),
                 }
@@ -425,16 +425,16 @@ mod test {
                 assert!(table.is_some());
 
                 let table = table.unwrap();
-                assert!(is_match!(table, &Value::Table(_)));
+                assert!(is_match!(table, Value::Table(_)));
                 match table {
-                    &Value::Table(ref t) => {
+                    Value::Table(ref t) => {
                         assert!(!t.is_empty());
 
                         let a = t.get("a");
                         assert!(a.is_some());
 
                         let a = a.unwrap();
-                        assert!(is_match!(a, &Value::Integer(1)));
+                        assert!(is_match!(a, Value::Integer(1)));
                     }
                     _ => panic!("What just happenend?"),
                 }

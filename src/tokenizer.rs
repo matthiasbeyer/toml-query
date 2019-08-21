@@ -18,8 +18,8 @@ impl Token {
     pub fn next(&self) -> Option<&Box<Token>> {
         trace!("Matching token (self): {:?}", self);
         match self {
-            &Token::Identifier { ref next, .. } => next.as_ref(),
-            &Token::Index { ref next, .. } => next.as_ref(),
+            Token::Identifier { ref next, .. } => next.as_ref(),
+            Token::Index { ref next, .. } => next.as_ref(),
         }
     }
 
@@ -32,8 +32,8 @@ impl Token {
     pub fn set_next(&mut self, token: Token) {
         trace!("self.set_next({:?})", token);
         match self {
-            &mut Token::Identifier { ref mut next, .. } => *next = Some(Box::new(token)),
-            &mut Token::Index { ref mut next, .. } => *next = Some(Box::new(token)),
+            Token::Identifier { ref mut next, .. } => *next = Some(Box::new(token)),
+            Token::Index { ref mut next, .. } => *next = Some(Box::new(token)),
         }
     }
 
@@ -48,7 +48,7 @@ impl Token {
         } else {
             trace!("self.pop_last(): Having next");
             match self {
-                &mut Token::Identifier { ref mut next, .. } => {
+                Token::Identifier { ref mut next, .. } => {
                     trace!("self.pop_last(): self is Identifier");
                     if next.is_some() {
                         trace!("self.pop_last(): next is Some(_)");
@@ -73,7 +73,7 @@ impl Token {
                     }
                 }
 
-                &mut Token::Index { ref mut next, .. } => {
+                Token::Index { ref mut next, .. } => {
                     trace!("self.pop_last(): self is Index");
                     if next.is_some() {
                         trace!("self.pop_last(): next is Some(_)");
@@ -106,7 +106,7 @@ impl Token {
     pub fn identifier(&self) -> &String {
         trace!("self.identifier()");
         match self {
-            &Token::Identifier { ref ident, .. } => &ident,
+            Token::Identifier { ref ident, .. } => &ident,
             _ => unreachable!(),
         }
     }
@@ -115,7 +115,7 @@ impl Token {
     pub fn idx(&self) -> usize {
         trace!("self.idx()");
         match self {
-            &Token::Index { idx: i, .. } => i,
+            Token::Index { idx: i, .. } => *i,
             _ => unreachable!(),
         }
     }
@@ -333,7 +333,7 @@ mod test {
             } => {
                 assert_eq!("b", next.deref().identifier());
                 match next.deref() {
-                    &Token::Identifier { next: None, .. } => true,
+                    Token::Identifier { next: None, .. } => true,
                     _ => false,
                 }
             }
@@ -354,7 +354,7 @@ mod test {
                 next: Some(ref next),
                 ..
             } => match next.deref() {
-                &Token::Index { idx: 0, next: None } => true,
+                Token::Index { idx: 0, next: None } => true,
                 _ => false,
             },
             _ => false,

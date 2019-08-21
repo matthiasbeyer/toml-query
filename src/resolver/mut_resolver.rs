@@ -17,8 +17,8 @@ pub fn resolve<'doc>(
     error_if_not_found: bool,
 ) -> Result<Option<&'doc mut Value>> {
     match toml {
-        &mut Value::Table(ref mut t) => match tokens {
-            &Token::Identifier { ref ident, .. } => match t.get_mut(ident) {
+        Value::Table(ref mut t) => match tokens {
+            Token::Identifier { ref ident, .. } => match t.get_mut(ident) {
                 None => {
                     if error_if_not_found {
                         Err(Error::IdentifierNotFoundInDocument(ident.to_owned()))
@@ -32,26 +32,26 @@ pub fn resolve<'doc>(
                 },
             },
 
-            &Token::Index { idx, .. } => Err(Error::NoIndexInTable(idx)),
+            Token::Index { idx, .. } => Err(Error::NoIndexInTable(*idx)),
         },
 
-        &mut Value::Array(ref mut ary) => match tokens {
-            &Token::Index { idx, .. } => match tokens.next() {
-                Some(next) => resolve(ary.get_mut(idx).unwrap(), next, error_if_not_found),
+        Value::Array(ref mut ary) => match tokens {
+            Token::Index { idx, .. } => match tokens.next() {
+                Some(next) => resolve(ary.get_mut(*idx).unwrap(), next, error_if_not_found),
                 None => {
-                    if ary.get(idx).is_none() {
-                        Err(Error::IndexOutOfBounds(idx, ary.len()))
+                    if ary.get(*idx).is_none() {
+                        Err(Error::IndexOutOfBounds(*idx, ary.len()))
                     } else {
-                        Ok(Some(ary.index_mut(idx)))
+                        Ok(Some(ary.index_mut(*idx)))
                     }
                 }
             },
-            &Token::Identifier { ref ident, .. } => Err(Error::NoIdentifierInArray(ident.clone())),
+            Token::Identifier { ref ident, .. } => Err(Error::NoIdentifierInArray(ident.clone())),
         },
 
         _ => match tokens {
-            &Token::Identifier { ref ident, .. } => Err(Error::QueryingValueAsTable(ident.clone())),
-            &Token::Index { idx, .. } => Err(Error::QueryingValueAsArray(idx)),
+            Token::Identifier { ref ident, .. } => Err(Error::QueryingValueAsTable(ident.clone())),
+            Token::Index { idx, .. } => Err(Error::QueryingValueAsArray(*idx)),
         },
     }
 }
@@ -93,7 +93,7 @@ mod test {
         assert!(result.is_ok());
         let result = result.unwrap();
 
-        assert!(is_match!(result, Some(&mut Value::Boolean(true))));
+        assert!(is_match!(result, Some(Value::Boolean(true))));
     }
 
     #[test]
@@ -104,7 +104,7 @@ mod test {
         assert!(result.is_ok());
         let result = result.unwrap();
 
-        assert!(is_match!(result, Some(&mut Value::Integer(1))));
+        assert!(is_match!(result, Some(Value::Integer(1))));
     }
 
     #[test]
@@ -118,7 +118,7 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::Float(_)));
+        assert!(is_match!(result, Value::Float(_)));
         assert_eq!(result.as_float(), Some(1.0))
     }
 
@@ -133,9 +133,9 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::String(_)));
+        assert!(is_match!(result, Value::String(_)));
         match result {
-            &mut Value::String(ref s) => assert_eq!("string", s),
+            Value::String(ref s) => assert_eq!("string", s),
             _ => panic!("What just happened?"),
         }
     }
@@ -151,9 +151,9 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::Array(_)));
+        assert!(is_match!(result, Value::Array(_)));
         match result {
-            &mut Value::Array(ref ary) => {
+            Value::Array(ref ary) => {
                 assert_eq!(ary[0], Value::Boolean(true));
                 assert_eq!(ary[1], Value::Boolean(false));
             }
@@ -172,9 +172,9 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::Array(_)));
+        assert!(is_match!(result, Value::Array(_)));
         match result {
-            &mut Value::Array(ref ary) => {
+            Value::Array(ref ary) => {
                 assert_eq!(ary[0], Value::Integer(1));
                 assert_eq!(ary[1], Value::Integer(1337));
             }
@@ -193,9 +193,9 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::Array(_)));
+        assert!(is_match!(result, Value::Array(_)));
         match result {
-            &mut Value::Array(ref ary) => {
+            Value::Array(ref ary) => {
                 assert!(is_match!(ary[0], Value::Float(_)));
                 assert_eq!(ary[0].as_float(), Some(1.0));
                 assert!(is_match!(ary[1], Value::Float(_)));
@@ -216,7 +216,7 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::Integer(1)));
+        assert!(is_match!(result, Value::Integer(1)));
     }
 
     #[test]
@@ -230,7 +230,7 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::Integer(5)));
+        assert!(is_match!(result, Value::Integer(5)));
     }
 
     #[test]
@@ -250,7 +250,7 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::Integer(42)));
+        assert!(is_match!(result, Value::Integer(42)));
     }
 
     #[test]
@@ -274,7 +274,7 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::Integer(42)));
+        assert!(is_match!(result, Value::Integer(42)));
     }
 
     #[test]
@@ -294,9 +294,9 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::Array(_)));
+        assert!(is_match!(result, Value::Array(_)));
         match result {
-            &mut Value::Array(ref ary) => {
+            Value::Array(ref ary) => {
                 assert!(is_match!(ary[0], Value::Float(_)));
                 assert_eq!(ary[0].as_float(), Some(42.0));
                 assert!(is_match!(ary[1], Value::Float(_)));
@@ -323,7 +323,7 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::Integer(42)));
+        assert!(is_match!(result, Value::Integer(42)));
     }
 
     #[test]
@@ -349,9 +349,9 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::String(_)));
+        assert!(is_match!(result, Value::String(_)));
         match result {
-            &mut Value::String(ref s) => assert_eq!("Foo", s),
+            Value::String(ref s) => assert_eq!("Foo", s),
             _ => panic!("What just happened?"),
         }
     }
@@ -383,9 +383,9 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::String(_)));
+        assert!(is_match!(result, Value::String(_)));
         match result {
-            &mut Value::String(ref s) => assert_eq!("apple", s),
+            Value::String(ref s) => assert_eq!("apple", s),
             _ => panic!("What just happened?"),
         }
     }
@@ -401,9 +401,9 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::Table(_)));
+        assert!(is_match!(result, Value::Table(_)));
         match result {
-            &mut Value::Table(ref tab) => {
+            Value::Table(ref tab) => {
                 match tab.get("color") {
                     Some(&Value::String(ref s)) => assert_eq!("red", s),
                     _ => assert!(false),
@@ -437,9 +437,9 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::String(_)));
+        assert!(is_match!(result, Value::String(_)));
         match result {
-            &mut Value::String(ref s) => assert_eq!("yellow", s),
+            Value::String(ref s) => assert_eq!("yellow", s),
             _ => panic!("What just happened?"),
         }
     }
@@ -460,9 +460,9 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &mut Value::Table(_)));
+        assert!(is_match!(result, Value::Table(_)));
         match result {
-            &mut Value::Table(ref t) => assert!(t.is_empty()),
+            Value::Table(ref t) => assert!(t.is_empty()),
             _ => panic!("What just happened?"),
         }
     }

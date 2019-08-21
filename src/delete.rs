@@ -55,8 +55,8 @@ impl TomlValueDeleteExt for Value {
         #[inline]
         fn is_empty(val: Option<&Value>, default: bool) -> bool {
             val.map(|v| match v {
-                &Value::Table(ref tab) => tab.is_empty(),
-                &Value::Array(ref arr) => arr.is_empty(),
+                Value::Table(ref tab) => tab.is_empty(),
+                Value::Array(ref arr) => arr.is_empty(),
                 _ => default,
             })
             .unwrap_or(default)
@@ -79,7 +79,7 @@ impl TomlValueDeleteExt for Value {
 
         if last_token.is_none() {
             match self {
-                &mut Value::Table(ref mut tab) => match tokens {
+                Value::Table(ref mut tab) => match tokens {
                     Token::Identifier { ident, .. } => {
                         if is_empty(tab.get(&ident), true) {
                             Ok(tab.remove(&ident))
@@ -95,7 +95,7 @@ impl TomlValueDeleteExt for Value {
                     }
                     _ => Ok(None),
                 },
-                &mut Value::Array(ref mut arr) => match tokens {
+                Value::Array(ref mut arr) => match tokens {
                     Token::Identifier { ident, .. } => Err(Error::NoIdentifierInArray(ident)),
                     Token::Index { idx, .. } => {
                         if is_empty(Some(arr.index(idx)), true) {
@@ -123,7 +123,7 @@ impl TomlValueDeleteExt for Value {
             let val = resolve(self, &tokens, true)?.unwrap(); // safe because of resolve() guarantees
             let last_token = last_token.unwrap();
             match val {
-                &mut Value::Table(ref mut tab) => match *last_token {
+                Value::Table(ref mut tab) => match *last_token {
                     Token::Identifier { ref ident, .. } => {
                         if is_empty(tab.get(ident), true) {
                             Ok(tab.remove(ident))
@@ -139,7 +139,7 @@ impl TomlValueDeleteExt for Value {
                     }
                     Token::Index { idx, .. } => Err(Error::NoIndexInTable(idx)),
                 },
-                &mut Value::Array(ref mut arr) => match *last_token {
+                Value::Array(ref mut arr) => match *last_token {
                     Token::Identifier { ident, .. } => Err(Error::NoIdentifierInArray(ident)),
                     Token::Index { idx, .. } => {
                         if idx > arr.len() {
