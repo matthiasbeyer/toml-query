@@ -456,14 +456,14 @@ mod test {
                         assert!(is_match!(data.get("a").unwrap(), Value::Integer(15)));
                         match data.get("s").unwrap() {
                             Value::String(ref s) => assert_eq!(s, "Helloworld"),
-                            _ => assert!(false),
+                            _ => unreachable!(),
                         };
                     }
-                    _ => assert!(false),
+                    _ => unreachable!(),
                 },
-                _ => assert!(false),
+                _ => unreachable!(),
             },
-            _ => assert!(false),
+            _ => unreachable!(),
         }
     }
 }

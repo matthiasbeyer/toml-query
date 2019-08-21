@@ -244,7 +244,7 @@ mod test {
 
         match toml {
             Value::Table(tab) => assert!(tab.is_empty()),
-            _ => assert!(false, "Strange things are happening"),
+            _ => unreachable!("Strange things are happening"),
         }
     }
 
@@ -295,7 +295,7 @@ mod test {
 
         match toml {
             Value::Table(tab) => assert!(tab.is_empty()),
-            _ => assert!(false, "Strange things are happening"),
+            _ => unreachable!("Strange things are happening"),
         }
     }
 
@@ -346,7 +346,7 @@ mod test {
 
         match toml {
             Value::Table(tab) => assert!(tab.is_empty()),
-            _ => assert!(false, "Strange things are happening"),
+            _ => unreachable!("Strange things are happening"),
         }
     }
 
@@ -397,7 +397,7 @@ mod test {
 
         match toml {
             Value::Table(tab) => assert!(tab.is_empty()),
-            _ => assert!(false, "Strange things are happening"),
+            _ => unreachable!("Strange things are happening"),
         }
     }
 

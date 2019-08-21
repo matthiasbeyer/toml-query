@@ -95,7 +95,7 @@ mod test {
         assert!(is_match!(result, Value::Table(_)));
         match result {
             Value::Table(ref tab) => assert!(tab.is_empty()),
-            _ => assert!(false, "Expected Table, got something else"),
+            _ => unreachable!("Expected Table, got something else"),
         }
     }
 
@@ -378,11 +378,11 @@ mod test {
             Value::Table(ref tab) => {
                 match tab.get("color") {
                     Some(&Value::String(ref s)) => assert_eq!("red", s),
-                    _ => assert!(false),
+                    _ => unreachable!(),
                 }
                 match tab.get("shape") {
                     Some(&Value::String(ref s)) => assert_eq!("round", s),
-                    _ => assert!(false),
+                    _ => unreachable!(),
                 }
             }
             _ => panic!("What just happened?"),
