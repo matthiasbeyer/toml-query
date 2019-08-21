@@ -15,11 +15,11 @@ pub enum Token {
 }
 
 impl Token {
-    pub fn next(&self) -> Option<&Box<Token>> {
+    pub fn next(&self) -> Option<&Token> {
         trace!("Matching token (self): {:?}", self);
         match self {
-            Token::Identifier { ref next, .. } => next.as_ref(),
-            Token::Index { ref next, .. } => next.as_ref(),
+            Token::Identifier { ref next, .. } => next.as_ref().map(|t| &**t),
+            Token::Index { ref next, .. } => next.as_ref().map(|t| &**t),
         }
     }
 

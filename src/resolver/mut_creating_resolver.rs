@@ -49,7 +49,7 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut 
                             None => ary.get_mut(idx).ok_or_else(|| unreachable!()),
                         }
                     } else if let Some(next) = tokens.next() {
-                        match **next {
+                        match next {
                             Token::Identifier { .. } => {
                                 ary.push(Value::Table(Map::new()));
                             }
