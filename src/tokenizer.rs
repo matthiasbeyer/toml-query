@@ -201,7 +201,7 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
         s.replace("[", "").replace("]", "")
     }
 
-    fn build_token_tree(split: &mut Split<char>, last: &mut Token) -> Result<()> {
+    fn build_token_tree(split: &mut Split<'_, char>, last: &mut Token) -> Result<()> {
         trace!("build_token_tree(split: {:?}, last: {:?})", split, last);
         match split.next() {
             None => { /* No more tokens */ }

@@ -1,4 +1,5 @@
 #![recursion_limit = "1024"]
+#![warn(rust_2018_idioms)]
 // We need this for error_chain, unfortunately.
 
 /// # toml-query
@@ -14,16 +15,10 @@ extern crate is_match;
 extern crate lazy_static;
 #[macro_use]
 extern crate failure_derive;
-extern crate failure;
-extern crate regex;
-extern crate toml;
 
 #[cfg(feature = "log")]
 #[macro_use]
 extern crate log;
-
-#[cfg(feature = "typed")]
-extern crate serde;
 
 #[cfg(all(test, feature = "typed"))]
 #[macro_use]
@@ -38,8 +33,6 @@ extern crate quickcheck;
 #[cfg(not(feature = "log"))]
 #[macro_use]
 pub mod log;
-
-extern crate toml_query_derive;
 
 #[doc(hidden)]
 pub use toml_query_derive::*;

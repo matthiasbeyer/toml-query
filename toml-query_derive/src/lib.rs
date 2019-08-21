@@ -1,14 +1,10 @@
-extern crate darling;
+#![warn(rust_2018_idioms)]
+
 extern crate proc_macro;
-extern crate quote;
-extern crate syn;
 
 #[cfg(test)]
 #[macro_use]
 extern crate serde_derive;
-
-#[cfg(test)]
-extern crate serde;
 
 use proc_macro::TokenStream;
 use quote::quote;
