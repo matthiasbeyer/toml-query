@@ -21,7 +21,7 @@ pub fn resolve<'doc>(
             &Token::Identifier { ref ident, .. } => match t.get(ident) {
                 None => {
                     if error_if_not_found {
-                        return Err(Error::IdentifierNotFoundInDocument(ident.to_owned()));
+                        Err(Error::IdentifierNotFoundInDocument(ident.to_owned()))
                     } else {
                         Ok(None)
                     }
@@ -38,11 +38,13 @@ pub fn resolve<'doc>(
         &Value::Array(ref ary) => match tokens {
             &Token::Index { idx, .. } => match tokens.next() {
                 Some(next) => resolve(ary.get(idx).unwrap(), next, error_if_not_found),
-                None => if ary.get(idx).is_none() {
-                    Err(Error::IndexOutOfBounds(idx, ary.len()))
-                } else {
-                    Ok(Some(ary.index(idx)))
-                },
+                None => {
+                    if ary.get(idx).is_none() {
+                        Err(Error::IndexOutOfBounds(idx, ary.len()))
+                    } else {
+                        Ok(Some(ary.index(idx)))
+                    }
+                }
             },
             &Token::Identifier { ref ident, .. } => Err(Error::NoIdentifierInArray(ident.clone())),
         },
@@ -361,7 +363,7 @@ mod test {
         }
     }
 
-    static FRUIT_TABLE: &'static str = r#"
+    static FRUIT_TABLE: &str = r#"
     [[fruit.blah]]
       name = "apple"
 

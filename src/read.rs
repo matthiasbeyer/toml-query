@@ -296,7 +296,6 @@ mod test {
 
         assert!(is_match!(err, Error::NoIndexInTable(_)));
     }
-
 }
 
 #[cfg(test)]
@@ -362,7 +361,6 @@ mod high_level_fn_test {
 
         assert!(true);
     }
-
 }
 
 #[cfg(all(test, feature = "typed"))]
@@ -397,5 +395,4 @@ mod partial_tests {
         let obj: TestObj = tbl.read_partial::<TestObj>().unwrap().unwrap();
         assert_eq!(obj.value, "foobar");
     }
-
 }

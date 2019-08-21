@@ -83,16 +83,14 @@ impl TomlValueDeleteExt for Value {
                     Token::Identifier { ident, .. } => {
                         if is_empty(tab.get(&ident), true) {
                             Ok(tab.remove(&ident))
+                        } else if is_table(tab.get(&ident)) {
+                            Err(Error::CannotDeleteNonEmptyTable(Some(ident.clone())))
+                        } else if is_array(tab.get(&ident)) {
+                            Err(Error::CannotDeleteNonEmptyArray(Some(ident.clone())))
                         } else {
-                            if is_table(tab.get(&ident)) {
-                                Err(Error::CannotDeleteNonEmptyTable(Some(ident.clone())))
-                            } else if is_array(tab.get(&ident)) {
-                                Err(Error::CannotDeleteNonEmptyArray(Some(ident.clone())))
-                            } else {
-                                let act = name_of_val(tab.get(&ident));
-                                let tbl = "table";
-                                Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
-                            }
+                            let act = name_of_val(tab.get(&ident));
+                            let tbl = "table";
+                            Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
                         }
                     }
                     _ => Ok(None),
@@ -102,16 +100,14 @@ impl TomlValueDeleteExt for Value {
                     Token::Index { idx, .. } => {
                         if is_empty(Some(arr.index(idx)), true) {
                             Ok(Some(arr.remove(idx)))
+                        } else if is_table(Some(arr.index(idx))) {
+                            Err(Error::CannotDeleteNonEmptyTable(None))
+                        } else if is_array(Some(arr.index(idx))) {
+                            Err(Error::CannotDeleteNonEmptyArray(None))
                         } else {
-                            if is_table(Some(arr.index(idx))) {
-                                Err(Error::CannotDeleteNonEmptyTable(None))
-                            } else if is_array(Some(arr.index(idx))) {
-                                Err(Error::CannotDeleteNonEmptyArray(None))
-                            } else {
-                                let act = name_of_val(Some(arr.index(idx)));
-                                let tbl = "table";
-                                Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
-                            }
+                            let act = name_of_val(Some(arr.index(idx)));
+                            let tbl = "table";
+                            Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
                         }
                     }
                 },
@@ -120,7 +116,7 @@ impl TomlValueDeleteExt for Value {
                         Token::Identifier { ident, .. } => Error::QueryingValueAsTable(ident),
                         Token::Index { idx, .. } => Error::QueryingValueAsArray(idx),
                     };
-                    Err(Error::from(kind))
+                    Err(kind)
                 }
             }
         } else {
@@ -131,16 +127,14 @@ impl TomlValueDeleteExt for Value {
                     Token::Identifier { ref ident, .. } => {
                         if is_empty(tab.get(ident), true) {
                             Ok(tab.remove(ident))
+                        } else if is_table(tab.get(ident)) {
+                            Err(Error::CannotDeleteNonEmptyTable(Some(ident.clone())))
+                        } else if is_array(tab.get(ident)) {
+                            Err(Error::CannotDeleteNonEmptyArray(Some(ident.clone())))
                         } else {
-                            if is_table(tab.get(ident)) {
-                                Err(Error::CannotDeleteNonEmptyTable(Some(ident.clone())))
-                            } else if is_array(tab.get(ident)) {
-                                Err(Error::CannotDeleteNonEmptyArray(Some(ident.clone())))
-                            } else {
-                                let act = name_of_val(tab.get(ident));
-                                let tbl = "table";
-                                Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
-                            }
+                            let act = name_of_val(tab.get(ident));
+                            let tbl = "table";
+                            Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
                         }
                     }
                     Token::Index { idx, .. } => Err(Error::NoIndexInTable(idx)),
@@ -153,16 +147,14 @@ impl TomlValueDeleteExt for Value {
                         }
                         if is_empty(Some(&arr.index(idx)), true) {
                             Ok(Some(arr.remove(idx)))
+                        } else if is_table(Some(&arr.index(idx))) {
+                            Err(Error::CannotDeleteNonEmptyTable(None))
+                        } else if is_array(Some(&arr.index(idx))) {
+                            Err(Error::CannotDeleteNonEmptyArray(None))
                         } else {
-                            if is_table(Some(&arr.index(idx))) {
-                                Err(Error::CannotDeleteNonEmptyTable(None))
-                            } else if is_array(Some(&arr.index(idx))) {
-                                Err(Error::CannotDeleteNonEmptyArray(None))
-                            } else {
-                                let act = name_of_val(Some(arr.index(idx)));
-                                let tbl = "table";
-                                Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
-                            }
+                            let act = name_of_val(Some(arr.index(idx)));
+                            let tbl = "table";
+                            Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
                         }
                     }
                 },
@@ -171,7 +163,7 @@ impl TomlValueDeleteExt for Value {
                         Token::Identifier { ident, .. } => Error::QueryingValueAsTable(ident),
                         Token::Index { idx, .. } => Error::QueryingValueAsArray(idx),
                     };
-                    Err(Error::from(kind))
+                    Err(kind)
                 }
             }
         }
@@ -730,5 +722,4 @@ mod test {
         let res = res.unwrap_err();
         assert!(is_match!(res, Error::QueryingValueAsArray(0)));
     }
-
 }

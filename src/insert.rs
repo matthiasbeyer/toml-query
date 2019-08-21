@@ -442,5 +442,4 @@ mod test {
             _ => panic!("What just happenend?"),
         }
     }
-
 }

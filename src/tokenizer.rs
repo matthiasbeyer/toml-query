@@ -62,7 +62,7 @@ impl Token {
                             *next = Some(n);
 
                             trace!("self.pop_last(): Returning Result");
-                            return result;
+                            result
                         } else {
                             trace!("self.pop_last(): next itself has no next, returning Some");
                             Some(n)
@@ -88,7 +88,7 @@ impl Token {
                             *next = Some(n);
 
                             trace!("self.pop_last(): Returning Result");
-                            return result;
+                            result
                         } else {
                             trace!("self.pop_last(): next itself has no next, returning Some");
                             Some(n)
@@ -165,7 +165,7 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
         }
 
         match RE.captures(s) {
-            None => return Err(Error::ArrayAccessWithoutIndex),
+            None => Err(Error::ArrayAccessWithoutIndex),
             Some(captures) => {
                 trace!("Captured: {:?}", captures);
                 match captures.get(0) {
@@ -208,7 +208,7 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
             Some(token) => {
                 trace!("build_token_tree(...): next from split: {:?}", token);
 
-                if token.len() == 0 {
+                if token.is_empty() {
                     trace!("build_token_tree(...): Empty identifier... returning Error");
                     return Err(Error::EmptyIdentifier);
                 }
@@ -236,13 +236,13 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
         Some(token) => {
             trace!("next Token: {:?}", token);
 
-            if token.len() == 0 {
+            if token.is_empty() {
                 trace!("Empty token. Returning Error");
                 return Err(Error::EmptyIdentifier);
             }
 
             let mut tok = mk_token_object(token)?;
-            let _ = build_token_tree(&mut tokens, &mut tok)?;
+            build_token_tree(&mut tokens, &mut tok)?;
 
             trace!("Returning Ok({:?})", tok);
             Ok(tok)
@@ -549,5 +549,4 @@ mod test {
         let last = tokens.pop_last();
         assert!(last.is_none());
     }
-
 }

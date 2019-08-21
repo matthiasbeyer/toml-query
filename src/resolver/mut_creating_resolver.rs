@@ -48,21 +48,19 @@ pub fn resolve<'doc>(toml: &'doc mut Value, tokens: &Token) -> Result<&'doc mut 
                             Some(next) => resolve(ary.get_mut(idx).unwrap(), next),
                             None => ary.get_mut(idx).ok_or_else(|| unreachable!()),
                         }
-                    } else {
-                        if let Some(next) = tokens.next() {
-                            match **next {
-                                Token::Identifier { .. } => {
-                                    ary.push(Value::Table(Map::new()));
-                                }
-                                Token::Index { .. } => {
-                                    ary.push(Value::Array(vec![]));
-                                }
+                    } else if let Some(next) = tokens.next() {
+                        match **next {
+                            Token::Identifier { .. } => {
+                                ary.push(Value::Table(Map::new()));
                             }
-                            //resolve(toml, next)
-                            panic!("Cannot do this")
-                        } else {
-                            unimplemented!()
+                            Token::Index { .. } => {
+                                ary.push(Value::Array(vec![]));
+                            }
                         }
+                        //resolve(toml, next)
+                        panic!("Cannot do this")
+                    } else {
+                        unimplemented!()
                     }
                 }
                 _ => unimplemented!(),
@@ -336,7 +334,7 @@ mod test {
         }
     }
 
-    static FRUIT_TABLE: &'static str = r#"
+    static FRUIT_TABLE: &str = r#"
     [[fruit.blah]]
       name = "apple"
 
@@ -508,5 +506,4 @@ mod test {
         //    _                        => panic!("What just happened?"),
         //}
     }
-
 }
