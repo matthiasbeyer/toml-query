@@ -77,8 +77,8 @@ impl TomlValueDeleteExt for Value {
             val.map(crate::util::name_of_val).unwrap_or("None")
         }
 
-        if last_token.is_none() {
-            match self {
+        match last_token {
+            None => match self {
                 Value::Table(ref mut tab) => match tokens {
                     Token::Identifier { ident, .. } => {
                         if is_empty(tab.get(&ident), true) {
@@ -118,52 +118,52 @@ impl TomlValueDeleteExt for Value {
                     };
                     Err(kind)
                 }
-            }
-        } else {
-            let val = resolve(self, &tokens, true)?.unwrap(); // safe because of resolve() guarantees
-            let last_token = last_token.unwrap();
-            match val {
-                Value::Table(ref mut tab) => match *last_token {
-                    Token::Identifier { ref ident, .. } => {
-                        if is_empty(tab.get(ident), true) {
-                            Ok(tab.remove(ident))
-                        } else if is_table(tab.get(ident)) {
-                            Err(Error::CannotDeleteNonEmptyTable(Some(ident.clone())))
-                        } else if is_array(tab.get(ident)) {
-                            Err(Error::CannotDeleteNonEmptyArray(Some(ident.clone())))
-                        } else {
-                            let act = name_of_val(tab.get(ident));
-                            let tbl = "table";
-                            Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
+            },
+            Some(last_token) => {
+                let val = resolve(self, &tokens, true)?.unwrap(); // safe because of resolve() guarantees
+                match val {
+                    Value::Table(ref mut tab) => match *last_token {
+                        Token::Identifier { ref ident, .. } => {
+                            if is_empty(tab.get(ident), true) {
+                                Ok(tab.remove(ident))
+                            } else if is_table(tab.get(ident)) {
+                                Err(Error::CannotDeleteNonEmptyTable(Some(ident.clone())))
+                            } else if is_array(tab.get(ident)) {
+                                Err(Error::CannotDeleteNonEmptyArray(Some(ident.clone())))
+                            } else {
+                                let act = name_of_val(tab.get(ident));
+                                let tbl = "table";
+                                Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
+                            }
                         }
+                        Token::Index { idx, .. } => Err(Error::NoIndexInTable(idx)),
+                    },
+                    Value::Array(ref mut arr) => match *last_token {
+                        Token::Identifier { ident, .. } => Err(Error::NoIdentifierInArray(ident)),
+                        Token::Index { idx, .. } => {
+                            if idx > arr.len() {
+                                return Err(Error::ArrayIndexOutOfBounds(idx, arr.len()));
+                            }
+                            if is_empty(Some(&arr.index(idx)), true) {
+                                Ok(Some(arr.remove(idx)))
+                            } else if is_table(Some(&arr.index(idx))) {
+                                Err(Error::CannotDeleteNonEmptyTable(None))
+                            } else if is_array(Some(&arr.index(idx))) {
+                                Err(Error::CannotDeleteNonEmptyArray(None))
+                            } else {
+                                let act = name_of_val(Some(arr.index(idx)));
+                                let tbl = "table";
+                                Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
+                            }
+                        }
+                    },
+                    _ => {
+                        let kind = match *last_token {
+                            Token::Identifier { ident, .. } => Error::QueryingValueAsTable(ident),
+                            Token::Index { idx, .. } => Error::QueryingValueAsArray(idx),
+                        };
+                        Err(kind)
                     }
-                    Token::Index { idx, .. } => Err(Error::NoIndexInTable(idx)),
-                },
-                Value::Array(ref mut arr) => match *last_token {
-                    Token::Identifier { ident, .. } => Err(Error::NoIdentifierInArray(ident)),
-                    Token::Index { idx, .. } => {
-                        if idx > arr.len() {
-                            return Err(Error::ArrayIndexOutOfBounds(idx, arr.len()));
-                        }
-                        if is_empty(Some(&arr.index(idx)), true) {
-                            Ok(Some(arr.remove(idx)))
-                        } else if is_table(Some(&arr.index(idx))) {
-                            Err(Error::CannotDeleteNonEmptyTable(None))
-                        } else if is_array(Some(&arr.index(idx))) {
-                            Err(Error::CannotDeleteNonEmptyArray(None))
-                        } else {
-                            let act = name_of_val(Some(arr.index(idx)));
-                            let tbl = "table";
-                            Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
-                        }
-                    }
-                },
-                _ => {
-                    let kind = match *last_token {
-                        Token::Identifier { ident, .. } => Error::QueryingValueAsTable(ident),
-                        Token::Index { idx, .. } => Error::QueryingValueAsArray(idx),
-                    };
-                    Err(kind)
                 }
             }
         }
