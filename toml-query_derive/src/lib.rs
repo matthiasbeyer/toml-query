@@ -26,8 +26,8 @@ pub fn derive_partial(tokens: TokenStream) -> TokenStream {
         match option {
             // Match '#[ident = lit]' attributes. Match guard makes it '#[prefix = lit]'
             Meta::NameValue(MetaNameValue {
-                ref ident, ref lit, ..
-            }) if ident == "location" => {
+                ref path, ref lit, ..
+            }) if path.is_ident("location") => {
                 if let Lit::Str(lit) = lit {
                     location = Some(lit.value());
                 }

@@ -9,9 +9,9 @@ license     = "MPL-2.0"
 proc-macro = true
 
 [dependencies]
-syn     = "0.15"
-quote   = "0.6"
-darling = "0.8"
+syn     = "1"
+quote   = "1"
+darling = "0.10"
 
 [dev-dependencies]
 serde        = "1"
