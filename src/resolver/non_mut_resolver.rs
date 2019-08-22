@@ -17,11 +17,11 @@ pub fn resolve<'doc>(
     error_if_not_found: bool,
 ) -> Result<Option<&'doc Value>> {
     match toml {
-        &Value::Table(ref t) => match tokens {
-            &Token::Identifier { ref ident, .. } => match t.get(ident) {
+        Value::Table(ref t) => match tokens {
+            Token::Identifier { ref ident, .. } => match t.get(ident) {
                 None => {
                     if error_if_not_found {
-                        return Err(Error::IdentifierNotFoundInDocument(ident.to_owned()));
+                        Err(Error::IdentifierNotFoundInDocument(ident.to_owned()))
                     } else {
                         Ok(None)
                     }
@@ -32,25 +32,27 @@ pub fn resolve<'doc>(
                 },
             },
 
-            &Token::Index { idx, .. } => Err(Error::NoIndexInTable(idx)),
+            Token::Index { idx, .. } => Err(Error::NoIndexInTable(*idx)),
         },
 
-        &Value::Array(ref ary) => match tokens {
-            &Token::Index { idx, .. } => match tokens.next() {
-                Some(next) => resolve(ary.get(idx).unwrap(), next, error_if_not_found),
-                None => if ary.get(idx).is_none() {
-                    Err(Error::IndexOutOfBounds(idx, ary.len()))
-                } else {
-                    Ok(Some(ary.index(idx)))
-                },
+        Value::Array(ref ary) => match tokens {
+            Token::Index { idx, .. } => match tokens.next() {
+                Some(next) => resolve(ary.get(*idx).unwrap(), next, error_if_not_found),
+                None => {
+                    if ary.get(*idx).is_none() {
+                        Err(Error::IndexOutOfBounds(*idx, ary.len()))
+                    } else {
+                        Ok(Some(ary.index(*idx)))
+                    }
+                }
             },
-            &Token::Identifier { ref ident, .. } => Err(Error::NoIdentifierInArray(ident.clone())),
+            Token::Identifier { ref ident, .. } => Err(Error::NoIdentifierInArray(ident.clone())),
         },
 
         _ => match tokens {
-            &Token::Identifier { ref ident, .. } => Err(Error::QueryingValueAsTable(ident.clone())),
+            Token::Identifier { ref ident, .. } => Err(Error::QueryingValueAsTable(ident.clone())),
 
-            &Token::Index { idx, .. } => Err(Error::QueryingValueAsArray(idx)),
+            Token::Index { idx, .. } => Err(Error::QueryingValueAsArray(*idx)),
         },
     }
 }
@@ -95,7 +97,7 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::Boolean(true)));
+        assert!(is_match!(result, Value::Boolean(true)));
     }
 
     #[test]
@@ -109,7 +111,7 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::Integer(1)));
+        assert!(is_match!(result, Value::Integer(1)));
     }
 
     #[test]
@@ -123,7 +125,7 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::Float(_)));
+        assert!(is_match!(result, Value::Float(_)));
         assert_eq!(result.as_float(), Some(1.0))
     }
 
@@ -138,9 +140,9 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::String(_)));
+        assert!(is_match!(result, Value::String(_)));
         match result {
-            &Value::String(ref s) => assert_eq!("string", s),
+            Value::String(ref s) => assert_eq!("string", s),
             _ => panic!("What just happened?"),
         }
     }
@@ -156,9 +158,9 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::Array(_)));
+        assert!(is_match!(result, Value::Array(_)));
         match result {
-            &Value::Array(ref ary) => {
+            Value::Array(ref ary) => {
                 assert_eq!(ary[0], Value::Boolean(true));
                 assert_eq!(ary[1], Value::Boolean(false));
             }
@@ -177,9 +179,9 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::Array(_)));
+        assert!(is_match!(result, Value::Array(_)));
         match result {
-            &Value::Array(ref ary) => {
+            Value::Array(ref ary) => {
                 assert_eq!(ary[0], Value::Integer(1));
                 assert_eq!(ary[1], Value::Integer(1337));
             }
@@ -198,9 +200,9 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::Array(_)));
+        assert!(is_match!(result, Value::Array(_)));
         match result {
-            &Value::Array(ref ary) => {
+            Value::Array(ref ary) => {
                 assert!(is_match!(ary[0], Value::Float(_)));
                 assert_eq!(ary[0].as_float(), Some(1.0));
                 assert!(is_match!(ary[1], Value::Float(_)));
@@ -221,7 +223,7 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::Integer(1)));
+        assert!(is_match!(result, Value::Integer(1)));
     }
 
     #[test]
@@ -235,7 +237,7 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::Integer(5)));
+        assert!(is_match!(result, Value::Integer(5)));
     }
 
     #[test]
@@ -255,7 +257,7 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::Integer(42)));
+        assert!(is_match!(result, Value::Integer(42)));
     }
 
     #[test]
@@ -279,7 +281,7 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::Integer(42)));
+        assert!(is_match!(result, Value::Integer(42)));
     }
 
     #[test]
@@ -299,9 +301,9 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::Array(_)));
+        assert!(is_match!(result, Value::Array(_)));
         match result {
-            &Value::Array(ref ary) => {
+            Value::Array(ref ary) => {
                 assert!(is_match!(ary[0], Value::Float(_)));
                 assert_eq!(ary[0].as_float(), Some(42.0));
                 assert!(is_match!(ary[1], Value::Float(_)));
@@ -328,7 +330,7 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::Integer(42)));
+        assert!(is_match!(result, Value::Integer(42)));
     }
 
     #[test]
@@ -354,14 +356,14 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::String(_)));
+        assert!(is_match!(result, Value::String(_)));
         match result {
-            &Value::String(ref s) => assert_eq!("Foo", s),
+            Value::String(ref s) => assert_eq!("Foo", s),
             _ => panic!("What just happened?"),
         }
     }
 
-    static FRUIT_TABLE: &'static str = r#"
+    static FRUIT_TABLE: &str = r#"
     [[fruit.blah]]
       name = "apple"
 
@@ -388,9 +390,9 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::String(_)));
+        assert!(is_match!(result, Value::String(_)));
         match result {
-            &Value::String(ref s) => assert_eq!("apple", s),
+            Value::String(ref s) => assert_eq!("apple", s),
             _ => panic!("What just happened?"),
         }
     }
@@ -406,16 +408,16 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::Table(_)));
+        assert!(is_match!(result, Value::Table(_)));
         match result {
-            &Value::Table(ref tab) => {
+            Value::Table(ref tab) => {
                 match tab.get("color") {
                     Some(&Value::String(ref s)) => assert_eq!("red", s),
-                    _ => assert!(false),
+                    _ => unreachable!(),
                 }
                 match tab.get("shape") {
                     Some(&Value::String(ref s)) => assert_eq!("round", s),
-                    _ => assert!(false),
+                    _ => unreachable!(),
                 }
             }
             _ => panic!("What just happened?"),
@@ -442,9 +444,9 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::String(_)));
+        assert!(is_match!(result, Value::String(_)));
         match result {
-            &Value::String(ref s) => assert_eq!("yellow", s),
+            Value::String(ref s) => assert_eq!("yellow", s),
             _ => panic!("What just happened?"),
         }
     }
@@ -465,9 +467,9 @@ mod test {
         assert!(result.is_some());
         let result = result.unwrap();
 
-        assert!(is_match!(result, &Value::Table(_)));
+        assert!(is_match!(result, Value::Table(_)));
         match result {
-            &Value::Table(ref t) => assert!(t.is_empty()),
+            Value::Table(ref t) => assert!(t.is_empty()),
             _ => panic!("What just happened?"),
         }
     }

@@ -3,6 +3,7 @@ name = "toml-query_derive"
 version = "0.9.0"
 authors = ["Matthias Beyer <mail@beyermatthias.de>"]
 description = "Proc-macro for toml-query"
+edition = "2018"
 license     = "MPL-2.0"
 
 [lib]

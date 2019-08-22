@@ -55,8 +55,8 @@ impl TomlValueDeleteExt for Value {
         #[inline]
         fn is_empty(val: Option<&Value>, default: bool) -> bool {
             val.map(|v| match v {
-                &Value::Table(ref tab) => tab.is_empty(),
-                &Value::Array(ref arr) => arr.is_empty(),
+                Value::Table(ref tab) => tab.is_empty(),
+                Value::Array(ref arr) => arr.is_empty(),
                 _ => default,
             })
             .unwrap_or(default)
@@ -77,41 +77,37 @@ impl TomlValueDeleteExt for Value {
             val.map(crate::util::name_of_val).unwrap_or("None")
         }
 
-        if last_token.is_none() {
-            match self {
-                &mut Value::Table(ref mut tab) => match tokens {
+        match last_token {
+            None => match self {
+                Value::Table(ref mut tab) => match tokens {
                     Token::Identifier { ident, .. } => {
                         if is_empty(tab.get(&ident), true) {
                             Ok(tab.remove(&ident))
+                        } else if is_table(tab.get(&ident)) {
+                            Err(Error::CannotDeleteNonEmptyTable(Some(ident.clone())))
+                        } else if is_array(tab.get(&ident)) {
+                            Err(Error::CannotDeleteNonEmptyArray(Some(ident.clone())))
                         } else {
-                            if is_table(tab.get(&ident)) {
-                                Err(Error::CannotDeleteNonEmptyTable(Some(ident.clone())))
-                            } else if is_array(tab.get(&ident)) {
-                                Err(Error::CannotDeleteNonEmptyArray(Some(ident.clone())))
-                            } else {
-                                let act = name_of_val(tab.get(&ident));
-                                let tbl = "table";
-                                Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
-                            }
+                            let act = name_of_val(tab.get(&ident));
+                            let tbl = "table";
+                            Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
                         }
                     }
                     _ => Ok(None),
                 },
-                &mut Value::Array(ref mut arr) => match tokens {
+                Value::Array(ref mut arr) => match tokens {
                     Token::Identifier { ident, .. } => Err(Error::NoIdentifierInArray(ident)),
                     Token::Index { idx, .. } => {
                         if is_empty(Some(arr.index(idx)), true) {
                             Ok(Some(arr.remove(idx)))
+                        } else if is_table(Some(arr.index(idx))) {
+                            Err(Error::CannotDeleteNonEmptyTable(None))
+                        } else if is_array(Some(arr.index(idx))) {
+                            Err(Error::CannotDeleteNonEmptyArray(None))
                         } else {
-                            if is_table(Some(arr.index(idx))) {
-                                Err(Error::CannotDeleteNonEmptyTable(None))
-                            } else if is_array(Some(arr.index(idx))) {
-                                Err(Error::CannotDeleteNonEmptyArray(None))
-                            } else {
-                                let act = name_of_val(Some(arr.index(idx)));
-                                let tbl = "table";
-                                Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
-                            }
+                            let act = name_of_val(Some(arr.index(idx)));
+                            let tbl = "table";
+                            Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
                         }
                     }
                 },
@@ -120,19 +116,17 @@ impl TomlValueDeleteExt for Value {
                         Token::Identifier { ident, .. } => Error::QueryingValueAsTable(ident),
                         Token::Index { idx, .. } => Error::QueryingValueAsArray(idx),
                     };
-                    Err(Error::from(kind))
+                    Err(kind)
                 }
-            }
-        } else {
-            let val = resolve(self, &tokens, true)?.unwrap(); // safe because of resolve() guarantees
-            let last_token = last_token.unwrap();
-            match val {
-                &mut Value::Table(ref mut tab) => match *last_token {
-                    Token::Identifier { ref ident, .. } => {
-                        if is_empty(tab.get(ident), true) {
-                            Ok(tab.remove(ident))
-                        } else {
-                            if is_table(tab.get(ident)) {
+            },
+            Some(last_token) => {
+                let val = resolve(self, &tokens, true)?.unwrap(); // safe because of resolve() guarantees
+                match val {
+                    Value::Table(ref mut tab) => match *last_token {
+                        Token::Identifier { ref ident, .. } => {
+                            if is_empty(tab.get(ident), true) {
+                                Ok(tab.remove(ident))
+                            } else if is_table(tab.get(ident)) {
                                 Err(Error::CannotDeleteNonEmptyTable(Some(ident.clone())))
                             } else if is_array(tab.get(ident)) {
                                 Err(Error::CannotDeleteNonEmptyArray(Some(ident.clone())))
@@ -142,19 +136,17 @@ impl TomlValueDeleteExt for Value {
                                 Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
                             }
                         }
-                    }
-                    Token::Index { idx, .. } => Err(Error::NoIndexInTable(idx)),
-                },
-                &mut Value::Array(ref mut arr) => match *last_token {
-                    Token::Identifier { ident, .. } => Err(Error::NoIdentifierInArray(ident)),
-                    Token::Index { idx, .. } => {
-                        if idx > arr.len() {
-                            return Err(Error::ArrayIndexOutOfBounds(idx, arr.len()));
-                        }
-                        if is_empty(Some(&arr.index(idx)), true) {
-                            Ok(Some(arr.remove(idx)))
-                        } else {
-                            if is_table(Some(&arr.index(idx))) {
+                        Token::Index { idx, .. } => Err(Error::NoIndexInTable(idx)),
+                    },
+                    Value::Array(ref mut arr) => match *last_token {
+                        Token::Identifier { ident, .. } => Err(Error::NoIdentifierInArray(ident)),
+                        Token::Index { idx, .. } => {
+                            if idx > arr.len() {
+                                return Err(Error::ArrayIndexOutOfBounds(idx, arr.len()));
+                            }
+                            if is_empty(Some(&arr.index(idx)), true) {
+                                Ok(Some(arr.remove(idx)))
+                            } else if is_table(Some(&arr.index(idx))) {
                                 Err(Error::CannotDeleteNonEmptyTable(None))
                             } else if is_array(Some(&arr.index(idx))) {
                                 Err(Error::CannotDeleteNonEmptyArray(None))
@@ -164,14 +156,14 @@ impl TomlValueDeleteExt for Value {
                                 Err(Error::CannotAccessBecauseTypeMismatch(tbl, act))
                             }
                         }
+                    },
+                    _ => {
+                        let kind = match *last_token {
+                            Token::Identifier { ident, .. } => Error::QueryingValueAsTable(ident),
+                            Token::Index { idx, .. } => Error::QueryingValueAsArray(idx),
+                        };
+                        Err(kind)
                     }
-                },
-                _ => {
-                    let kind = match *last_token {
-                        Token::Identifier { ident, .. } => Error::QueryingValueAsTable(ident),
-                        Token::Index { idx, .. } => Error::QueryingValueAsArray(idx),
-                    };
-                    Err(Error::from(kind))
                 }
             }
         }
@@ -252,7 +244,7 @@ mod test {
 
         match toml {
             Value::Table(tab) => assert!(tab.is_empty()),
-            _ => assert!(false, "Strange things are happening"),
+            _ => unreachable!("Strange things are happening"),
         }
     }
 
@@ -303,7 +295,7 @@ mod test {
 
         match toml {
             Value::Table(tab) => assert!(tab.is_empty()),
-            _ => assert!(false, "Strange things are happening"),
+            _ => unreachable!("Strange things are happening"),
         }
     }
 
@@ -354,7 +346,7 @@ mod test {
 
         match toml {
             Value::Table(tab) => assert!(tab.is_empty()),
-            _ => assert!(false, "Strange things are happening"),
+            _ => unreachable!("Strange things are happening"),
         }
     }
 
@@ -405,7 +397,7 @@ mod test {
 
         match toml {
             Value::Table(tab) => assert!(tab.is_empty()),
-            _ => assert!(false, "Strange things are happening"),
+            _ => unreachable!("Strange things are happening"),
         }
     }
 
@@ -730,5 +722,4 @@ mod test {
         let res = res.unwrap_err();
         assert!(is_match!(res, Error::QueryingValueAsArray(0)));
     }
-
 }
