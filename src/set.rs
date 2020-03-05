@@ -263,6 +263,7 @@ mod test {
     }
 
     #[test]
+    #[allow(clippy::cognitive_complexity)]
     fn test_set_with_seperator_into_nested_table() {
         let mut toml: Value = toml_from_str(
             r#"
