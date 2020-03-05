@@ -84,9 +84,9 @@ impl TomlValueDeleteExt for Value {
                         if is_empty(tab.get(&ident), true) {
                             Ok(tab.remove(&ident))
                         } else if is_table(tab.get(&ident)) {
-                            Err(Error::CannotDeleteNonEmptyTable(Some(ident.clone())))
+                            Err(Error::CannotDeleteNonEmptyTable(Some(ident)))
                         } else if is_array(tab.get(&ident)) {
-                            Err(Error::CannotDeleteNonEmptyArray(Some(ident.clone())))
+                            Err(Error::CannotDeleteNonEmptyArray(Some(ident)))
                         } else {
                             let act = name_of_val(tab.get(&ident));
                             let tbl = "table";

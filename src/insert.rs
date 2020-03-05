@@ -117,7 +117,7 @@ impl TomlValueInsertExt for Value {
         match *last {
             Token::Identifier { ident, .. } => match val {
                 Value::Table(ref mut t) => Ok(t.insert(ident, value)),
-                _ => Err(Error::NoIdentifierInArray(ident.clone())),
+                _ => Err(Error::NoIdentifierInArray(ident)),
             },
 
             Token::Index { idx, .. } => match val {

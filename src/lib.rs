@@ -13,8 +13,6 @@
 extern crate is_match;
 #[macro_use]
 extern crate lazy_static;
-#[macro_use]
-extern crate failure_derive;
 
 #[cfg(feature = "log")]
 #[macro_use]

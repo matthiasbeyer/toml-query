@@ -15,8 +15,7 @@ logging = [ "log" ]
 typed = ["serde"]
 
 [dependencies]
-failure = "0.1"
-failure_derive = "0.1"
+thiserror = "1"
 is-match = "0.1"
 lazy_static = "1.4"
 regex = "1.3"
