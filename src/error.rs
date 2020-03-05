@@ -1,69 +1,69 @@
 /// Error types
 
+use thiserror::Error;
+
 pub type Result<T> = ::std::result::Result<T, Error>;
 
-#[derive(Debug, Fail)]
+#[derive(Debug, Error)]
 pub enum Error {
     #[cfg(feature = "typed")]
-    #[fail(display = "{}", _0)]
-    TomlSerialize(#[cause] ::toml::ser::Error),
+    #[error("{}", _0)]
+    TomlSerialize(#[from] ::toml::ser::Error),
 
     #[cfg(feature = "typed")]
-    #[fail(display = "{}", _0)]
-    TomlDeserialize(#[cause] ::toml::de::Error),
+    #[error("{}", _0)]
+    TomlDeserialize(#[from] ::toml::de::Error),
 
     // Errors for tokenizer
-    #[fail(display = "Parsing the query '{}' failed", _0)]
+    #[error("Parsing the query '{0}' failed")]
     QueryParsingError(String),
 
-    #[fail(display = "The query on the TOML is empty")]
+    #[error("The query on the TOML is empty")]
     EmptyQueryError,
 
-    #[fail(display = "The passed query has an empty identifier")]
+    #[error("The passed query has an empty identifier")]
     EmptyIdentifier,
 
-    #[fail(display = "The passed query tries to access an array but does not specify the index")]
+    #[error("The passed query tries to access an array but does not specify the index")]
     ArrayAccessWithoutIndex,
 
-    #[fail(
-        display = "The passed query tries to access an array but does not specify a valid index"
-    )]
+    #[error("The passed query tries to access an array but does not specify a valid index")]
     ArrayAccessWithInvalidIndex,
 
     // Errors for Resolver
-    #[fail(display = "The identfier '{}' is not present in the document", _0)]
+    #[error("The identfier '{0}' is not present in the document")]
     IdentifierNotFoundInDocument(String),
 
-    #[fail(display = "Got an index query '[{}]' but have table", _0)]
+    #[error("Got an index query '[{0}]' but have table")]
     NoIndexInTable(usize),
 
-    #[fail(display = "Got an identifier query '{}' but have array", _0)]
+    #[error("Got an identifier query '{0}' but have array")]
     NoIdentifierInArray(String),
 
-    #[fail(display = "Got an identifier query '{}' but have value", _0)]
+    #[error("Got an identifier query '{0}' but have value")]
     QueryingValueAsTable(String),
 
-    #[fail(display = "Got an index query '{}' but have value", _0)]
+    #[error("Got an index query '{0}' but have value")]
     QueryingValueAsArray(usize),
 
-    #[fail(display = "Cannot delete table '{:?}' which is not empty", _0)]
+    #[error("Cannot delete table '{0:?}' which is not empty")]
     CannotDeleteNonEmptyTable(Option<String>),
 
-    #[fail(display = "Cannot delete array '{:?}' which is not empty", _0)]
+    #[error("Cannot delete array '{0:?}' which is not empty")]
     CannotDeleteNonEmptyArray(Option<String>),
 
-    #[fail(display = "Cannot access {} because expected {}", _0, _1)]
+    #[error("Cannot access {0} because expected {1}")]
     CannotAccessBecauseTypeMismatch(&'static str, &'static str),
 
-    #[fail(display = "Cannot delete in array at {}, array has length {}", _0, _1)]
+    #[error("Cannot delete in array at {0}, array has length {1}")]
     ArrayIndexOutOfBounds(usize, usize),
 
-    #[fail(display = "Cannot access array at {}, array has length {}", _0, _1)]
+    #[error("Cannot access array at {0}, array has length {1}")]
     IndexOutOfBounds(usize, usize),
 
-    #[fail(display = "Type Error. Requested {}, but got {}", _0, _1)]
+    #[error("Type Error. Requested {0}, but got {1}")]
     TypeError(&'static str, &'static str),
 
-    #[fail(display = "Value at '{}' not there", _0)]
+    #[error("Value at '{0}' not there")]
     NotAvailable(String),
 }
