@@ -3,6 +3,15 @@
 This changelog was started with the 0.4.0 release, so there are no logs before
 that version.
 
+# 0.10.0
+
+* The library uses 'thiserror' for error types now
+* Dependencies of the library were updated
+* Minimum rustc version was updated to 1.32.0
+* clippy-fixes were applied
+* rustfmt was applied
+
+
 # 0.9.2
 
 Bugfix release:
