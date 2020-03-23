@@ -1,6 +1,6 @@
 [package]
 name = "toml-query_derive"
-version = "0.9.0"
+version = "0.10.0"
 authors = ["Matthias Beyer <mail@beyermatthias.de>"]
 description = "Proc-macro for toml-query"
 edition = "2018"
