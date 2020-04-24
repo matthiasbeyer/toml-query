@@ -358,8 +358,6 @@ mod high_level_fn_test {
             .unwrap()
             .is_none());
         let _: Test = toml.read_deserialized("table.value").unwrap().unwrap();
-
-        assert!(true);
     }
 }
 
