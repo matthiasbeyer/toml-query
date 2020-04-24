@@ -1,0 +1,18 @@
+image: debian/stable
+sources:
+  - https://git.sr.ht/~matthiasbeyer/toml-query
+packages:
+  - curl
+  - openssl
+tasks:
+  - install: curl https://sh.rustup.rs -sSf | sh -s -- -y
+  - build: |
+      cd toml-query
+      PATH="$HOME/.cargo/bin:$PATH" cargo build --all --all-features
+  - test: |
+      cd toml-query
+      PATH="$HOME/.cargo/bin:$PATH" cargo test --all --all-features
+  - clippy: |
+      cd toml-query
+      PATH="$HOME/.cargo/bin:$PATH" rustup component add clippy
+      PATH="$HOME/.cargo/bin:$PATH" cargo clippy --all --all-targets --all-features -- -D warnings
