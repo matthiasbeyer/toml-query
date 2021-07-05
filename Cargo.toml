@@ -6,7 +6,7 @@ edition = "2018"
 keywords = ["toml", "extension"]
 license = "MPL-2.0"
 readme = "./README.md"
-repository = "https://github.com/matthiasbeyer/toml-query"
+repository = "https://git.beyermatthi.as/toml-query"
 description = "Library to work with toml::Value objects more conveniently"
 
 [features]
