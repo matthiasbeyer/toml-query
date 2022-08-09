@@ -145,3 +145,19 @@ jobs:
         run: pip install gitlint
       - run: gitlint --commits $(git merge-base origin/master HEAD)..
 
+  ci:
+    if: ${{ success() }}
+    needs:
+      - check
+      - clippy
+      - dco-check
+      - deny
+      - doc
+      - fmt
+      - license
+      - test
+    runs-on: ubuntu-latest
+    steps:
+      - name: CI succeeded
+        run: exit 0
+
