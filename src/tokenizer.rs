@@ -106,7 +106,7 @@ impl Token {
     pub fn identifier(&self) -> &String {
         trace!("self.identifier()");
         match self {
-            Token::Identifier { ref ident, .. } => &ident,
+            Token::Identifier { ref ident, .. } => ident,
             _ => unreachable!(),
         }
     }
