@@ -2,7 +2,7 @@
 name = "toml-query"
 version = "0.10.0"
 authors = ["Matthias Beyer <mail@beyermatthias.de>"]
-edition = "2018"
+edition = "2021"
 keywords = ["toml", "extension"]
 license = "MPL-2.0"
 readme = "./README.md"

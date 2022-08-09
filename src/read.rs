@@ -92,8 +92,8 @@ macro_rules! make_type_getter {
         fn $fnname(&'doc self, query: &str) -> Result<Option<$rettype>> {
             self.read_with_seperator(query, '.').and_then(|o| match o {
                 $matcher => Ok(Some($implementation)),
-                Some(o)  => Err(Error::TypeError($typename, crate::util::name_of_val(&o)).into()),
-                None     => Ok(None),
+                Some(o) => Err(Error::TypeError($typename, crate::util::name_of_val(&o)).into()),
+                None => Ok(None),
             })
         }
     };

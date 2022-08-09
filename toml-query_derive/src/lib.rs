@@ -1,4 +1,5 @@
 #![warn(rust_2018_idioms)]
+#![allow(clippy::collapsible_match)]
 
 use proc_macro::TokenStream;
 use quote::quote;
@@ -15,9 +16,7 @@ pub fn derive_partial(tokens: TokenStream) -> TokenStream {
         let option = option.parse_meta().unwrap();
         match option {
             // Match '#[ident = lit]' attributes. Match guard makes it '#[prefix = lit]'
-            Meta::NameValue(MetaNameValue {
-                ref path, ref lit, ..
-            }) if path.is_ident("location") => {
+            Meta::NameValue(MetaNameValue { ref path, lit, .. }) if path.is_ident("location") => {
                 if let Lit::Str(lit) = lit {
                     location = Some(lit.value());
                 }
