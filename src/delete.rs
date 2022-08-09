@@ -144,11 +144,11 @@ impl TomlValueDeleteExt for Value {
                             if idx > arr.len() {
                                 return Err(Error::ArrayIndexOutOfBounds(idx, arr.len()));
                             }
-                            if is_empty(Some(&arr.index(idx)), true) {
+                            if is_empty(Some(arr.index(idx)), true) {
                                 Ok(Some(arr.remove(idx)))
-                            } else if is_table(Some(&arr.index(idx))) {
+                            } else if is_table(Some(arr.index(idx))) {
                                 Err(Error::CannotDeleteNonEmptyTable(None))
-                            } else if is_array(Some(&arr.index(idx))) {
+                            } else if is_array(Some(arr.index(idx))) {
                                 Err(Error::CannotDeleteNonEmptyArray(None))
                             } else {
                                 let act = name_of_val(Some(arr.index(idx)));
