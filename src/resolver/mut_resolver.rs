@@ -82,7 +82,10 @@ mod test {
         assert!(result.is_err());
         let result = result.unwrap_err();
 
-        assert!(is_match!(result, Error::IdentifierNotFoundInDocument { .. }));
+        assert!(is_match!(
+            result,
+            Error::IdentifierNotFoundInDocument { .. }
+        ));
     }
 
     #[test]
@@ -480,7 +483,10 @@ mod test {
         assert!(result.is_err());
         let result = result.unwrap_err();
 
-        assert!(is_match!(result, Error::IdentifierNotFoundInDocument { .. }));
+        assert!(is_match!(
+            result,
+            Error::IdentifierNotFoundInDocument { .. }
+        ));
     }
 
     #[test]
