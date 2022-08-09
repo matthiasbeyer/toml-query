@@ -332,10 +332,7 @@ mod test {
                 ..
             } => {
                 assert_eq!("b", next.deref().identifier());
-                match next.deref() {
-                    Token::Identifier { next: None, .. } => true,
-                    _ => false,
-                }
+                std::matches!(next.deref(), Token::Identifier { next: None, .. })
             }
             _ => false,
         });
@@ -353,10 +350,7 @@ mod test {
             Token::Identifier {
                 next: Some(ref next),
                 ..
-            } => match next.deref() {
-                Token::Index { idx: 0, next: None } => true,
-                _ => false,
-            },
+            } => std::matches!(next.deref(), Token::Index { idx: 0, next: None }),
             _ => false,
         });
     }
@@ -397,10 +391,8 @@ mod test {
 
     quickcheck! {
         fn test_array_index(i: usize) -> bool {
-            match tokenize_with_seperator(&format!("[{}]", i), '.') {
-                Ok(Token::Index { next: None, ..  }) => true,
-                _                                    => false,
-            }
+            std::matches!(tokenize_with_seperator(&format!("[{}]", i), '.'),
+                Ok(Token::Index { next: None, ..  }))
         }
     }
 
