@@ -1,6 +1,6 @@
 # toml-query
 
-Work with [toml-rs]() `Value` objects in an easy way:
+Work with [toml](https://docs.rs/toml) `Value` objects in an easy way:
 
 ```rust
 value.read("foo.bar.a.b.c")                       // -> Result<Option<&Value>, Error>
