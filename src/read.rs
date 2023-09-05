@@ -109,7 +109,7 @@ impl<'doc, T> TomlValueReadTypeExt<'doc> for T
 where
     T: TomlValueReadExt<'doc>,
 {
-    make_type_getter!(read_string, String, "String", Some(&Value::String(ref obj)) => obj.clone());
+    make_type_getter!(read_string, String, "String", Some(Value::String(ref obj)) => obj.clone());
     make_type_getter!(read_int, i64, "Integer", Some(&Value::Integer(obj)) => obj);
     make_type_getter!(read_float, f64, "Float", Some(&Value::Float(obj)) => obj);
     make_type_getter!(read_bool, bool, "Boolean", Some(&Value::Boolean(obj)) => obj);
