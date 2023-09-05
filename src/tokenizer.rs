@@ -265,7 +265,7 @@ mod test {
 
     #[test]
     fn test_tokenize_empty_query_to_error() {
-        let tokens = tokenize_with_seperator(&String::from(""), '.');
+        let tokens = tokenize_with_seperator("", '.');
         assert!(tokens.is_err());
         let tokens = tokens.unwrap_err();
 
@@ -274,7 +274,7 @@ mod test {
 
     #[test]
     fn test_tokenize_seperator_only() {
-        let tokens = tokenize_with_seperator(&String::from("."), '.');
+        let tokens = tokenize_with_seperator(".", '.');
         assert!(tokens.is_err());
         let tokens = tokens.unwrap_err();
 
@@ -283,7 +283,7 @@ mod test {
 
     #[test]
     fn test_tokenize_array_brackets_only() {
-        let tokens = tokenize_with_seperator(&String::from("[]"), '.');
+        let tokens = tokenize_with_seperator("[]", '.');
         assert!(tokens.is_err());
         let tokens = tokens.unwrap_err();
 
@@ -292,7 +292,7 @@ mod test {
 
     #[test]
     fn test_tokenize_identifiers_with_array_brackets_only() {
-        let tokens = tokenize_with_seperator(&String::from("a.b.c.[]"), '.');
+        let tokens = tokenize_with_seperator("a.b.c.[]", '.');
         assert!(tokens.is_err());
         let tokens = tokens.unwrap_err();
 
@@ -301,7 +301,7 @@ mod test {
 
     #[test]
     fn test_tokenize_identifiers_in_array_brackets() {
-        let tokens = tokenize_with_seperator(&String::from("[a]"), '.');
+        let tokens = tokenize_with_seperator("[a]", '.');
         assert!(tokens.is_err());
         let tokens = tokens.unwrap_err();
 
@@ -310,7 +310,7 @@ mod test {
 
     #[test]
     fn test_tokenize_single_token_query() {
-        let tokens = tokenize_with_seperator(&String::from("example"), '.');
+        let tokens = tokenize_with_seperator("example", '.');
         assert!(tokens.is_ok());
         let tokens = tokens.unwrap();
 
@@ -328,7 +328,7 @@ mod test {
 
     #[test]
     fn test_tokenize_double_token_query() {
-        let tokens = tokenize_with_seperator(&String::from("a.b"), '.');
+        let tokens = tokenize_with_seperator("a.b", '.');
         assert!(tokens.is_ok());
         let tokens = tokens.unwrap();
 
@@ -347,7 +347,7 @@ mod test {
 
     #[test]
     fn test_tokenize_ident_then_array_query() {
-        let tokens = tokenize_with_seperator(&String::from("a.[0]"), '.');
+        let tokens = tokenize_with_seperator("a.[0]", '.');
         assert!(tokens.is_ok());
         let tokens = tokens.unwrap();
 
@@ -363,7 +363,7 @@ mod test {
 
     #[test]
     fn test_tokenize_many_idents_then_array_query() {
-        let tokens = tokenize_with_seperator(&String::from("a.b.c.[1000]"), '.');
+        let tokens = tokenize_with_seperator("a.b.c.[1000]", '.');
         assert!(tokens.is_ok());
         let tokens = tokens.unwrap();
 
@@ -388,7 +388,7 @@ mod test {
 
     #[test]
     fn test_tokenize_empty_token_after_good_token() {
-        let tokens = tokenize_with_seperator(&String::from("a..b"), '.');
+        let tokens = tokenize_with_seperator("a..b", '.');
         assert!(tokens.is_err());
         let tokens = tokens.unwrap_err();
 
@@ -462,7 +462,7 @@ mod test {
 
     #[test]
     fn test_pop_last_token_from_identifier_chain() {
-        let tokens = tokenize_with_seperator(&String::from("a.b.c.d.e.f"), '.');
+        let tokens = tokenize_with_seperator("a.b.c.d.e.f", '.');
         assert!(tokens.is_ok());
         let mut tokens = tokens.unwrap();
 
@@ -473,7 +473,7 @@ mod test {
 
     #[test]
     fn test_pop_last_token_from_mixed_chain() {
-        let tokens = tokenize_with_seperator(&String::from("a.[100].c.[3].e.f"), '.');
+        let tokens = tokenize_with_seperator("a.[100].c.[3].e.f", '.');
         assert!(tokens.is_ok());
         let mut tokens = tokens.unwrap();
 
@@ -484,7 +484,7 @@ mod test {
 
     #[test]
     fn test_pop_last_token_from_identifier_chain_is_array() {
-        let tokens = tokenize_with_seperator(&String::from("a.b.c.d.e.f.[1000]"), '.');
+        let tokens = tokenize_with_seperator("a.b.c.d.e.f.[1000]", '.');
         assert!(tokens.is_ok());
         let mut tokens = tokens.unwrap();
 
@@ -495,7 +495,7 @@ mod test {
 
     #[test]
     fn test_pop_last_token_from_mixed_chain_is_array() {
-        let tokens = tokenize_with_seperator(&String::from("a.[100].c.[3].e.f.[1000]"), '.');
+        let tokens = tokenize_with_seperator("a.[100].c.[3].e.f.[1000]", '.');
         assert!(tokens.is_ok());
         let mut tokens = tokens.unwrap();
 
@@ -506,7 +506,7 @@ mod test {
 
     #[test]
     fn test_pop_last_token_from_one_token() {
-        let tokens = tokenize_with_seperator(&String::from("a"), '.');
+        let tokens = tokenize_with_seperator("a", '.');
         assert!(tokens.is_ok());
         let mut tokens = tokens.unwrap();
 
@@ -516,7 +516,7 @@ mod test {
 
     #[test]
     fn test_pop_last_chain() {
-        let tokens = tokenize_with_seperator(&String::from("a.[100].c.[3].e.f.[1000]"), '.');
+        let tokens = tokenize_with_seperator("a.[100].c.[3].e.f.[1000]", '.');
         assert!(tokens.is_ok());
         let mut tokens = tokens.unwrap();
 
