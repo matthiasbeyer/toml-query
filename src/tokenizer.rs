@@ -204,7 +204,7 @@ pub fn tokenize_with_seperator(query: &str, seperator: char) -> Result<Token> {
     /// Remove '[' and ']' from a str
     fn without_array_brackets(s: &str) -> String {
         trace!("without_array_brackets({:?})", s);
-        s.replace('[', "").replace(']', "")
+        s.replace(['[', ']'], "")
     }
 
     fn build_token_tree(split: &mut Split<'_, char>, last: &mut Token) -> Result<()> {
