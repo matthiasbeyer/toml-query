@@ -3,6 +3,10 @@
 This changelog was started with the 0.4.0 release, so there are no logs before
 that version.
 
+# 0.11.0
+
+* Updated to work with toml 0.9
+
 # 0.10.0
 
 * The library uses 'thiserror' for error types now

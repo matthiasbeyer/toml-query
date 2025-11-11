@@ -4,8 +4,6 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 
-/// The Toml Insert extensions
-
 #[cfg(feature = "typed")]
 use serde::Serialize;
 use toml::Value;
@@ -14,6 +12,7 @@ use crate::error::{Error, Result};
 use crate::tokenizer::tokenize_with_seperator;
 use crate::tokenizer::Token;
 
+/// The Toml Insert extensions
 pub trait TomlValueInsertExt {
     /// Extension function for inserting a value in the current toml::Value document
     /// using a custom seperator.

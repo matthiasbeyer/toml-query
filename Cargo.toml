@@ -1,6 +1,6 @@
 [package]
 name = "toml-query"
-version = "0.10.0"
+version = "0.11.0"
 authors = ["Matthias Beyer <mail@beyermatthias.de>"]
 edition = "2021"
 keywords = ["toml", "extension"]
@@ -19,7 +19,7 @@ thiserror = "1"
 is-match = "0.1"
 lazy_static = "1.4"
 regex = "1.3"
-toml = "0.5"
+toml = "0.9"
 
 [dependencies.log]
 version = "0.4"

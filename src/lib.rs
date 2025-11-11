@@ -8,10 +8,9 @@
 #![warn(rust_2018_idioms)]
 // We need this for error_chain, unfortunately.
 
-/// # toml-query
-///
-/// A crate to help executing queries on toml data structures inside Rust code.
-///
+//! # toml-query
+//!
+//! A crate to help executing queries on toml data structures inside Rust code.
 
 // external crates
 
