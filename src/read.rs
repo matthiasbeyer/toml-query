@@ -4,8 +4,6 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 //
 
-/// The Toml Read extensions
-
 #[cfg(feature = "typed")]
 use std::fmt::Debug;
 
@@ -16,6 +14,7 @@ use toml::Value;
 use crate::error::{Error, Result};
 use crate::tokenizer::tokenize_with_seperator;
 
+/// The Toml Read extensions
 pub trait TomlValueReadExt<'doc> {
     /// Extension function for reading a value from the current toml::Value document
     /// using a custom seperator
